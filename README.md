@@ -1,0 +1,94 @@
+# DocuGen
+
+DocuGen es un SaaS freemium para generar borradores profesionales de documentos laborales, comerciales y legales orientados al mercado español. No sustituye asesoramiento legal, laboral, fiscal ni profesional.
+
+## Stack
+
+- Next.js 14 App Router, TypeScript estricto y Tailwind CSS
+- Supabase Auth, PostgreSQL, RLS y Storage
+- Stripe Checkout, suscripciones, portal y webhooks
+- OpenAI Responses API con el paquete oficial `openai`
+- jsPDF para PDF, `docx`, Resend y React Email preparados para Fase 2
+
+## Instalación
+
+```bash
+npm install
+cp .env.local.example .env.local
+npm run dev
+```
+
+## Variables
+
+Rellena en `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENAI_API_KEY=
+OPENAI_MODEL_DEFAULT=gpt-4.1-mini
+OPENAI_MODEL_PREMIUM=gpt-4.1
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_ID_PRO=
+STRIPE_PRICE_ID_EMPRESA=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+RESEND_API_KEY=
+```
+
+## Supabase
+
+1. Crea un proyecto en [Supabase](https://supabase.com/dashboard).
+2. Copia URL, anon key y service role key a `.env.local`.
+3. Ejecuta `supabase-schema.sql` en el SQL Editor.
+4. En Authentication, activa magic link por email.
+5. Para Google OAuth, configura el provider en Supabase y añade el callback permitido:
+   `http://localhost:3000/auth/callback`.
+6. En producción añade también `https://tu-dominio.vercel.app/auth/callback`.
+
+El SQL crea perfiles, workspaces, documentos, límites, referidos, tablas de chat, bucket `brand-logos`, triggers y RLS.
+
+## Stripe
+
+1. Crea un producto Pro mensual de 9 € y copia su Price ID en `STRIPE_PRICE_ID_PRO`.
+2. Crea o reserva el Price ID Empresa para `STRIPE_PRICE_ID_EMPRESA`.
+3. Configura el portal de cliente en Stripe.
+4. Para webhooks locales:
+
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+Copia el signing secret en `STRIPE_WEBHOOK_SECRET`. Eventos usados: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`.
+
+## OpenAI
+
+1. Crea una API key en [OpenAI](https://platform.openai.com).
+2. Añade `OPENAI_API_KEY`.
+3. Ajusta modelos con `OPENAI_MODEL_DEFAULT` y `OPENAI_MODEL_PREMIUM` si lo necesitas.
+
+## Vercel
+
+1. Sube el repo a GitHub.
+2. Importa el proyecto en [Vercel](https://vercel.com/dashboard).
+3. Añade las mismas variables de entorno.
+4. Actualiza `NEXT_PUBLIC_APP_URL` con la URL pública.
+5. Añade la URL pública en Supabase Auth y Stripe.
+
+## Resend
+
+Resend y React Email están preparados para Fase 2 con `lib/resend.ts`, `emails/welcome.tsx` y `emails/document-ready.tsx`. Añade `RESEND_API_KEY` cuando se integren envíos.
+
+## Comandos
+
+```bash
+npm run lint
+npm run build
+npm run dev
+```
+
+## Aviso legal del producto
+
+DocuGen genera borradores con IA basados en la información introducida por el usuario. Los documentos deben revisarse antes de usarse y, si pueden tener efectos legales, laborales, fiscales o contractuales, deben validarse por un profesional cualificado.
