@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | DocuGen",
   },
   description:
-    "Genera borradores profesionales de contratos, presupuestos, propuestas y documentos web adaptados al contexto español.",
+    "Genera borradores profesionales de contratos, presupuestos, propuestas y documentos web adaptados al contexto espanol.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
 };
 

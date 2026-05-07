@@ -37,18 +37,18 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
   const cards = [
     {
       name: "Free",
-      price: "0 €",
+      price: "0 EUR",
       description: "Para probar DocuGen con documentos puntuales.",
-      features: ["3 documentos/mes", "Historial básico", "Exportación PDF y TXT"],
+      features: ["3 documentos al mes", "Historial basico", "Exportacion PDF y TXT"],
       action: currentPlan ? "Plan inicial" : "Empezar gratis",
       href: currentPlan ? "/dashboard" : "/auth",
       disabled: currentPlan === "free",
     },
     {
       name: "Pro",
-      price: "9 €/mes",
-      description: "Para profesionales que generan documentación cada semana.",
-      features: ["Documentos ilimitados", "Word preparado para Fase 2", "Marca personalizada preparada"],
+      price: "9 EUR/mes",
+      description: "Para profesionales que generan documentacion cada semana.",
+      features: ["Documentos ilimitados", "Exportacion Word", "Marca personalizada"],
       action: isPro ? "Plan actual" : loading ? "Conectando..." : "Actualizar a Pro",
       onClick: isPro ? undefined : startCheckout,
       href: isPro ? "/dashboard" : undefined,
@@ -57,10 +57,10 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
     },
     {
       name: "Empresa",
-      price: "39 €/mes",
+      price: "39 EUR/mes",
       description: "Arquitectura preparada para equipos y workspaces.",
-      features: ["Workspaces preparados", "Roles de equipo", "Price ID listo para Stripe"],
-      action: "Próximamente",
+      features: ["Workspaces preparados", "Roles de equipo", "Facturacion avanzada preparada"],
+      action: "Proximamente",
       disabled: true,
     },
   ];
@@ -71,6 +71,9 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
         <div className="mb-8 max-w-2xl">
           <p className="eyebrow">Precios</p>
           <h2 className="font-serif-display mt-3 text-4xl font-bold">Empieza gratis y crece cuando lo necesites</h2>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Free sirve para probar el flujo completo. Pro desbloquea uso intensivo, Word y marca personalizada.
+          </p>
         </div>
       )}
       <div className="grid gap-4 md:grid-cols-3">
@@ -81,7 +84,7 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
             <p className="mt-3 min-h-12 text-sm text-slate-600">{card.description}</p>
             <ul className="mt-5 space-y-2 text-sm">
               {card.features.map((feature) => (
-                <li key={feature}>✓ {feature}</li>
+                <li key={feature}>Incluye: {feature}</li>
               ))}
             </ul>
             {card.onClick ? (

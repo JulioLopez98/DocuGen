@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { PricingCards } from "@/components/PricingCards";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
+import { PricingCards } from "@/components/PricingCards";
 import { createSupabaseServerClient, type Profile } from "@/lib/supabase-server";
 
 export default async function PricingPage() {
@@ -18,8 +18,8 @@ export default async function PricingPage() {
           <p className="eyebrow">Precios</p>
           <h1 className="font-serif-display mt-3 text-5xl font-bold leading-tight">Planes claros para trabajar mejor</h1>
           <p className="mt-4 text-sm leading-6 text-slate-600">
-            Empieza gratis, valida el flujo y activa Pro cuando necesites documentos ilimitados, exportación Word y
-            personalización de marca.
+            Empieza gratis, valida el flujo y activa Pro cuando necesites documentos ilimitados, exportacion Word y
+            personalizacion de marca.
           </p>
         </div>
         <Link href={user ? "/dashboard" : "/auth"} className="focus-ring btn-secondary px-4 py-2 text-sm">

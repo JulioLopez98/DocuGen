@@ -152,7 +152,7 @@ select {
 .nav-link::after {
   position: absolute;
   right: 0;
-  bottom: -8px;
+  bottom: 2px;
   left: 0;
   height: 2px;
   border-radius: 999px;
@@ -167,11 +167,18 @@ select {
 
 .nav-link:hover {
   color: #2d6a4f;
+  background: rgba(216, 243, 220, 0.35);
 }
 
-.nav-link:hover::after {
+.nav-link:hover::after,
+.nav-link-active::after {
   opacity: 1;
   transform: scaleX(1);
+}
+
+.nav-link-active {
+  background: rgba(216, 243, 220, 0.62);
+  color: #2d6a4f;
 }
 
 .eyebrow {
