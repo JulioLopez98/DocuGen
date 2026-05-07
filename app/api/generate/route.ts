@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
-import { generatePayloadSchema, getDocumentConfig } from "@/lib/document-types";
+import { generatePayloadSchema, getDocumentConfig, requiresPro } from "@/lib/document-types";
 import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
 import { requireUser, type Profile } from "@/lib/supabase-server";
 
@@ -37,6 +37,10 @@ export async function POST(request: Request) {
 
     if (profile.plan === "free" && profile.docs_this_month >= 3) {
       return errorResponse(403, "limit_reached", "Has alcanzado el límite de 3 documentos gratuitos este mes.");
+    }
+
+    if (profile.plan === "free" && requiresPro(config)) {
+      return errorResponse(403, "pro_required", "Este tipo de documento esta disponible solo en DocuGen Pro.");
     }
 
     const rateLimit = await checkGenerationRateLimit(supabase, user.id, profile.plan);

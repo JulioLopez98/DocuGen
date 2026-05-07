@@ -2,16 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AcuerdoColaboracion } from "@/components/forms/AcuerdoColaboracion";
-import { AcuerdoNDA } from "@/components/forms/AcuerdoNDA";
-import { AvisoLegal } from "@/components/forms/AvisoLegal";
-import { CartaPresentacion } from "@/components/forms/CartaPresentacion";
-import { ContratoFreelance } from "@/components/forms/ContratoFreelance";
-import { PoliticaPrivacidad } from "@/components/forms/PoliticaPrivacidad";
-import { Presupuesto } from "@/components/forms/Presupuesto";
-import { PropuestaProyecto } from "@/components/forms/PropuestaProyecto";
+import Link from "next/link";
+import { FormShell } from "@/components/forms/FormShell";
 import { DocResult } from "@/components/DocResult";
-import { documentTypes, getDefaultDocumentType, getDocumentConfig, type DocumentType } from "@/lib/document-types";
+import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
 import type { PdfBrandSettings } from "@/lib/pdf";
 
 type GeneratedDocument = {
@@ -27,27 +21,16 @@ type GeneratorClientProps = {
   initialFormData?: Record<string, string>;
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
+  plan?: "free" | "pro" | "empresa";
 };
 
-const formComponents: Record<
-  DocumentType,
-  (props: {
-    onSubmit: (payload: { docType: string; formData: Record<string, string> }) => void;
-    disabled?: boolean;
-    defaultValues?: Record<string, string>;
-  }) => JSX.Element
-> = {
-  "contrato-freelance": ContratoFreelance,
-  "presupuesto-comercial": Presupuesto,
-  "propuesta-proyecto": PropuestaProyecto,
-  "acuerdo-nda": AcuerdoNDA,
-  "aviso-legal": AvisoLegal,
-  "politica-privacidad": PoliticaPrivacidad,
-  "carta-presentacion": CartaPresentacion,
-  "acuerdo-colaboracion": AcuerdoColaboracion,
-};
-
-export function GeneratorClient({ initialDocType, initialFormData, canExportDocx = false, brandSettings }: GeneratorClientProps) {
+export function GeneratorClient({
+  initialDocType,
+  initialFormData,
+  canExportDocx = false,
+  brandSettings,
+  plan = "free",
+}: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selected, setSelected] = useState<DocumentType>(initialDocType || getDefaultDocumentType(searchParams.get("type")));
@@ -59,7 +42,8 @@ export function GeneratorClient({ initialDocType, initialFormData, canExportDocx
   const [error, setError] = useState<string | null>(null);
 
   const config = getDocumentConfig(selected)!;
-  const SelectedForm = useMemo(() => formComponents[selected], [selected]);
+  const proLocked = plan === "free" && requiresPro(config);
+  const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
   const isTemplateMode = Boolean(initialFormData && initialDocType);
 
   function selectDocument(type: DocumentType) {
@@ -125,7 +109,10 @@ export function GeneratorClient({ initialDocType, initialFormData, canExportDocx
                   }`}
                 >
                   <span className="block text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{doc.category}</span>
-                  <span className="mt-1 block font-semibold">{doc.label}</span>
+                  <span className="mt-1 flex items-center justify-between gap-3 font-semibold">
+                    {doc.label}
+                    {requiresPro(doc) && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>}
+                  </span>
                 </button>
               );
             })}
@@ -139,8 +126,14 @@ export function GeneratorClient({ initialDocType, initialFormData, canExportDocx
           <div className="mt-5 grid gap-2 text-sm">
             <InfoPill label="Campos" value={`${config.fields.length} datos`} />
             <InfoPill label="Firmas" value={config.includesSignatures ? "Incluidas si aplica" : "No necesarias"} />
+            <InfoPill label="Acceso" value={requiresPro(config) ? "Solo Pro" : "Free"} />
             <InfoPill label="Word" value={canExportDocx ? "Disponible" : "Solo Pro"} />
           </div>
+          {plan === "free" && (
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Free incluye {freeTypes} tipos. Pro desbloquea documentos laborales y legales avanzados.
+            </p>
+          )}
           {isTemplateMode && (
             <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">
               Has cargado datos desde un documento del historial.
@@ -160,12 +153,32 @@ export function GeneratorClient({ initialDocType, initialFormData, canExportDocx
           </div>
           {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
         </div>
-        <SelectedForm
-          key={`${selected}-${lastPayload ? "template" : "blank"}`}
-          onSubmit={submit}
-          disabled={loading}
-          defaultValues={lastPayload?.docType === selected ? lastPayload.formData : undefined}
-        />
+        {proLocked ? (
+          <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
+            <p className="eyebrow">Documento Pro</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Desbloquea {config.label.toLowerCase()}</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Este documento esta reservado para DocuGen Pro porque requiere instrucciones mas avanzadas y suele tener
+              mayor impacto laboral, legal o comercial.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
+                Ver Pro
+              </Link>
+              <button type="button" onClick={() => selectDocument("contrato-freelance")} className="focus-ring btn-secondary px-5 py-3 text-sm">
+                Elegir documento Free
+              </button>
+            </div>
+          </div>
+        ) : (
+          <FormShell
+            key={`${selected}-${lastPayload ? "template" : "blank"}`}
+            config={config}
+            onSubmit={submit}
+            disabled={loading}
+            defaultValues={lastPayload?.docType === selected ? lastPayload.formData : undefined}
+          />
+        )}
         {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       </section>
 

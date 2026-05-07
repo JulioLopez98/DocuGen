@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { documentTypes } from "@/lib/document-types";
+import { documentTypes, requiresPro } from "@/lib/document-types";
 
 export function DocumentGallery() {
   return (
@@ -19,7 +19,12 @@ export function DocumentGallery() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {documentTypes.map((doc) => (
           <Link key={doc.type} href={`/generar?type=${doc.type}`} className="surface-flat interactive rounded-md p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6a4f]">{doc.category}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6a4f]">{doc.category}</p>
+              {requiresPro(doc) && (
+                <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
+              )}
+            </div>
             <h3 className="mt-3 text-lg font-bold">{doc.label}</h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">{doc.summary}</p>
             <span className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">Crear este documento</span>

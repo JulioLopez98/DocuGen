@@ -54,6 +54,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           initialFormData={initialFormData}
           canExportDocx={profile?.plan !== "free"}
           brandSettings={brandSettings || null}
+          plan={profile?.plan}
         />
       </Suspense>
       <div className="mt-8">
