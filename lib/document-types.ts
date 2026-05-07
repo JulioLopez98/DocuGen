@@ -28,6 +28,7 @@ export type DocumentTypeConfig = {
   category: string;
   fields: DocumentField[];
   includesSignatures: boolean;
+  generationGuidance: string;
   future?: boolean;
 };
 
@@ -43,6 +44,8 @@ export const documentTypes = [
     summary: "Borrador para prestación de servicios profesionales entre freelancer y cliente.",
     category: "Laboral y servicios",
     includesSignatures: true,
+    generationGuidance:
+      "Estructura como contrato profesional con partes reunidas, antecedentes si procede, cláusulas numeradas, duración, precio, forma de pago, obligaciones, confidencialidad si procede, jurisdicción y bloque final de firmas.",
     fields: [
       { name: "nombre_freelancer", label: "Nombre del freelancer" },
       { name: "nif_freelancer", label: "NIF del freelancer" },
@@ -64,6 +67,8 @@ export const documentTypes = [
     summary: "Documento comercial con alcance, partidas, validez y condiciones de pago.",
     category: "Comercial",
     includesSignatures: false,
+    generationGuidance:
+      "Estructura como presupuesto comercial, no como contrato. Incluye encabezado, cliente, descripción, partidas, importe total, validez, condiciones de pago y aceptación opcional. No incluyas cláusulas legales extensas ni bloque de firmas salvo una línea breve de aceptación.",
     fields: [
       { name: "nombre_empresa", label: "Nombre de la empresa" },
       { name: "cif_empresa", label: "CIF de la empresa" },
@@ -83,6 +88,8 @@ export const documentTypes = [
     summary: "Propuesta profesional para presentar alcance, entregables, plazo y precio.",
     category: "Comercial",
     includesSignatures: false,
+    generationGuidance:
+      "Estructura como propuesta comercial de proyecto. Incluye contexto, objetivo, alcance, entregables, metodología breve, calendario, precio, condiciones y próximos pasos. No uses lenguaje de contrato ni sección de firmas.",
     fields: [
       { name: "nombre_proveedor", label: "Nombre del proveedor" },
       { name: "cliente", label: "Cliente" },
@@ -102,6 +109,8 @@ export const documentTypes = [
     summary: "Borrador de acuerdo de confidencialidad para compartir información sensible.",
     category: "Legal",
     includesSignatures: true,
+    generationGuidance:
+      "Estructura como acuerdo de confidencialidad con partes, objeto, obligaciones de confidencialidad, exclusiones, duración, devolución o destrucción de información, jurisdicción y bloque final de firmas.",
     fields: [
       { name: "parte_reveladora", label: "Parte reveladora" },
       { name: "parte_receptora", label: "Parte receptora" },
@@ -118,6 +127,8 @@ export const documentTypes = [
     summary: "Aviso legal básico para identificar titular, contacto y actividad de una web.",
     category: "Web",
     includesSignatures: false,
+    generationGuidance:
+      "Estructura como aviso legal web. Incluye identificación del titular, objeto, condiciones de uso, propiedad intelectual, responsabilidad, enlaces a privacidad si procede, legislación y jurisdicción. No incluyas bloque de firmas.",
     fields: [
       { name: "titular", label: "Titular" },
       { name: "cif_nif", label: "CIF/NIF" },
@@ -135,6 +146,8 @@ export const documentTypes = [
     summary: "Borrador de privacidad con finalidad, base legal y plazo de conservación.",
     category: "Web",
     includesSignatures: false,
+    generationGuidance:
+      "Estructura como política de privacidad web. Incluye responsable, finalidad, base legal, conservación, destinatarios si faltan como [PENDIENTE DE COMPLETAR], derechos de usuarios, seguridad y contacto. No incluyas bloque de firmas.",
     fields: [
       { name: "titular", label: "Titular" },
       { name: "cif_nif", label: "CIF/NIF" },
@@ -153,7 +166,9 @@ export const documentTypes = [
     seoDescription: "Redacta cartas de presentación profesionales para candidaturas en España.",
     summary: "Carta adaptada a puesto, empresa, experiencia y motivación del candidato.",
     category: "Profesional",
-    includesSignatures: true,
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta una carta de presentación natural, humana y profesional, no un documento legal. No incluyas cláusulas, partes identificadas, numeración jurídica ni bloque de firmas. Usa saludo, introducción, experiencia relevante, motivación específica, encaje con la empresa, cierre cordial y firma textual sencilla con nombre y email.",
     fields: [
       { name: "nombre_candidato", label: "Nombre del candidato" },
       { name: "email", label: "Email", type: "email" },
@@ -171,6 +186,8 @@ export const documentTypes = [
     summary: "Documento para definir objeto, responsabilidades, duración y condiciones económicas.",
     category: "Empresa",
     includesSignatures: true,
+    generationGuidance:
+      "Estructura como acuerdo de colaboración con partes, objeto, responsabilidades, duración, condiciones económicas, confidencialidad si procede, resolución, jurisdicción y bloque final de firmas.",
     fields: [
       { name: "parte_1", label: "Parte 1" },
       { name: "parte_2", label: "Parte 2" },
