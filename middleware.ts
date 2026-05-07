@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const protectedPrefixes = ["/dashboard", "/generar", "/historial", "/admin"];
+const protectedPrefixes = ["/dashboard", "/generar", "/historial", "/admin", "/onboarding"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

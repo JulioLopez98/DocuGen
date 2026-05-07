@@ -6,7 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 export function AuthForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/dashboard";
+  const next = searchParams.get("next") || "/onboarding";
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(searchParams.get("error"));
