@@ -40,11 +40,12 @@ export function GeneratorClient({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [documentQuery, setDocumentQuery] = useState("");
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
-  const groupedDocuments = useMemo(() => groupDocumentTypes(), []);
+  const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
   const isTemplateMode = Boolean(initialFormData && initialDocType);
 
   function selectDocument(type: DocumentType) {
@@ -94,9 +95,23 @@ export function GeneratorClient({
             <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{documentTypes.length} tipos</span>
           </div>
 
+          <label className="mt-5 block">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar documento</span>
+            <input
+              value={documentQuery}
+              onChange={(event) => setDocumentQuery(event.target.value)}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              placeholder="Contrato, cookies, reclamacion..."
+            />
+          </label>
+
           <div className="mt-5 grid gap-2">
             {groupedDocuments.map((group) => (
-              <details key={group.category} open={group.category === config.category} className="rounded-md border border-[#d8f3dc] bg-white/58">
+              <details
+                key={group.category}
+                open={documentQuery.trim().length > 0 || group.category === config.category}
+                className="rounded-md border border-[#d8f3dc] bg-white/58"
+              >
                 <summary className="cursor-pointer list-none px-3 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-bold text-[#1f2933]">{group.category}</span>
@@ -133,6 +148,11 @@ export function GeneratorClient({
                 </div>
               </details>
             ))}
+            {groupedDocuments.length === 0 && (
+              <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm text-slate-600">
+                No hay documentos que coincidan con esa busqueda.
+              </div>
+            )}
           </div>
         </section>
 
@@ -215,10 +235,17 @@ export function GeneratorClient({
   );
 }
 
-function groupDocumentTypes() {
+function groupDocumentTypes(query: string) {
   const groups = new Map<string, typeof documentTypes[number][]>();
+  const normalizedQuery = query.trim().toLowerCase();
 
   for (const doc of documentTypes) {
+    const searchable = `${doc.label} ${doc.summary} ${doc.category}`.toLowerCase();
+
+    if (normalizedQuery && !searchable.includes(normalizedQuery)) {
+      continue;
+    }
+
     groups.set(doc.category, [...(groups.get(doc.category) || []), doc]);
   }
 

@@ -25,7 +25,19 @@ export type DocumentType =
   | "carta-reclamacion-empresa"
   | "respuesta-reclamacion"
   | "certificado-prestacion-servicios"
-  | "condiciones-generales-venta";
+  | "condiciones-generales-venta"
+  | "acuerdo-teletrabajo"
+  | "pacto-no-competencia"
+  | "cesion-derechos-pi"
+  | "contrato-desarrollo-web"
+  | "contrato-mantenimiento-web"
+  | "politica-devoluciones"
+  | "politica-envios"
+  | "consentimiento-newsletter"
+  | "orden-compra"
+  | "albaran-entrega"
+  | "contrato-arras"
+  | "inventario-inmueble";
 
 export type FieldType = "text" | "email" | "number" | "date" | "textarea";
 export type PlanRequirement = "free" | "pro";
@@ -585,6 +597,261 @@ export const documentTypes = [
       { name: "envios", label: "Envios o entrega", type: "textarea" },
       { name: "devoluciones", label: "Devoluciones o desistimiento", type: "textarea" },
       { name: "contacto", label: "Contacto", type: "email" },
+    ],
+  },
+  {
+    type: "acuerdo-teletrabajo",
+    label: "Acuerdo de teletrabajo",
+    seoTitle: "Generador de acuerdo de teletrabajo",
+    seoDescription: "Prepara un borrador de acuerdo de teletrabajo para empresa y trabajador.",
+    summary: "Acuerdo laboral con jornada, medios, gastos, lugar de trabajo y disponibilidad.",
+    category: "Laboral",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como acuerdo de teletrabajo para Espana. Incluye empresa, trabajador, modalidad, lugar, jornada, disponibilidad, medios aportados, gastos, prevencion de riesgos, proteccion de datos, duracion, reversibilidad y firmas. Recomienda revision laboral.",
+    fields: [
+      { name: "empresa", label: "Empresa" },
+      { name: "trabajador", label: "Trabajador" },
+      { name: "puesto", label: "Puesto" },
+      { name: "modalidad", label: "Modalidad de teletrabajo" },
+      { name: "lugar_trabajo", label: "Lugar de teletrabajo" },
+      { name: "jornada", label: "Jornada y horario" },
+      { name: "medios", label: "Medios y equipos", type: "textarea" },
+      { name: "gastos", label: "Gastos y compensacion", type: "textarea" },
+      { name: "duracion", label: "Duracion" },
+    ],
+  },
+  {
+    type: "pacto-no-competencia",
+    label: "Pacto de no competencia",
+    seoTitle: "Generador de pacto de no competencia",
+    seoDescription: "Crea un borrador de pacto de no competencia o no captacion.",
+    summary: "Pacto para regular limites de competencia, clientes, duracion y compensacion.",
+    category: "Empresa",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como pacto de no competencia o no captacion. Incluye partes, ambito, actividades restringidas, territorio, duracion, compensacion si procede, confidencialidad, consecuencias por incumplimiento, proporcionalidad y firmas. Evita asegurar validez automatica.",
+    fields: [
+      { name: "parte_obligada", label: "Parte obligada" },
+      { name: "parte_beneficiaria", label: "Parte beneficiaria" },
+      { name: "actividad_restringida", label: "Actividad restringida", type: "textarea" },
+      { name: "territorio", label: "Territorio" },
+      { name: "duracion", label: "Duracion" },
+      { name: "compensacion", label: "Compensacion", type: "textarea" },
+      { name: "clientes_o_sector", label: "Clientes o sector afectados", type: "textarea" },
+      { name: "jurisdiccion", label: "Jurisdiccion" },
+    ],
+  },
+  {
+    type: "cesion-derechos-pi",
+    label: "Cesion de derechos PI",
+    seoTitle: "Generador de cesion de derechos de propiedad intelectual",
+    seoDescription: "Prepara una cesion de derechos de propiedad intelectual para obras o proyectos.",
+    summary: "Documento para ceder derechos de uso, explotacion o propiedad intelectual sobre una obra.",
+    category: "Legal",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como cesion de derechos de propiedad intelectual. Incluye cedente, cesionario, obra, derechos cedidos, ambito territorial, duracion, exclusividad, precio o contraprestacion, garantias, creditos/autoria si procede y firmas.",
+    fields: [
+      { name: "cedente", label: "Cedente" },
+      { name: "cesionario", label: "Cesionario" },
+      { name: "obra", label: "Obra o activo", type: "textarea" },
+      { name: "derechos_cedidos", label: "Derechos cedidos", type: "textarea" },
+      { name: "exclusividad", label: "Exclusividad" },
+      { name: "territorio", label: "Territorio" },
+      { name: "duracion", label: "Duracion" },
+      { name: "contraprestacion", label: "Precio o contraprestacion" },
+    ],
+  },
+  {
+    type: "contrato-desarrollo-web",
+    label: "Contrato de desarrollo web",
+    seoTitle: "Generador de contrato de desarrollo web",
+    seoDescription: "Crea un borrador para contratar desarrollo web, alcance, entregables y pagos.",
+    summary: "Contrato digital para webs, apps sencillas, entregables, hitos, revisiones y propiedad.",
+    category: "Digital",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de desarrollo web. Incluye proveedor, cliente, alcance, funcionalidades, entregables, calendario, revisiones, precio, pagos por hitos, aceptacion, mantenimiento si procede, propiedad intelectual, contenidos del cliente, confidencialidad y firmas.",
+    fields: [
+      { name: "proveedor", label: "Proveedor" },
+      { name: "cliente", label: "Cliente" },
+      { name: "proyecto", label: "Proyecto web" },
+      { name: "alcance", label: "Alcance y funcionalidades", type: "textarea" },
+      { name: "entregables", label: "Entregables", type: "textarea" },
+      { name: "plazo", label: "Plazo" },
+      { name: "precio", label: "Precio" },
+      { name: "revisiones", label: "Revisiones incluidas" },
+      { name: "propiedad", label: "Propiedad intelectual", type: "textarea" },
+    ],
+  },
+  {
+    type: "contrato-mantenimiento-web",
+    label: "Mantenimiento web",
+    seoTitle: "Generador de contrato de mantenimiento web",
+    seoDescription: "Prepara un contrato de mantenimiento web con alcance, SLA y pagos.",
+    summary: "Contrato para soporte, actualizaciones, seguridad, tiempos de respuesta y cuotas.",
+    category: "Digital",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de mantenimiento web. Incluye partes, web o servicio, alcance, exclusiones, tiempos de respuesta, horarios, cuota, incidencias, copias de seguridad si procede, seguridad, duracion, terminacion y firmas.",
+    fields: [
+      { name: "proveedor", label: "Proveedor" },
+      { name: "cliente", label: "Cliente" },
+      { name: "web_servicio", label: "Web o servicio" },
+      { name: "alcance", label: "Alcance del mantenimiento", type: "textarea" },
+      { name: "exclusiones", label: "Exclusiones", type: "textarea" },
+      { name: "tiempos_respuesta", label: "Tiempos de respuesta" },
+      { name: "cuota", label: "Cuota" },
+      { name: "duracion", label: "Duracion" },
+    ],
+  },
+  {
+    type: "politica-devoluciones",
+    label: "Politica de devoluciones",
+    seoTitle: "Generador de politica de devoluciones",
+    seoDescription: "Crea una politica de devoluciones para ecommerce o negocio online.",
+    summary: "Documento web para cambios, devoluciones, plazos, costes y excepciones.",
+    category: "Web",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta politica de devoluciones clara para ecommerce. Incluye plazo, estado del producto, procedimiento, costes, reembolsos, excepciones, productos excluidos si se indican, contacto y aviso de revision.",
+    fields: [
+      { name: "titular", label: "Titular" },
+      { name: "nombre_tienda", label: "Nombre de tienda/web" },
+      { name: "plazo_devolucion", label: "Plazo de devolucion" },
+      { name: "condiciones_producto", label: "Condiciones del producto", type: "textarea" },
+      { name: "costes", label: "Costes de devolucion" },
+      { name: "excepciones", label: "Excepciones", type: "textarea" },
+      { name: "email_contacto", label: "Email de contacto", type: "email" },
+    ],
+  },
+  {
+    type: "politica-envios",
+    label: "Politica de envios",
+    seoTitle: "Generador de politica de envios",
+    seoDescription: "Prepara una politica de envios para ecommerce con plazos y costes.",
+    summary: "Documento web con zonas, plazos, costes, incidencias y seguimiento de envios.",
+    category: "Web",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta politica de envios para ecommerce. Incluye zonas de envio, plazos, costes, transportistas si se indican, seguimiento, incidencias, direccion incorrecta, pedidos internacionales si aplica y contacto.",
+    fields: [
+      { name: "titular", label: "Titular" },
+      { name: "nombre_tienda", label: "Nombre de tienda/web" },
+      { name: "zonas_envio", label: "Zonas de envio", type: "textarea" },
+      { name: "plazos", label: "Plazos de entrega" },
+      { name: "costes", label: "Costes de envio" },
+      { name: "transportistas", label: "Transportistas" },
+      { name: "incidencias", label: "Gestion de incidencias", type: "textarea" },
+      { name: "email_contacto", label: "Email de contacto", type: "email" },
+    ],
+  },
+  {
+    type: "consentimiento-newsletter",
+    label: "Consentimiento newsletter",
+    seoTitle: "Generador de consentimiento para newsletter",
+    seoDescription: "Crea un texto de consentimiento para suscripciones a newsletter.",
+    summary: "Texto informativo para captacion de emails, finalidad, responsable y derechos.",
+    category: "Web",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta un texto de consentimiento para newsletter. Incluye responsable, finalidad, base de consentimiento, frecuencia si se indica, baja, derechos de usuario, enlace a privacidad si falta como pendiente y contacto.",
+    fields: [
+      { name: "responsable", label: "Responsable" },
+      { name: "nombre_newsletter", label: "Nombre de la newsletter" },
+      { name: "finalidad", label: "Finalidad", type: "textarea" },
+      { name: "frecuencia", label: "Frecuencia" },
+      { name: "politica_privacidad_url", label: "URL politica de privacidad" },
+      { name: "email_contacto", label: "Email de contacto", type: "email" },
+    ],
+  },
+  {
+    type: "orden-compra",
+    label: "Orden de compra",
+    seoTitle: "Generador de orden de compra",
+    seoDescription: "Prepara una orden de compra con proveedor, conceptos, cantidades y condiciones.",
+    summary: "Documento comercial para formalizar una solicitud de compra a proveedor.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como orden de compra. Incluye comprador, proveedor, referencia, fecha, productos o servicios, cantidades, precios, total, entrega, condiciones de pago y contacto. No la conviertas en contrato extenso.",
+    fields: [
+      { name: "comprador", label: "Comprador" },
+      { name: "proveedor", label: "Proveedor" },
+      { name: "referencia", label: "Referencia" },
+      { name: "conceptos", label: "Conceptos", type: "textarea" },
+      { name: "importe_total", label: "Importe total" },
+      { name: "fecha_entrega", label: "Fecha de entrega" },
+      { name: "condiciones_pago", label: "Condiciones de pago", type: "textarea" },
+    ],
+  },
+  {
+    type: "albaran-entrega",
+    label: "Albaran de entrega",
+    seoTitle: "Generador de albaran de entrega",
+    seoDescription: "Crea un albaran de entrega con productos, receptor y observaciones.",
+    summary: "Documento de entrega para acreditar recepcion de productos o materiales.",
+    category: "Comercial",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como albaran de entrega. Incluye emisor, receptor, fecha, referencia, productos o materiales, cantidades, estado, observaciones, firma de entrega y recepcion. No incluyas clausulas legales extensas.",
+    fields: [
+      { name: "emisor", label: "Emisor" },
+      { name: "receptor", label: "Receptor" },
+      { name: "referencia", label: "Referencia" },
+      { name: "productos", label: "Productos o materiales", type: "textarea" },
+      { name: "fecha_entrega", label: "Fecha de entrega", type: "date" },
+      { name: "lugar_entrega", label: "Lugar de entrega" },
+      { name: "observaciones", label: "Observaciones", type: "textarea" },
+    ],
+  },
+  {
+    type: "contrato-arras",
+    label: "Contrato de arras",
+    seoTitle: "Generador de contrato de arras",
+    seoDescription: "Prepara un borrador de contrato de arras para compraventa inmobiliaria.",
+    summary: "Documento inmobiliario con comprador, vendedor, inmueble, precio, senal y plazo.",
+    category: "Inmobiliario",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de arras. Incluye vendedor, comprador, inmueble, precio total, cantidad entregada, tipo de arras si se indica, plazo para escritura, cargas si se aportan, gastos, consecuencias de incumplimiento, jurisdiccion y firmas. Recomienda revision profesional.",
+    fields: [
+      { name: "vendedor", label: "Vendedor" },
+      { name: "comprador", label: "Comprador" },
+      { name: "inmueble", label: "Inmueble", type: "textarea" },
+      { name: "precio_total", label: "Precio total" },
+      { name: "cantidad_arras", label: "Cantidad entregada como arras" },
+      { name: "tipo_arras", label: "Tipo de arras" },
+      { name: "plazo_escritura", label: "Plazo para escritura" },
+      { name: "jurisdiccion", label: "Jurisdiccion" },
+    ],
+  },
+  {
+    type: "inventario-inmueble",
+    label: "Inventario de inmueble",
+    seoTitle: "Generador de inventario de inmueble",
+    seoDescription: "Crea un inventario de local o vivienda para alquiler o entrega.",
+    summary: "Inventario de estado, mobiliario, llaves, suministros y observaciones.",
+    category: "Inmobiliario",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como inventario anexo de inmueble. Incluye inmueble, fecha, partes, estancias, mobiliario, electrodomesticos, estado general, llaves, contadores, observaciones, fotografias si faltan como pendiente y firmas.",
+    fields: [
+      { name: "inmueble", label: "Inmueble" },
+      { name: "propietario", label: "Propietario o arrendador" },
+      { name: "ocupante", label: "Inquilino o receptor" },
+      { name: "fecha", label: "Fecha", type: "date" },
+      { name: "estancias", label: "Estancias y estado", type: "textarea" },
+      { name: "mobiliario", label: "Mobiliario y equipamiento", type: "textarea" },
+      { name: "llaves", label: "Llaves entregadas" },
+      { name: "observaciones", label: "Observaciones", type: "textarea" },
     ],
   },
 ] as const satisfies readonly DocumentTypeConfig[];
