@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { AlignmentType, Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import { z } from "zod";
-import { requireUser, type Profile } from "@/lib/supabase-server";
+import { requireUser, type BrandSettings, type Profile } from "@/lib/supabase-server";
 
 const exportSchema = z.object({
   title: z.string().trim().min(1).max(180),
@@ -27,8 +27,13 @@ export async function POST(request: Request) {
     }
 
     const payload = exportSchema.parse(await request.json());
+    const { data: brandSettings } = await supabase
+      .from("brand_settings")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle<BrandSettings>();
     const doc = new Document({
-      creator: "DocuGen",
+      creator: brandSettings?.company_name || "DocuGen",
       title: payload.title,
       description: "Documento generado con IA por DocuGen",
       sections: [
@@ -36,10 +41,11 @@ export async function POST(request: Request) {
           properties: {},
           children: [
             new Paragraph({
-              text: "DocuGen",
+              text: brandSettings?.company_name || "DocuGen",
               heading: HeadingLevel.TITLE,
               spacing: { after: 180 },
             }),
+            ...brandHeaderParagraphs(brandSettings || null),
             new Paragraph({
               text: payload.title,
               heading: HeadingLevel.HEADING_1,
@@ -88,6 +94,31 @@ export async function POST(request: Request) {
     console.error("docx_export_error", error);
     return errorResponse(500, "docx_export_failed", "No se pudo preparar la exportación Word.");
   }
+}
+
+function brandHeaderParagraphs(brandSettings: BrandSettings | null) {
+  if (!brandSettings?.company_name && !brandSettings?.cif && !brandSettings?.address && !brandSettings?.logo_url) {
+    return [];
+  }
+
+  const lines = [
+    brandSettings.company_name,
+    brandSettings.cif ? `CIF/NIF: ${brandSettings.cif}` : null,
+    brandSettings.address,
+    brandSettings.logo_url ? `Logo: ${brandSettings.logo_url}` : null,
+  ].filter(Boolean) as string[];
+
+  return [
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: lines.join(" · "),
+          color: "64748B",
+        }),
+      ],
+      spacing: { after: 260 },
+    }),
+  ];
 }
 
 function contentToParagraphs(content: string) {

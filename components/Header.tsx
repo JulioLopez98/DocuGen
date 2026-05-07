@@ -31,6 +31,11 @@ export async function Header() {
               Dashboard
             </Link>
           )}
+          {user && (
+            <Link className="nav-link" href="/ajustes">
+              Ajustes
+            </Link>
+          )}
         </nav>
 
         {user ? (

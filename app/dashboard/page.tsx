@@ -149,6 +149,20 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+
+      <section className="surface mt-4 rounded-md p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold">Marca personalizada</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Configura datos corporativos y logo para exportaciones Word y futuras plantillas de marca.
+            </p>
+          </div>
+          <Link href="/ajustes" className="focus-ring btn-secondary px-4 py-2 text-sm">
+            Abrir ajustes
+          </Link>
+        </div>
+      </section>
     </section>
   );
 }

@@ -26,6 +26,17 @@ export type DocumentRow = {
   created_at: string;
 };
 
+export type BrandSettings = {
+  id: string;
+  user_id: string;
+  company_name: string | null;
+  cif: string | null;
+  address: string | null;
+  logo_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export function hasSupabaseServerEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
