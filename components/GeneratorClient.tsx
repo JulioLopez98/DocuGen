@@ -87,7 +87,7 @@ export function GeneratorClient({ initialDocType, initialFormData }: GeneratorCl
 
   return (
     <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
-      <aside className="rounded-md border border-[#d8f3dc] bg-white p-5">
+      <aside className="surface rounded-md p-5">
         <label>
           <span className="text-sm font-semibold">Tipo de documento</span>
           <select
@@ -110,7 +110,7 @@ export function GeneratorClient({ initialDocType, initialFormData }: GeneratorCl
         <p className="mt-4 text-sm leading-6 text-slate-600">{config.summary}</p>
       </aside>
 
-      <section className="rounded-md border border-[#d8f3dc] bg-white p-5">
+      <section className="surface rounded-md p-5">
         <div className="mb-6">
           <p className="text-sm font-semibold text-[#2d6a4f]">{config.category}</p>
           <h1 className="font-serif-display mt-1 text-3xl font-bold">{config.label}</h1>

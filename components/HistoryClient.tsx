@@ -99,16 +99,12 @@ export function HistoryClient({ documents }: HistoryClientProps) {
   }
 
   if (documents.length === 0) {
-    return (
-      <div className="rounded-md border border-[#d8f3dc] bg-white p-6 text-sm text-slate-600">
-        Aún no hay documentos en tu historial.
-      </div>
-    );
+    return <div className="surface rounded-md p-6 text-sm text-slate-600">Aún no hay documentos en tu historial.</div>;
   }
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white p-4">
+      <div className="surface rounded-md p-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">{documents.length} documentos guardados</p>
           <p className="mt-1 text-xs text-slate-500">El historial se muestra plegado para que puedas escanearlo rápido.</p>
@@ -117,7 +113,7 @@ export function HistoryClient({ documents }: HistoryClientProps) {
           type="button"
           onClick={clearHistory}
           disabled={busyId === "all"}
-          className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
+          className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
         >
           {busyId === "all" ? "Borrando..." : "Borrar todo"}
         </button>
@@ -127,7 +123,7 @@ export function HistoryClient({ documents }: HistoryClientProps) {
 
       {groupedByMonth.map((group) => (
         <section key={group.label} className="grid gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#2d6a4f]">{group.label}</h2>
+          <h2 className="eyebrow">{group.label}</h2>
           {group.documents.map((doc) => {
             const config = getDocumentConfig(doc.doc_type);
             const createdAt = new Date(doc.created_at);
@@ -135,7 +131,7 @@ export function HistoryClient({ documents }: HistoryClientProps) {
             const isBusy = busyId === doc.id;
 
             return (
-              <details key={doc.id} className="group rounded-md border border-[#d8f3dc] bg-white">
+              <details key={doc.id} className="surface-flat interactive group rounded-md">
                 <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-4 p-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -158,37 +154,37 @@ export function HistoryClient({ documents }: HistoryClientProps) {
                     {preview}
                   </article>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
-                      href={`/historial/${doc.id}`}
-                      className="focus-ring rounded-md bg-[#2d6a4f] px-3 py-2 text-sm font-semibold text-white"
-                    >
+                    <Link href={`/historial/${doc.id}`} className="focus-ring btn-primary px-3 py-2 text-sm">
                       Ver detalle
                     </Link>
-                    <Link
-                      href={`/generar?templateId=${doc.id}`}
-                      className="focus-ring rounded-md border border-[#2d6a4f] px-3 py-2 text-sm font-semibold text-[#2d6a4f]"
-                    >
+                    <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
                       Usar como plantilla
                     </Link>
                     <button
                       type="button"
                       onClick={() => regenerate(doc)}
                       disabled={isBusy}
-                      className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                      className="focus-ring btn-ghost px-3 py-2 text-sm disabled:opacity-60"
                     >
                       {isBusy ? "Regenerando..." : "Regenerar"}
                     </button>
                     <button
                       type="button"
-                      onClick={() => downloadDocumentPdf({ title: doc.doc_label, content: doc.content, includesSignatures: config?.includesSignatures })}
-                      className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold"
+                      onClick={() =>
+                        downloadDocumentPdf({
+                          title: doc.doc_label,
+                          content: doc.content,
+                          includesSignatures: config?.includesSignatures,
+                        })
+                      }
+                      className="focus-ring btn-ghost px-3 py-2 text-sm"
                     >
                       PDF
                     </button>
                     <button
                       type="button"
                       onClick={() => downloadDocumentTxt(doc.doc_label, doc.content)}
-                      className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold"
+                      className="focus-ring btn-ghost px-3 py-2 text-sm"
                     >
                       TXT
                     </button>
@@ -196,7 +192,7 @@ export function HistoryClient({ documents }: HistoryClientProps) {
                       type="button"
                       onClick={() => deleteDocument(doc.id)}
                       disabled={isBusy}
-                      className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
+                      className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
                     >
                       {isBusy ? "Borrando..." : "Borrar"}
                     </button>

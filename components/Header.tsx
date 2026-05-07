@@ -8,33 +8,42 @@ export async function Header() {
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
 
   return (
-    <header className="border-b border-[#d8f3dc] bg-[#faf9f6]/95">
-      <div className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="font-serif-display text-2xl font-bold text-[#2d6a4f]">
+    <header className="sticky top-0 z-40 border-b border-[#d8f3dc]/80 bg-[#faf9f6]/86 backdrop-blur-xl">
+      <div className="container-page flex h-16 items-center justify-between gap-4">
+        <Link href="/" className="font-serif-display text-2xl font-bold tracking-tight text-[#2d6a4f]">
           DocuGen
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-[#1f2933] md:flex">
-          <Link href="/generar">Generar</Link>
-          {user && <Link href="/historial">Historial</Link>}
-          {user && <Link href="/dashboard">Dashboard</Link>}
+
+        <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
+          <Link className="nav-link" href="/generar">
+            Generar
+          </Link>
+          <Link className="nav-link" href="/#precios">
+            Precios
+          </Link>
+          {user && (
+            <Link className="nav-link" href="/historial">
+              Historial
+            </Link>
+          )}
+          {user && (
+            <Link className="nav-link" href="/dashboard">
+              Dashboard
+            </Link>
+          )}
         </nav>
+
         {user ? (
           <div className="flex items-center gap-3">
-            <span className="hidden max-w-44 truncate text-sm text-slate-600 sm:inline">{user.email}</span>
+            <span className="hidden max-w-44 truncate text-sm text-slate-600 lg:inline">{user.email}</span>
             <form action="/auth/logout" method="post">
-              <button
-                type="submit"
-                className="focus-ring rounded-md border border-[#2d6a4f] px-4 py-2 text-sm font-semibold text-[#2d6a4f]"
-              >
+              <button type="submit" className="focus-ring btn-secondary px-4 py-2 text-sm">
                 Salir
               </button>
             </form>
           </div>
         ) : (
-          <Link
-            href="/auth"
-            className="focus-ring rounded-md bg-[#2d6a4f] px-4 py-2 text-sm font-semibold text-white"
-          >
+          <Link href="/auth" className="focus-ring btn-primary px-4 py-2 text-sm">
             Entrar
           </Link>
         )}

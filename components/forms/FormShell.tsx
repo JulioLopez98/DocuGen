@@ -40,7 +40,7 @@ export function FormShell({ config, onSubmit, defaultValues, submitLabel = "Gene
         {config.fields.map((field) => {
           const error = errors[field.name]?.message as string | undefined;
           const common =
-            "focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-[#1f2933]";
+            "focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]";
 
           return (
             <label key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
@@ -63,7 +63,7 @@ export function FormShell({ config, onSubmit, defaultValues, submitLabel = "Gene
       <button
         type="submit"
         disabled={disabled}
-        className="focus-ring rounded-md bg-[#2d6a4f] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="focus-ring btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
       >
         {disabled ? "Generando..." : submitLabel}
       </button>

@@ -20,7 +20,7 @@ export function DocResult({ title, content, includesSignatures, onRegenerate }: 
   }
 
   return (
-    <section className="rounded-md border border-[#d8f3dc] bg-white p-5">
+    <section className="surface rounded-md p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d8f3dc] pb-4">
         <div>
           <p className="text-sm font-semibold text-[#2d6a4f]">Resultado generado</p>
@@ -30,21 +30,21 @@ export function DocResult({ title, content, includesSignatures, onRegenerate }: 
           <button
             type="button"
             onClick={() => downloadDocumentPdf({ title, content, includesSignatures })}
-            className="focus-ring rounded-md bg-[#2d6a4f] px-3 py-2 text-sm font-semibold text-white"
+            className="focus-ring btn-primary px-3 py-2 text-sm"
           >
             PDF
           </button>
           <button
             type="button"
             onClick={() => downloadDocumentTxt(title, content)}
-            className="focus-ring rounded-md border border-[#2d6a4f] px-3 py-2 text-sm font-semibold text-[#2d6a4f]"
+            className="focus-ring btn-secondary px-3 py-2 text-sm"
           >
             TXT
           </button>
           <button
             type="button"
             onClick={copyText}
-            className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold"
+            className="focus-ring btn-ghost px-3 py-2 text-sm"
           >
             {copied ? "Copiado" : "Copiar"}
           </button>
@@ -60,7 +60,7 @@ export function DocResult({ title, content, includesSignatures, onRegenerate }: 
             <button
               type="button"
               onClick={onRegenerate}
-              className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold"
+              className="focus-ring btn-ghost px-3 py-2 text-sm"
             >
               Volver a generar
             </button>

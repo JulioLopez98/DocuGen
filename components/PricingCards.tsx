@@ -66,21 +66,16 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
   ];
 
   return (
-    <section id="precios" className={compact ? "" : "container-page py-16"}>
+    <section id="precios" className={compact ? "" : "container-page py-16 scroll-mt-24"}>
       {!compact && (
         <div className="mb-8 max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2d6a4f]">Precios</p>
+          <p className="eyebrow">Precios</p>
           <h2 className="font-serif-display mt-3 text-4xl font-bold">Empieza gratis y crece cuando lo necesites</h2>
         </div>
       )}
       <div className="grid gap-4 md:grid-cols-3">
         {cards.map((card) => (
-          <div
-            key={card.name}
-            className={`rounded-md border p-6 ${
-              card.highlighted ? "border-[#2d6a4f] bg-white shadow-sm" : "border-[#d8f3dc] bg-white/70"
-            }`}
-          >
+          <div key={card.name} className={`interactive rounded-md p-6 ${card.highlighted ? "surface" : "surface-flat"}`}>
             <h3 className="text-xl font-bold">{card.name}</h3>
             <p className="mt-3 font-serif-display text-4xl font-bold text-[#2d6a4f]">{card.price}</p>
             <p className="mt-3 min-h-12 text-sm text-slate-600">{card.description}</p>
@@ -94,16 +89,14 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
                 type="button"
                 onClick={card.onClick}
                 disabled={loading || card.disabled}
-                className="focus-ring mt-6 w-full rounded-md bg-[#2d6a4f] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="focus-ring btn-primary mt-6 w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {card.action}
               </button>
             ) : card.href ? (
               <Link
                 href={card.href}
-                className={`focus-ring mt-6 block w-full rounded-md px-4 py-3 text-center text-sm font-semibold ${
-                  card.disabled ? "bg-[#d8f3dc] text-[#1f2933]" : "bg-[#2d6a4f] text-white"
-                }`}
+                className={`focus-ring mt-6 w-full px-4 py-3 text-sm ${card.disabled ? "btn-secondary" : "btn-primary"}`}
               >
                 {card.action}
               </Link>
