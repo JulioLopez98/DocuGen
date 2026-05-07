@@ -75,7 +75,6 @@ export function GeneratorClient({
       }
 
       setGenerated(data);
-      router.refresh();
     } catch {
       setError("No se pudo conectar con el generador.");
     } finally {
