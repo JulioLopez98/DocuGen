@@ -18,10 +18,11 @@ export function DocumentGallery() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {documentTypes.map((doc) => (
-          <Link key={doc.type} href={`/${doc.type}`} className="surface-flat interactive rounded-md p-5">
+          <Link key={doc.type} href={`/generar?type=${doc.type}`} className="surface-flat interactive rounded-md p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6a4f]">{doc.category}</p>
             <h3 className="mt-3 text-lg font-bold">{doc.label}</h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">{doc.summary}</p>
+            <span className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">Crear este documento</span>
           </Link>
         ))}
       </div>

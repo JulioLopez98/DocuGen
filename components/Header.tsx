@@ -10,7 +10,6 @@ export async function Header() {
 
   const links = user
     ? [
-        { href: "/", label: "Inicio" },
         { href: "/dashboard", label: "Dashboard" },
         { href: "/generar", label: "Generar" },
         { href: "/historial", label: "Historial" },

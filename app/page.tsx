@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { DocumentGallery } from "@/components/DocumentGallery";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
-import { PricingCards } from "@/components/PricingCards";
 import { createSupabaseServerClient, type Profile } from "@/lib/supabase-server";
 
 const useCases = [
@@ -32,6 +31,7 @@ export default async function HomePage() {
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
   const { data: profile } =
     supabase && user ? await supabase.from("profiles").select("*").eq("id", user.id).single<Profile>() : { data: null };
+  const planLabel = profile?.plan === "pro" ? "Pro" : profile?.plan === "empresa" ? "Empresa" : "Free";
 
   return (
     <>
@@ -140,7 +140,23 @@ export default async function HomePage() {
       </section>
 
       <DocumentGallery />
-      <PricingCards currentPlan={profile?.plan} />
+
+      <section className="border-y border-[#d8f3dc]/80 bg-white/58 py-16">
+        <div className="container-page grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="max-w-3xl">
+            <p className="eyebrow">Planes</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Empieza gratis y desbloquea mas cuando lo necesites</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              El plan Free incluye 3 documentos al mes. Pro anade documentos ilimitados, exportacion Word y marca
+              personalizada. {user ? `Tu plan actual es ${planLabel}.` : "Puedes registrarte gratis y probar el flujo completo."}
+            </p>
+          </div>
+          <Link href="/precios" className="focus-ring btn-primary px-6 py-3 text-sm">
+            Ver planes y precios
+          </Link>
+        </div>
+      </section>
+
       <section className="container-page">
         <LegalDisclaimer />
       </section>
