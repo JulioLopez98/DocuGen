@@ -29,6 +29,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const hasLogo = Boolean(form.logo_url);
 
   function updateField(field: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -147,34 +148,70 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
             placeholder="Calle, número, ciudad"
           />
         </label>
-        <label className="md:col-span-2">
-          <span className="text-sm font-semibold">Logo</span>
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void uploadLogo(file);
-              }
-            }}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm"
-          />
-          <input
-            value={form.logo_url}
-            onChange={(event) => updateField("logo_url", event.target.value)}
-            className="focus-ring mt-3 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-            placeholder="https://..."
-          />
-          {form.logo_url && (
-            <div className="mt-3 flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={form.logo_url} alt="Logo de marca" className="h-14 w-14 rounded-md border border-[#d8f3dc] object-contain bg-white" />
-              <span className="text-xs text-slate-500">Logo actual</span>
-            </div>
-          )}
-        </label>
       </div>
+
+      <section className="surface-flat mt-6 rounded-md p-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 className="font-semibold">Logo de marca</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Sube un PNG, JPG, WebP o SVG. También puedes pegar una URL si ya tienes el logo alojado.
+            </p>
+          </div>
+          <label className="focus-ring btn-secondary cursor-pointer px-4 py-2 text-sm">
+            {uploading ? "Subiendo..." : "Subir logo"}
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) {
+                  void uploadLogo(file);
+                }
+              }}
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-[120px_1fr]">
+          <div className="flex h-28 w-28 items-center justify-center rounded-md border border-[#d8f3dc] bg-white p-3">
+            {hasLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.logo_url} alt="Logo de marca" className="max-h-full max-w-full object-contain" />
+            ) : (
+              <span className="text-center text-xs font-semibold text-slate-400">Sin logo</span>
+            )}
+          </div>
+
+          <div>
+            <label>
+              <span className="text-sm font-semibold">URL del logo</span>
+              <input
+                value={form.logo_url}
+                onChange={(event) => updateField("logo_url", event.target.value)}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                placeholder="https://..."
+              />
+            </label>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {hasLogo && (
+                <button
+                  type="button"
+                  onClick={() => updateField("logo_url", "")}
+                  className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                  Quitar logo
+                </button>
+              )}
+              <p className="text-xs leading-5 text-slate-500">
+                En Word se añadirá como referencia de marca. La inserción visual del logo en PDF queda preparada para la
+                siguiente iteración.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <button type="submit" disabled={saving || uploading} className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60">
