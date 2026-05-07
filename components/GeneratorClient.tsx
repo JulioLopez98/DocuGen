@@ -44,6 +44,7 @@ export function GeneratorClient({
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
+  const groupedDocuments = useMemo(() => groupDocumentTypes(), []);
   const isTemplateMode = Boolean(initialFormData && initialDocType);
 
   function selectDocument(type: DocumentType) {
@@ -94,28 +95,44 @@ export function GeneratorClient({
           </div>
 
           <div className="mt-5 grid gap-2">
-            {documentTypes.map((doc) => {
-              const active = doc.type === selected;
+            {groupedDocuments.map((group) => (
+              <details key={group.category} open={group.category === config.category} className="rounded-md border border-[#d8f3dc] bg-white/58">
+                <summary className="cursor-pointer list-none px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-bold text-[#1f2933]">{group.category}</span>
+                    <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-xs font-bold text-[#2d6a4f]">
+                      {group.documents.length}
+                    </span>
+                  </div>
+                </summary>
+                <div className="grid gap-2 border-t border-[#d8f3dc] p-2">
+                  {group.documents.map((doc) => {
+                    const active = doc.type === selected;
 
-              return (
-                <button
-                  key={doc.type}
-                  type="button"
-                  onClick={() => selectDocument(doc.type)}
-                  className={`focus-ring rounded-md border px-4 py-3 text-left transition ${
-                    active
-                      ? "border-[#2d6a4f] bg-[#d8f3dc]/70 shadow-sm"
-                      : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f] hover:bg-white"
-                  }`}
-                >
-                  <span className="block text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{doc.category}</span>
-                  <span className="mt-1 flex items-center justify-between gap-3 font-semibold">
-                    {doc.label}
-                    {requiresPro(doc) && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>}
-                  </span>
-                </button>
-              );
-            })}
+                    return (
+                      <button
+                        key={doc.type}
+                        type="button"
+                        onClick={() => selectDocument(doc.type)}
+                        className={`focus-ring rounded-md border px-3 py-3 text-left transition ${
+                          active
+                            ? "border-[#2d6a4f] bg-[#d8f3dc]/70 shadow-sm"
+                            : "border-transparent bg-white/70 hover:border-[#2d6a4f] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex items-center justify-between gap-3 text-sm font-semibold">
+                          {doc.label}
+                          {requiresPro(doc) && (
+                            <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
+                          )}
+                        </span>
+                        <span className="mt-1 block text-xs leading-5 text-slate-500">{doc.summary}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </details>
+            ))}
           </div>
         </section>
 
@@ -196,6 +213,19 @@ export function GeneratorClient({
       )}
     </div>
   );
+}
+
+function groupDocumentTypes() {
+  const groups = new Map<string, typeof documentTypes[number][]>();
+
+  for (const doc of documentTypes) {
+    groups.set(doc.category, [...(groups.get(doc.category) || []), doc]);
+  }
+
+  return Array.from(groups.entries()).map(([category, documents]) => ({
+    category,
+    documents,
+  }));
 }
 
 function InfoPill({ label, value }: { label: string; value: string }) {

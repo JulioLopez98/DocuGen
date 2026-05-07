@@ -15,7 +15,17 @@ export type DocumentType =
   | "acta-reunion"
   | "arrendamiento-local"
   | "carta-renuncia"
-  | "reclamacion-formal-email";
+  | "reclamacion-formal-email"
+  | "factura-proforma"
+  | "terminos-condiciones-web"
+  | "politica-cookies"
+  | "prestacion-servicios-empresa"
+  | "acuerdo-socios-basico"
+  | "compraventa-sencilla"
+  | "carta-reclamacion-empresa"
+  | "respuesta-reclamacion"
+  | "certificado-prestacion-servicios"
+  | "condiciones-generales-venta";
 
 export type FieldType = "text" | "email" | "number" | "date" | "textarea";
 export type PlanRequirement = "free" | "pro";
@@ -360,6 +370,221 @@ export const documentTypes = [
       { name: "solicitud", label: "Solicitud concreta", type: "textarea" },
       { name: "plazo_respuesta", label: "Plazo de respuesta" },
       { name: "referencia", label: "Referencia, factura o pedido" },
+    ],
+  },
+  {
+    type: "factura-proforma",
+    label: "Factura proforma",
+    seoTitle: "Generador de factura proforma",
+    seoDescription: "Prepara una factura proforma clara con cliente, conceptos e importes.",
+    summary: "Documento comercial previo con datos de emisor, cliente, conceptos, impuestos y total.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como factura proforma, no como factura definitiva. Incluye emisor, cliente, numero o referencia si falta como pendiente, fecha, conceptos, base imponible, impuestos si se aportan, total, forma de pago, validez y aviso de que no tiene valor fiscal definitivo salvo revision.",
+    fields: [
+      { name: "emisor", label: "Emisor" },
+      { name: "cif_emisor", label: "CIF/NIF emisor" },
+      { name: "cliente", label: "Cliente" },
+      { name: "cif_cliente", label: "CIF/NIF cliente" },
+      { name: "conceptos", label: "Conceptos", type: "textarea" },
+      { name: "base_imponible", label: "Base imponible" },
+      { name: "impuestos", label: "Impuestos" },
+      { name: "total", label: "Total" },
+      { name: "forma_pago", label: "Forma de pago" },
+      { name: "validez", label: "Validez" },
+    ],
+  },
+  {
+    type: "terminos-condiciones-web",
+    label: "Terminos y condiciones web",
+    seoTitle: "Generador de terminos y condiciones web",
+    seoDescription: "Crea un borrador de terminos y condiciones para una web o servicio digital.",
+    summary: "Condiciones de uso para webs, servicios digitales, SaaS o venta online.",
+    category: "Web",
+    includesSignatures: false,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta terminos y condiciones web. Incluye titular, objeto, acceso, registro si aplica, condiciones de compra o uso, precios si procede, obligaciones de usuarios, propiedad intelectual, responsabilidad, cancelacion, legislacion y contacto. No incluyas firmas.",
+    fields: [
+      { name: "titular", label: "Titular" },
+      { name: "cif_nif", label: "CIF/NIF" },
+      { name: "nombre_web", label: "Nombre de la web" },
+      { name: "actividad", label: "Actividad o servicio", type: "textarea" },
+      { name: "usuarios", label: "Tipo de usuarios" },
+      { name: "condiciones_compra", label: "Condiciones de compra o uso", type: "textarea" },
+      { name: "cancelaciones", label: "Cancelaciones o bajas", type: "textarea" },
+      { name: "contacto", label: "Email de contacto", type: "email" },
+    ],
+  },
+  {
+    type: "politica-cookies",
+    label: "Politica de cookies",
+    seoTitle: "Generador de politica de cookies",
+    seoDescription: "Prepara una politica de cookies para una web espanola.",
+    summary: "Borrador web con tipos de cookies, finalidad, titular y gestion del consentimiento.",
+    category: "Web",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta una politica de cookies para Espana. Incluye titular, que son las cookies, tipos usados, finalidades, terceros si se indican, gestion del consentimiento, revocacion y contacto. Usa pendientes si no hay detalle tecnico.",
+    fields: [
+      { name: "titular", label: "Titular" },
+      { name: "nombre_web", label: "Nombre de la web" },
+      { name: "email_contacto", label: "Email de contacto", type: "email" },
+      { name: "cookies_utilizadas", label: "Cookies utilizadas", type: "textarea" },
+      { name: "terceros", label: "Terceros o herramientas", type: "textarea" },
+      { name: "finalidad", label: "Finalidad", type: "textarea" },
+    ],
+  },
+  {
+    type: "prestacion-servicios-empresa",
+    label: "Prestacion de servicios empresa",
+    seoTitle: "Generador de contrato de prestacion de servicios empresa",
+    seoDescription: "Crea un borrador de contrato de servicios entre empresas.",
+    summary: "Contrato B2B para definir alcance, precio, obligaciones, plazos y responsabilidad.",
+    category: "Empresa",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato B2B de prestacion de servicios. Incluye partes, objeto, alcance, entregables, precio, facturacion, plazos, obligaciones, propiedad intelectual, confidencialidad, responsabilidad, terminacion, jurisdiccion y firmas.",
+    fields: [
+      { name: "proveedor", label: "Empresa proveedora" },
+      { name: "cif_proveedor", label: "CIF proveedor" },
+      { name: "cliente", label: "Empresa cliente" },
+      { name: "cif_cliente", label: "CIF cliente" },
+      { name: "servicios", label: "Servicios", type: "textarea" },
+      { name: "entregables", label: "Entregables", type: "textarea" },
+      { name: "precio", label: "Precio" },
+      { name: "facturacion", label: "Facturacion y pagos", type: "textarea" },
+      { name: "plazo", label: "Plazo" },
+      { name: "jurisdiccion", label: "Jurisdiccion" },
+    ],
+  },
+  {
+    type: "acuerdo-socios-basico",
+    label: "Acuerdo de socios basico",
+    seoTitle: "Generador de acuerdo de socios basico",
+    seoDescription: "Prepara un borrador de pacto entre socios para proyectos o sociedades.",
+    summary: "Documento para regular aportaciones, participaciones, decisiones, salidas y obligaciones.",
+    category: "Empresa",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como acuerdo de socios basico. Incluye socios, proyecto o sociedad, aportaciones, participaciones, organos de decision, mayorias, dedicacion, confidencialidad, no competencia si se indica, transmision de participaciones, salida, resolucion de conflictos y firmas.",
+    fields: [
+      { name: "socios", label: "Socios", type: "textarea" },
+      { name: "proyecto_sociedad", label: "Proyecto o sociedad" },
+      { name: "aportaciones", label: "Aportaciones", type: "textarea" },
+      { name: "participaciones", label: "Participaciones" },
+      { name: "decisiones", label: "Toma de decisiones", type: "textarea" },
+      { name: "dedicacion", label: "Dedicacion y funciones", type: "textarea" },
+      { name: "salida_socios", label: "Salida de socios", type: "textarea" },
+      { name: "jurisdiccion", label: "Jurisdiccion" },
+    ],
+  },
+  {
+    type: "compraventa-sencilla",
+    label: "Contrato de compraventa sencillo",
+    seoTitle: "Generador de contrato de compraventa sencillo",
+    seoDescription: "Crea un borrador de compraventa de bienes con precio, entrega y estado.",
+    summary: "Contrato para compraventa de bienes, equipos o material entre particulares o empresas.",
+    category: "Legal",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de compraventa sencillo. Incluye vendedor, comprador, descripcion del bien, estado, precio, forma de pago, entrega, manifestaciones, responsabilidad, jurisdiccion y firmas.",
+    fields: [
+      { name: "vendedor", label: "Vendedor" },
+      { name: "nif_vendedor", label: "NIF/CIF vendedor" },
+      { name: "comprador", label: "Comprador" },
+      { name: "nif_comprador", label: "NIF/CIF comprador" },
+      { name: "bien", label: "Bien objeto de compraventa", type: "textarea" },
+      { name: "estado", label: "Estado del bien", type: "textarea" },
+      { name: "precio", label: "Precio" },
+      { name: "forma_pago", label: "Forma de pago" },
+      { name: "entrega", label: "Entrega" },
+    ],
+  },
+  {
+    type: "carta-reclamacion-empresa",
+    label: "Carta de reclamacion",
+    seoTitle: "Generador de carta de reclamacion",
+    seoDescription: "Redacta una carta formal de reclamacion a empresa o proveedor.",
+    summary: "Carta formal para exponer hechos, solicitar solucion y dejar constancia.",
+    category: "Profesional",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta una carta formal de reclamacion, con tono firme y educado. Incluye remitente, destinatario, hechos, referencia, solicitud concreta, plazo de respuesta y cierre. No uses lenguaje agresivo ni amenazas no justificadas.",
+    fields: [
+      { name: "remitente", label: "Remitente" },
+      { name: "destinatario", label: "Destinatario" },
+      { name: "referencia", label: "Referencia" },
+      { name: "hechos", label: "Hechos", type: "textarea" },
+      { name: "solicitud", label: "Solicitud", type: "textarea" },
+      { name: "plazo_respuesta", label: "Plazo de respuesta" },
+      { name: "contacto", label: "Contacto" },
+    ],
+  },
+  {
+    type: "respuesta-reclamacion",
+    label: "Respuesta a reclamacion",
+    seoTitle: "Generador de respuesta formal a reclamacion",
+    seoDescription: "Prepara una respuesta profesional a una reclamacion de cliente o usuario.",
+    summary: "Respuesta empresarial para aceptar, matizar o rechazar una reclamacion con tono profesional.",
+    category: "Empresa",
+    includesSignatures: false,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como respuesta formal a una reclamacion. Incluye acuse de recibo, resumen de la reclamacion, posicion de la empresa, solucion o explicacion, plazos, canal de contacto y cierre profesional. Mantiene tono empatico y prudente.",
+    fields: [
+      { name: "empresa", label: "Empresa" },
+      { name: "cliente", label: "Cliente" },
+      { name: "referencia", label: "Referencia" },
+      { name: "reclamacion_recibida", label: "Reclamacion recibida", type: "textarea" },
+      { name: "posicion_empresa", label: "Posicion de la empresa", type: "textarea" },
+      { name: "solucion", label: "Solucion propuesta", type: "textarea" },
+      { name: "contacto", label: "Contacto" },
+    ],
+  },
+  {
+    type: "certificado-prestacion-servicios",
+    label: "Certificado de servicios",
+    seoTitle: "Generador de certificado de prestacion de servicios",
+    seoDescription: "Crea un certificado profesional de servicios prestados.",
+    summary: "Certificado breve para acreditar servicios, fechas, cliente y proveedor.",
+    category: "Profesional",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como certificado profesional breve. Incluye entidad o persona emisora, persona o empresa certificada, descripcion del servicio, periodo, valoracion si se indica, fecha y firma sencilla.",
+    fields: [
+      { name: "emisor", label: "Emisor del certificado" },
+      { name: "certificado_a", label: "Persona o empresa certificada" },
+      { name: "servicio", label: "Servicio prestado", type: "textarea" },
+      { name: "periodo", label: "Periodo" },
+      { name: "valoracion", label: "Valoracion o comentario", type: "textarea" },
+      { name: "fecha", label: "Fecha", type: "date" },
+    ],
+  },
+  {
+    type: "condiciones-generales-venta",
+    label: "Condiciones generales de venta",
+    seoTitle: "Generador de condiciones generales de venta",
+    seoDescription: "Prepara condiciones de venta para ecommerce o servicios comerciales.",
+    summary: "Condiciones para pedidos, pagos, envios, devoluciones, garantias y atencion al cliente.",
+    category: "Comercial",
+    includesSignatures: false,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta condiciones generales de venta. Incluye vendedor, productos o servicios, proceso de compra, precios, pagos, envios, desistimiento o devoluciones si aplica, garantias, atencion al cliente, responsabilidad, legislacion y contacto.",
+    fields: [
+      { name: "vendedor", label: "Vendedor" },
+      { name: "cif_nif", label: "CIF/NIF" },
+      { name: "productos_servicios", label: "Productos o servicios", type: "textarea" },
+      { name: "proceso_compra", label: "Proceso de compra", type: "textarea" },
+      { name: "pagos", label: "Pagos", type: "textarea" },
+      { name: "envios", label: "Envios o entrega", type: "textarea" },
+      { name: "devoluciones", label: "Devoluciones o desistimiento", type: "textarea" },
+      { name: "contacto", label: "Contacto", type: "email" },
     ],
   },
 ] as const satisfies readonly DocumentTypeConfig[];
