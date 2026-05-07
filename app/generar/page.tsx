@@ -7,6 +7,7 @@ import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/s
 type Props = {
   searchParams?: {
     templateId?: string;
+    type?: string;
   };
 };
 
@@ -34,10 +35,18 @@ export default async function GeneratePage({ searchParams }: Props) {
 
   return (
     <section className="container-page py-10">
-      <div className="mb-8 max-w-3xl">
-        <p className="eyebrow">Generador</p>
-        <h1 className="font-serif-display mt-3 text-4xl font-bold">Crea un borrador profesional</h1>
-        <p className="mt-3 text-slate-600">Completa el formulario y revisa el documento antes de usarlo.</p>
+      <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="max-w-3xl">
+          <p className="eyebrow">Generador</p>
+          <h1 className="font-serif-display mt-3 text-4xl font-bold">Crea un borrador profesional</h1>
+          <p className="mt-3 text-slate-600">
+            Elige el documento, completa los campos y revisa el resultado antes de exportarlo o usarlo.
+          </p>
+        </div>
+        <div className="surface-flat rounded-md p-4 text-sm">
+          <p className="font-semibold text-[#2d6a4f]">Exportaciones</p>
+          <p className="mt-1 text-slate-600">{profile?.plan !== "free" ? "PDF, TXT y Word disponibles" : "PDF y TXT incluidos. Word con Pro"}</p>
+        </div>
       </div>
       <Suspense>
         <GeneratorClient
