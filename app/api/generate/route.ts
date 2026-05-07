@@ -3,6 +3,7 @@ import { z } from "zod";
 import { buildDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { generatePayloadSchema, getDocumentConfig, requiresPro } from "@/lib/document-types";
 import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
+import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type Profile } from "@/lib/supabase-server";
 
 const errorResponse = (status: number, error: string, message: string) =>
@@ -99,6 +100,17 @@ export async function POST(request: Request) {
     }
 
     await recordGenerationEvent(supabase, user.id);
+
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      await sendDocumentReadyEmail({
+        to: user.email,
+        documentTitle: config.label,
+        documentUrl: `${appUrl}/historial/${document.id}`,
+      });
+    } catch (emailError) {
+      console.error("document_ready_email_error", emailError);
+    }
 
     return NextResponse.json({
       id: document.id,
