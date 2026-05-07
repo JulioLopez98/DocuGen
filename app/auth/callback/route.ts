@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle<{ created_at: string }>(),
       ]);
       const profileAgeMs = profile?.created_at ? Date.now() - new Date(profile.created_at).getTime() : Number.POSITIVE_INFINITY;
-      const isRecentSignup = profileAgeMs < 15 * 60 * 1000;
+      const isRecentSignup = !profile?.created_at || profileAgeMs < 15 * 60 * 1000;
 
       if ((count || 0) === 0 && isRecentSignup) {
         await sendWelcomeEmail({
