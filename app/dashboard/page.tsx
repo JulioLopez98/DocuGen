@@ -25,20 +25,41 @@ export default async function DashboardPage() {
   const remaining = Math.max(3 - profile.docs_this_month, 0);
   const isFree = profile.plan === "free";
   const mostUsedTypes = getMostUsedTypes(allDocuments);
+  const nextStep = getNextStep({ isFree, remaining, hasDocuments: allDocuments.length > 0, hasBrand: profile.plan !== "free" });
 
   return (
     <section className="container-page py-10">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="eyebrow">Dashboard</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">Tu espacio DocuGen</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Controla tu uso, retoma documentos recientes y empieza nuevos borradores sin pasar por la landing.
-          </p>
+      <div className="surface mb-6 overflow-hidden rounded-md">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_320px] lg:items-center">
+          <div>
+            <p className="eyebrow">Dashboard</p>
+            <h1 className="font-serif-display mt-3 text-4xl font-bold">Tu espacio DocuGen</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Controla tu uso, retoma documentos recientes y empieza nuevos borradores sin pasar por la landing.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
+                Generar documento
+              </Link>
+              <Link href="/historial" className="focus-ring btn-secondary px-5 py-3 text-sm">
+                Ver historial
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-md border border-[#d8f3dc] bg-white/78 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-[#2d6a4f]">Plan actual</p>
+              <PlanBadge plan={profile.plan} />
+            </div>
+            <div className="mt-5">
+              <UsageBar used={profile.docs_this_month} plan={profile.plan} />
+            </div>
+            <p className="mt-4 text-sm text-slate-600">
+              {isFree ? `Te quedan ${remaining} documentos gratuitos este mes.` : "Documentos ilimitados activos."}
+            </p>
+          </div>
         </div>
-        <Link href="/generar" className="focus-ring btn-primary px-4 py-2 text-sm">
-          Generar documento
-        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -46,60 +67,54 @@ export default async function DashboardPage() {
         <MetricCard
           label="Generados este mes"
           value={profile.docs_this_month.toString()}
-          helper={isFree ? `${remaining} restantes en Free` : "Sin límite mensual en Pro"}
+          helper={isFree ? `${remaining} restantes en Free` : "Sin limite mensual en Pro"}
         />
         <MetricCard
-          label="Tipo más usado"
+          label="Tipo mas usado"
           value={mostUsedTypes[0]?.label || "Sin datos"}
           helper={mostUsedTypes[0] ? `${mostUsedTypes[0].count} documentos` : "Genera tu primer borrador"}
         />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="mt-4 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
         <section className="surface rounded-md p-6">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold">Plan actual</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                {isFree ? "Plan gratuito para empezar con documentos puntuales." : "Plan activo con documentos ilimitados."}
-              </p>
+              <h2 className="text-xl font-bold">Siguiente paso</h2>
+              <p className="mt-1 text-sm text-slate-600">{nextStep.description}</p>
             </div>
-            <PlanBadge plan={profile.plan} />
           </div>
 
-          <div className="mt-6">
-            <UsageBar used={profile.docs_this_month} plan={profile.plan} />
-          </div>
-
-          {isFree && (
-            <p className="mt-4 text-sm text-slate-600">
-              Te quedan <strong>{remaining}</strong> documentos gratuitos este mes.
-            </p>
-          )}
-          {isFree && remaining === 0 && (
-            <p className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
-              Has alcanzado el límite de 3 documentos gratuitos este mes.
-            </p>
-          )}
-          {!isFree && (
-            <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm font-medium text-[#1f2933]">
-              Tu cuenta está en Pro. Puedes generar documentos sin límite mensual.
-            </p>
-          )}
-
-          <div className="mt-6">
-            <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
-          </div>
-          <Link href="/precios" className="mt-4 inline-flex text-sm font-semibold text-[#2d6a4f]">
-            Comparar planes
+          <Link href={nextStep.href} className="focus-ring btn-primary mt-6 px-4 py-3 text-sm">
+            {nextStep.action}
           </Link>
+
+          <div className="mt-6 border-t border-[#d8f3dc] pt-6">
+            <h3 className="font-semibold">Suscripcion</h3>
+            {isFree && remaining === 0 && (
+              <p className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
+                Has alcanzado el limite de 3 documentos gratuitos este mes.
+              </p>
+            )}
+            {!isFree && (
+              <p className="mt-3 rounded-md bg-[#d8f3dc] p-3 text-sm font-medium text-[#1f2933]">
+                Tu cuenta esta en Pro. Puedes generar documentos sin limite mensual.
+              </p>
+            )}
+            <div className="mt-4">
+              <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
+            </div>
+            <Link href="/precios" className="mt-4 inline-flex text-sm font-semibold text-[#2d6a4f]">
+              Comparar planes
+            </Link>
+          </div>
         </section>
 
         <section className="surface rounded-md p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-bold">Historial reciente</h2>
-              <p className="mt-1 text-sm text-slate-600">Últimos borradores generados.</p>
+              <p className="mt-1 text-sm text-slate-600">Ultimos borradores generados.</p>
             </div>
             <Link href="/historial" className="btn-ghost px-3 py-2 text-sm">
               Ver todo
@@ -113,7 +128,7 @@ export default async function DashboardPage() {
                   <div>
                     <h3 className="font-semibold">{doc.doc_label}</h3>
                     <p className="text-xs text-slate-500">
-                      {new Date(doc.created_at).toLocaleDateString("es-ES")} · {getDocumentConfig(doc.doc_type)?.category}
+                      {new Date(doc.created_at).toLocaleDateString("es-ES")} - {getDocumentConfig(doc.doc_type)?.category}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -127,7 +142,12 @@ export default async function DashboardPage() {
                 </div>
               </article>
             ))}
-            {recentDocuments.length === 0 && <p className="py-4 text-sm text-slate-600">Aún no has generado documentos.</p>}
+            {recentDocuments.length === 0 && (
+              <div className="py-6">
+                <p className="text-sm font-semibold">Aun no has generado documentos.</p>
+                <p className="mt-1 text-sm text-slate-600">Empieza con un contrato, propuesta o carta y aqui aparecera el historial.</p>
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -135,8 +155,8 @@ export default async function DashboardPage() {
       <section className="surface mt-4 rounded-md p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold">Acciones rápidas</h2>
-            <p className="mt-1 text-sm text-slate-600">Empieza por los documentos más habituales.</p>
+            <h2 className="text-xl font-bold">Acciones rapidas</h2>
+            <p className="mt-1 text-sm text-slate-600">Empieza por los documentos mas habituales.</p>
           </div>
           <Link href="/generar" className="btn-ghost px-3 py-2 text-sm">
             Ver todos
@@ -158,7 +178,7 @@ export default async function DashboardPage() {
           <div>
             <h2 className="text-xl font-bold">Marca personalizada</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Configura datos corporativos y logo para exportaciones Word y futuras plantillas de marca.
+              Configura datos corporativos y logo para exportaciones Word, PDF y futuras plantillas de marca.
             </p>
           </div>
           <Link href="/ajustes" className="focus-ring btn-secondary px-4 py-2 text-sm">
@@ -194,4 +214,46 @@ function getMostUsedTypes(documents: DocumentRow[]) {
       label: getDocumentConfig(type)?.label || type,
     }))
     .sort((a, b) => b.count - a.count);
+}
+
+function getNextStep({
+  isFree,
+  remaining,
+  hasDocuments,
+  hasBrand,
+}: {
+  isFree: boolean;
+  remaining: number;
+  hasDocuments: boolean;
+  hasBrand: boolean;
+}) {
+  if (isFree && remaining === 0) {
+    return {
+      description: "Has agotado los documentos gratuitos de este mes. Pro desbloquea generaciones ilimitadas.",
+      action: "Ver planes",
+      href: "/precios",
+    };
+  }
+
+  if (!hasDocuments) {
+    return {
+      description: "Crea tu primer borrador para activar historial, plantillas y exportaciones.",
+      action: "Crear primer documento",
+      href: "/generar",
+    };
+  }
+
+  if (hasBrand) {
+    return {
+      description: "Ya puedes mejorar la presencia de tus exportaciones con datos corporativos y logo.",
+      action: "Configurar marca",
+      href: "/ajustes",
+    };
+  }
+
+  return {
+    description: "Reutiliza un documento anterior como plantilla o crea uno nuevo desde cero.",
+    action: "Ir al historial",
+    href: "/historial",
+  };
 }
