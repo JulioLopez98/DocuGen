@@ -21,11 +21,17 @@ export function buildDocumentPrompt(config: DocumentTypeConfig, formData: Record
   const values = config.fields
     .map((field) => `- ${field.label} (${field.name}): ${formData[field.name] || "[PENDIENTE DE COMPLETAR]"}`)
     .join("\n");
+  const isFormalLegalDocument = config.includesSignatures || config.category === "Legal" || config.category === "Web";
+  const structureRules = isFormalLegalDocument
+    ? "Incluye título, fecha, partes o titular identificado cuando proceda, apartados claros, cláusulas numeradas cuando sea natural para este tipo de documento, aviso final y bloque de firmas solo si se indica abajo."
+    : "Incluye título, fecha si aporta valor, apartados claros y aviso final. No uses formato contractual, no crees secciones de partes identificadas, no incluyas cláusulas y no añadas firmas formales.";
 
   return `Genera un borrador profesional para España.
 
 Tipo de documento: ${config.label}
-Debe incluir título, fecha, partes identificadas, apartados claros, cláusulas numeradas cuando proceda, bloque de firmas cuando aplique y aviso legal final.
+Reglas de estructura:
+${structureRules}
+
 No inventes datos no proporcionados. Si falta información, usa [PENDIENTE DE COMPLETAR].
 
 Instrucciones específicas para este tipo:
