@@ -38,12 +38,13 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
   async function uploadLogo(file: File) {
     setUploading(true);
     setError(null);
+    setMessage(null);
 
     try {
       const supabase = createSupabaseBrowserClient();
 
       if (!supabase) {
-        setError("Supabase no está configurado.");
+        setError("Supabase no esta configurado.");
         return;
       }
 
@@ -98,15 +99,15 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
     return (
       <div className="surface rounded-md p-6">
         <p className="eyebrow">Marca Pro</p>
-        <h2 className="font-serif-display mt-3 text-3xl font-bold">Personalización de marca</h2>
+        <h2 className="font-serif-display mt-3 text-3xl font-bold">Identidad de marca</h2>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Añade nombre de empresa, CIF, dirección y logo para preparar documentos con identidad corporativa.
+          Anade nombre de empresa, CIF, direccion y logo para preparar documentos con una presencia mas corporativa.
         </p>
         <div className="mt-6 rounded-md bg-[#d8f3dc] p-4 text-sm text-[#1f2933]">
-          Esta función está disponible solo en DocuGen Pro.
+          Esta funcion esta disponible solo en DocuGen Pro.
         </div>
-        <Link href="/dashboard" className="focus-ring btn-primary mt-6 px-4 py-2 text-sm">
-          Actualizar desde el dashboard
+        <Link href="/precios" className="focus-ring btn-primary mt-6 px-4 py-2 text-sm">
+          Ver planes Pro
         </Link>
       </div>
     );
@@ -114,11 +115,18 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
 
   return (
     <form onSubmit={save} className="surface rounded-md p-6">
-      <p className="eyebrow">Marca Pro</p>
-      <h2 className="font-serif-display mt-3 text-3xl font-bold">Personalización de marca</h2>
-      <p className="mt-3 text-sm leading-6 text-slate-600">
-        Estos datos se usarán en exportaciones Word y quedan preparados para PDF y plantillas avanzadas.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">Marca Pro</p>
+          <h2 className="font-serif-display mt-3 text-3xl font-bold">Identidad de marca</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+            Estos datos se usaran en exportaciones Word y PDF, y quedan listos para plantillas avanzadas.
+          </p>
+        </div>
+        <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
+          Pro activo
+        </span>
+      </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <label>
@@ -140,12 +148,12 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           />
         </label>
         <label className="md:col-span-2">
-          <span className="text-sm font-semibold">Dirección</span>
+          <span className="text-sm font-semibold">Direccion</span>
           <input
             value={form.address}
             onChange={(event) => updateField("address", event.target.value)}
             className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 transition focus:border-[#2d6a4f]"
-            placeholder="Calle, número, ciudad"
+            placeholder="Calle, numero, ciudad"
           />
         </label>
       </div>
@@ -155,7 +163,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           <div>
             <h3 className="font-semibold">Logo de marca</h3>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              Sube un PNG, JPG, WebP o SVG. También puedes pegar una URL si ya tienes el logo alojado.
+              Sube un PNG, JPG, WebP o SVG. Tambien puedes pegar una URL si ya tienes el logo alojado.
             </p>
           </div>
           <label className="focus-ring btn-secondary cursor-pointer px-4 py-2 text-sm">
@@ -205,8 +213,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
                 </button>
               )}
               <p className="text-xs leading-5 text-slate-500">
-                En Word se añadirá como referencia de marca. La inserción visual del logo en PDF queda preparada para la
-                siguiente iteración.
+                En Word y PDF se anadira como referencia visual de marca cuando el formato lo permita.
               </p>
             </div>
           </div>

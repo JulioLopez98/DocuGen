@@ -21,7 +21,7 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
       const payload = (await response.json()) as { url?: string; message?: string };
 
       if (!response.ok || !payload.url) {
-        setError(payload.message || "No se pudo crear la sesión.");
+        setError(payload.message || "No se pudo crear la sesion.");
         return;
       }
 
@@ -40,7 +40,7 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
           type="button"
           onClick={() => go("/api/create-checkout")}
           disabled={loading !== null}
-          className="focus-ring rounded-md bg-[#2d6a4f] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="focus-ring btn-primary px-4 py-2 text-sm disabled:opacity-60"
         >
           {loading === "/api/create-checkout" ? "Conectando..." : "Actualizar a Pro"}
         </button>
@@ -50,9 +50,9 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
           type="button"
           onClick={() => go("/api/create-portal")}
           disabled={loading !== null}
-          className="focus-ring rounded-md border border-[#2d6a4f] px-4 py-2 text-sm font-semibold text-[#2d6a4f] disabled:opacity-60"
+          className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
         >
-          {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripción"}
+          {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripcion"}
         </button>
       )}
       {error && <p className="w-full text-sm text-red-700">{error}</p>}
