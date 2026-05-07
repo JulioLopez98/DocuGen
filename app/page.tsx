@@ -2,8 +2,14 @@ import Link from "next/link";
 import { DocumentGallery } from "@/components/DocumentGallery";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { PricingCards } from "@/components/PricingCards";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+
   return (
     <>
       <section className="bg-[#faf9f6]">
@@ -19,16 +25,16 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/auth"
+                href={user ? "/generar" : "/auth"}
                 className="focus-ring rounded-md bg-[#2d6a4f] px-6 py-3 text-sm font-semibold text-white"
               >
-                Registrarme gratis
+                {user ? "Crear documento" : "Registrarme gratis"}
               </Link>
               <Link
-                href="/generar"
+                href={user ? "/dashboard" : "/generar"}
                 className="focus-ring rounded-md border border-[#2d6a4f] px-6 py-3 text-sm font-semibold text-[#2d6a4f]"
               >
-                Ver generador
+                {user ? "Ir al dashboard" : "Ver generador"}
               </Link>
             </div>
           </div>
@@ -44,9 +50,7 @@ export default function HomePage() {
                 <strong>1. Objeto.</strong>
                 <p className="mt-1">El presente documento regula la prestación de los servicios descritos por las partes.</p>
               </div>
-              <p className="text-xs text-slate-500">
-                Documento generado con IA. Revisar antes de su uso legal.
-              </p>
+              <p className="text-xs text-slate-500">Documento generado con IA. Revisar antes de su uso legal.</p>
             </div>
           </div>
         </div>
