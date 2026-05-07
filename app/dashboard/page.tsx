@@ -90,6 +90,9 @@ export default async function DashboardPage() {
           <div className="mt-6">
             <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
           </div>
+          <Link href="/precios" className="mt-4 inline-flex text-sm font-semibold text-[#2d6a4f]">
+            Comparar planes
+          </Link>
         </section>
 
         <section className="surface rounded-md p-6">

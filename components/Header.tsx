@@ -7,35 +7,32 @@ export async function Header() {
     data: { user },
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
 
+  const links = user
+    ? [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/generar", label: "Generar" },
+        { href: "/historial", label: "Historial" },
+        { href: "/ajustes", label: "Ajustes" },
+      ]
+    : [
+        { href: "/", label: "Inicio" },
+        { href: "/generar", label: "Generador" },
+        { href: "/precios", label: "Precios" },
+      ];
+
   return (
     <header className="sticky top-0 z-40 border-b border-[#d8f3dc]/80 bg-[#faf9f6]/86 backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="font-serif-display text-2xl font-bold tracking-tight text-[#2d6a4f]">
+        <Link href={user ? "/dashboard" : "/"} className="font-serif-display text-2xl font-bold tracking-tight text-[#2d6a4f]">
           DocuGen
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
-          <Link className="nav-link" href="/generar">
-            Generar
-          </Link>
-          <Link className="nav-link" href="/#precios">
-            Precios
-          </Link>
-          {user && (
-            <Link className="nav-link" href="/historial">
-              Historial
+          {links.map((link) => (
+            <Link key={link.href} className="nav-link" href={link.href}>
+              {link.label}
             </Link>
-          )}
-          {user && (
-            <Link className="nav-link" href="/dashboard">
-              Dashboard
-            </Link>
-          )}
-          {user && (
-            <Link className="nav-link" href="/ajustes">
-              Ajustes
-            </Link>
-          )}
+          ))}
         </nav>
 
         {user ? (
