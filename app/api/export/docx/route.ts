@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AlignmentType, Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
+import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, TextRun } from "docx";
 import { z } from "zod";
 import { requireUser, type BrandSettings, type Profile } from "@/lib/supabase-server";
 
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle<BrandSettings>();
+    const brandParagraphs = await brandHeaderParagraphs(brandSettings || null);
     const doc = new Document({
       creator: brandSettings?.company_name || "DocuGen",
       title: payload.title,
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
               heading: HeadingLevel.TITLE,
               spacing: { after: 180 },
             }),
-            ...brandHeaderParagraphs(brandSettings || null),
+            ...brandParagraphs,
             new Paragraph({
               text: payload.title,
               heading: HeadingLevel.HEADING_1,
@@ -96,29 +97,93 @@ export async function POST(request: Request) {
   }
 }
 
-function brandHeaderParagraphs(brandSettings: BrandSettings | null) {
+async function brandHeaderParagraphs(brandSettings: BrandSettings | null) {
   if (!brandSettings?.company_name && !brandSettings?.cif && !brandSettings?.address && !brandSettings?.logo_url) {
     return [];
   }
 
   const lines = [
-    brandSettings.company_name,
     brandSettings.cif ? `CIF/NIF: ${brandSettings.cif}` : null,
     brandSettings.address,
-    brandSettings.logo_url ? `Logo: ${brandSettings.logo_url}` : null,
   ].filter(Boolean) as string[];
+  const logoRun = brandSettings.logo_url ? await logoToImageRun(brandSettings.logo_url) : null;
 
   return [
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: lines.join(" · "),
-          color: "64748B",
-        }),
-      ],
-      spacing: { after: 260 },
-    }),
+    ...(logoRun
+      ? [
+          new Paragraph({
+            children: [logoRun],
+            spacing: { after: lines.length ? 140 : 260 },
+          }),
+        ]
+      : []),
+    ...(lines.length
+      ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: lines.join(" · "),
+                color: "64748B",
+              }),
+            ],
+            spacing: { after: 260 },
+          }),
+        ]
+      : []),
   ];
+}
+
+async function logoToImageRun(url: string) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    const imageType = getDocxImageType(url, contentType);
+
+    if (!imageType) {
+      return null;
+    }
+
+    const buffer = await response.arrayBuffer();
+
+    return new ImageRun({
+      data: new Uint8Array(buffer),
+      transformation: {
+        width: 120,
+        height: 56,
+      },
+      type: imageType,
+    });
+  } catch (error) {
+    console.warn("docx_logo_skipped", error);
+    return null;
+  }
+}
+
+function getDocxImageType(url: string, contentType: string) {
+  const normalized = `${contentType} ${url}`.toLowerCase();
+
+  if (normalized.includes("png")) {
+    return "png" as const;
+  }
+
+  if (normalized.includes("jpg") || normalized.includes("jpeg")) {
+    return "jpg" as const;
+  }
+
+  if (normalized.includes("gif")) {
+    return "gif" as const;
+  }
+
+  if (normalized.includes("bmp")) {
+    return "bmp" as const;
+  }
+
+  return null;
 }
 
 function contentToParagraphs(content: string) {
