@@ -45,7 +45,12 @@ export default async function HistoryDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      <DocResult title={document.doc_label} content={document.content} includesSignatures={config?.includesSignatures} />
+      <DocResult
+        title={document.doc_label}
+        content={document.content}
+        includesSignatures={config?.includesSignatures}
+        canExportDocx={profile.plan !== "free"}
+      />
     </section>
   );
 }

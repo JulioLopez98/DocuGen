@@ -24,6 +24,7 @@ type GeneratedDocument = {
 type GeneratorClientProps = {
   initialDocType?: DocumentType;
   initialFormData?: Record<string, string>;
+  canExportDocx?: boolean;
 };
 
 const formComponents: Record<
@@ -44,7 +45,7 @@ const formComponents: Record<
   "acuerdo-colaboracion": AcuerdoColaboracion,
 };
 
-export function GeneratorClient({ initialDocType, initialFormData }: GeneratorClientProps) {
+export function GeneratorClient({ initialDocType, initialFormData, canExportDocx = false }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selected, setSelected] = useState<DocumentType>(initialDocType || getDefaultDocumentType(searchParams.get("type")));
@@ -130,6 +131,7 @@ export function GeneratorClient({ initialDocType, initialFormData }: GeneratorCl
             title={generated.docLabel}
             content={generated.content}
             includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures}
+            canExportDocx={canExportDocx}
             onRegenerate={() => lastPayload && submit(lastPayload)}
           />
         </div>

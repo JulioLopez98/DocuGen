@@ -12,12 +12,11 @@ type Props = {
 
 export default async function GeneratePage({ searchParams }: Props) {
   const templateId = searchParams?.templateId;
+  const { supabase, profile } = await getCurrentProfile();
   let initialDocType: DocumentType | undefined;
   let initialFormData: Record<string, string> | undefined;
 
   if (templateId) {
-    const { supabase, profile } = await getCurrentProfile();
-
     if (supabase && profile) {
       const { data: template } = await supabase.from("documents").select("*").eq("id", templateId).single<DocumentRow>();
       const config = getDocumentConfig(template?.doc_type);
@@ -37,7 +36,11 @@ export default async function GeneratePage({ searchParams }: Props) {
         <p className="mt-3 text-slate-600">Completa el formulario y revisa el documento antes de usarlo.</p>
       </div>
       <Suspense>
-        <GeneratorClient initialDocType={initialDocType} initialFormData={initialFormData} />
+        <GeneratorClient
+          initialDocType={initialDocType}
+          initialFormData={initialFormData}
+          canExportDocx={profile?.plan !== "free"}
+        />
       </Suspense>
       <div className="mt-8">
         <LegalDisclaimer />

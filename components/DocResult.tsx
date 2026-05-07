@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { downloadDocumentDocx } from "@/lib/docx";
 import { downloadDocumentPdf, downloadDocumentTxt } from "@/lib/pdf";
 
 type DocResultProps = {
   title: string;
   content: string;
   includesSignatures?: boolean;
+  canExportDocx?: boolean;
   onRegenerate?: () => void;
 };
 
-export function DocResult({ title, content, includesSignatures, onRegenerate }: DocResultProps) {
+export function DocResult({ title, content, includesSignatures, canExportDocx = false, onRegenerate }: DocResultProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyText() {
@@ -50,11 +52,15 @@ export function DocResult({ title, content, includesSignatures, onRegenerate }: 
           </button>
           <button
             type="button"
-            disabled
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-400"
-            title="Preparado para Fase 2"
+            onClick={() => downloadDocumentDocx({ title, content, includesSignatures, canExportDocx })}
+            className={
+              canExportDocx
+                ? "focus-ring btn-secondary px-3 py-2 text-sm"
+                : "focus-ring rounded-md border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
+            }
+            title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
           >
-            Word
+            {canExportDocx ? "Word" : "Word Pro"}
           </button>
           {onRegenerate && (
             <button

@@ -32,7 +32,7 @@ export default async function HistoryPage() {
         </Link>
       </div>
 
-      <HistoryClient documents={documents || []} />
+      <HistoryClient documents={documents || []} canExportDocx={profile.plan !== "free"} />
     </section>
   );
 }
