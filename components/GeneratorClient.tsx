@@ -12,6 +12,7 @@ import { Presupuesto } from "@/components/forms/Presupuesto";
 import { PropuestaProyecto } from "@/components/forms/PropuestaProyecto";
 import { DocResult } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, type DocumentType } from "@/lib/document-types";
+import type { PdfBrandSettings } from "@/lib/pdf";
 
 type GeneratedDocument = {
   id: string;
@@ -25,6 +26,7 @@ type GeneratorClientProps = {
   initialDocType?: DocumentType;
   initialFormData?: Record<string, string>;
   canExportDocx?: boolean;
+  brandSettings?: PdfBrandSettings | null;
 };
 
 const formComponents: Record<
@@ -45,7 +47,7 @@ const formComponents: Record<
   "acuerdo-colaboracion": AcuerdoColaboracion,
 };
 
-export function GeneratorClient({ initialDocType, initialFormData, canExportDocx = false }: GeneratorClientProps) {
+export function GeneratorClient({ initialDocType, initialFormData, canExportDocx = false, brandSettings }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selected, setSelected] = useState<DocumentType>(initialDocType || getDefaultDocumentType(searchParams.get("type")));
@@ -132,6 +134,7 @@ export function GeneratorClient({ initialDocType, initialFormData, canExportDocx
             content={generated.content}
             includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures}
             canExportDocx={canExportDocx}
+            brandSettings={brandSettings}
             onRegenerate={() => lastPayload && submit(lastPayload)}
           />
         </div>

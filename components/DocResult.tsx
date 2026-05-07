@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 import { downloadDocumentDocx } from "@/lib/docx";
-import { downloadDocumentPdf, downloadDocumentTxt } from "@/lib/pdf";
+import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
 
 type DocResultProps = {
   title: string;
   content: string;
   includesSignatures?: boolean;
   canExportDocx?: boolean;
+  brandSettings?: PdfBrandSettings | null;
   onRegenerate?: () => void;
 };
 
-export function DocResult({ title, content, includesSignatures, canExportDocx = false, onRegenerate }: DocResultProps) {
+export function DocResult({
+  title,
+  content,
+  includesSignatures,
+  canExportDocx = false,
+  brandSettings,
+  onRegenerate,
+}: DocResultProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyText() {
@@ -31,7 +39,7 @@ export function DocResult({ title, content, includesSignatures, canExportDocx = 
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => downloadDocumentPdf({ title, content, includesSignatures })}
+            onClick={() => void downloadDocumentPdf({ title, content, includesSignatures, brandSettings })}
             className="focus-ring btn-primary px-3 py-2 text-sm"
           >
             PDF

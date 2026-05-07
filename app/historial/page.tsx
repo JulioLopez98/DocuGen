@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { HistoryClient } from "@/components/HistoryClient";
-import { getCurrentProfile, type DocumentRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
 
 export default async function HistoryPage() {
   const { supabase, profile } = await getCurrentProfile();
@@ -15,6 +15,10 @@ export default async function HistoryPage() {
     .select("*")
     .order("created_at", { ascending: false })
     .returns<DocumentRow[]>();
+  const { data: brandSettings } =
+    profile.plan !== "free"
+      ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
+      : { data: null };
 
   return (
     <section className="container-page py-10">
@@ -32,7 +36,11 @@ export default async function HistoryPage() {
         </Link>
       </div>
 
-      <HistoryClient documents={documents || []} canExportDocx={profile.plan !== "free"} />
+      <HistoryClient
+        documents={documents || []}
+        canExportDocx={profile.plan !== "free"}
+        brandSettings={brandSettings || null}
+      />
     </section>
   );
 }

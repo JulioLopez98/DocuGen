@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
-import { getCurrentProfile, type DocumentRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
 
 type Props = {
   searchParams?: {
@@ -27,6 +27,10 @@ export default async function GeneratePage({ searchParams }: Props) {
       }
     }
   }
+  const { data: brandSettings } =
+    supabase && profile && profile.plan !== "free"
+      ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
+      : { data: null };
 
   return (
     <section className="container-page py-10">
@@ -40,6 +44,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           initialDocType={initialDocType}
           initialFormData={initialFormData}
           canExportDocx={profile?.plan !== "free"}
+          brandSettings={brandSettings || null}
         />
       </Suspense>
       <div className="mt-8">

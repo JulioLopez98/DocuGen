@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DocResult } from "@/components/DocResult";
 import { getDocumentConfig } from "@/lib/document-types";
-import { getCurrentProfile, type DocumentRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
 
 type Props = {
   params: {
@@ -24,6 +24,10 @@ export default async function HistoryDetailPage({ params }: Props) {
   }
 
   const config = getDocumentConfig(document.doc_type);
+  const { data: brandSettings } =
+    profile.plan !== "free"
+      ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
+      : { data: null };
 
   return (
     <section className="container-page py-10">
@@ -50,6 +54,7 @@ export default async function HistoryDetailPage({ params }: Props) {
         content={document.content}
         includesSignatures={config?.includesSignatures}
         canExportDocx={profile.plan !== "free"}
+        brandSettings={brandSettings || null}
       />
     </section>
   );

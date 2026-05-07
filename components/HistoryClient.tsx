@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { downloadDocumentDocx } from "@/lib/docx";
-import { downloadDocumentPdf, downloadDocumentTxt } from "@/lib/pdf";
+import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
 import { getDocumentConfig } from "@/lib/document-types";
 import type { DocumentRow } from "@/lib/supabase-server";
 
 type HistoryClientProps = {
   documents: DocumentRow[];
   canExportDocx: boolean;
+  brandSettings?: PdfBrandSettings | null;
 };
 
 type GenerateResponse = {
@@ -18,7 +19,7 @@ type GenerateResponse = {
   message?: string;
 };
 
-export function HistoryClient({ documents, canExportDocx }: HistoryClientProps) {
+export function HistoryClient({ documents, canExportDocx, brandSettings }: HistoryClientProps) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +178,7 @@ export function HistoryClient({ documents, canExportDocx }: HistoryClientProps) 
                           title: doc.doc_label,
                           content: doc.content,
                           includesSignatures: config?.includesSignatures,
+                          brandSettings,
                         })
                       }
                       className="focus-ring btn-ghost px-3 py-2 text-sm"

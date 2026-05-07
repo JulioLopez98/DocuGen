@@ -6,9 +6,17 @@ type PdfOptions = {
   title: string;
   content: string;
   includesSignatures?: boolean;
+  brandSettings?: PdfBrandSettings | null;
 };
 
 const margin = 18;
+
+export type PdfBrandSettings = {
+  company_name: string | null;
+  cif: string | null;
+  address: string | null;
+  logo_url: string | null;
+};
 
 export function downloadDocumentTxt(title: string, content: string) {
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -20,23 +28,39 @@ export function downloadDocumentTxt(title: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-export function downloadDocumentPdf({ title, content, includesSignatures }: PdfOptions) {
+export async function downloadDocumentPdf({ title, content, includesSignatures, brandSettings }: PdfOptions) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const usableWidth = pageWidth - margin * 2;
   let y = 24;
+  const brandName = brandSettings?.company_name || "DocuGen";
+  const brandMeta = [brandSettings?.cif ? `CIF/NIF: ${brandSettings.cif}` : null, brandSettings?.address]
+    .filter(Boolean)
+    .join(" · ");
 
   doc.setFillColor(45, 106, 79);
-  doc.rect(0, 0, pageWidth, 36, "F");
+  doc.rect(0, 0, pageWidth, 42, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.text("DocuGen", margin, 16);
+  doc.text(brandName, margin, 16);
   doc.setFontSize(13);
-  doc.text(title, margin, 27);
+  doc.text(title, margin, 28);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("Generado con DocuGen", margin, 37);
 
-  y = 52;
+  if (brandMeta) {
+    doc.setFontSize(8);
+    doc.text(doc.splitTextToSize(brandMeta, 90) as string[], pageWidth - margin, 16, { align: "right" });
+  }
+
+  if (brandSettings?.logo_url) {
+    await addLogo(doc, brandSettings.logo_url, pageWidth - margin - 24, 23, 24, 14);
+  }
+
+  y = 58;
   doc.setTextColor(31, 41, 51);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
@@ -54,7 +78,7 @@ export function downloadDocumentPdf({ title, content, includesSignatures }: PdfO
     if (y + blockHeight > pageHeight - 22) {
       addFooter(doc, title);
       doc.addPage();
-      addHeader(doc, title);
+      addHeader(doc, title, brandName);
       y = 28;
     }
 
@@ -76,7 +100,7 @@ export function downloadDocumentPdf({ title, content, includesSignatures }: PdfO
     if (y > pageHeight - 65) {
       addFooter(doc, title);
       doc.addPage();
-      addHeader(doc, title);
+      addHeader(doc, title, brandName);
       y = 38;
     }
 
@@ -104,13 +128,59 @@ export function downloadDocumentPdf({ title, content, includesSignatures }: PdfO
   doc.save(`${slugify(title)}.pdf`);
 }
 
-function addHeader(doc: jsPDF, title: string) {
+function addHeader(doc: jsPDF, title: string, brandName: string) {
   doc.setTextColor(45, 106, 79);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.text(`DocuGen - ${title}`, margin, 14);
+  doc.text(`${brandName} - ${title}`, margin, 14);
   doc.setDrawColor(216, 243, 220);
   doc.line(margin, 18, doc.internal.pageSize.getWidth() - margin, 18);
+}
+
+async function addLogo(doc: jsPDF, url: string, x: number, y: number, maxWidth: number, maxHeight: number) {
+  try {
+    const dataUrl = await imageUrlToDataUrl(url);
+    const image = await loadImage(dataUrl);
+    const ratio = Math.min(maxWidth / image.width, maxHeight / image.height);
+    const width = image.width * ratio;
+    const height = image.height * ratio;
+    doc.addImage(dataUrl, getImageFormat(dataUrl), x + maxWidth - width, y, width, height);
+  } catch (error) {
+    console.warn("pdf_logo_skipped", error);
+  }
+}
+
+async function imageUrlToDataUrl(url: string) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function getImageFormat(dataUrl: string) {
+  if (dataUrl.includes("image/png")) {
+    return "PNG";
+  }
+
+  if (dataUrl.includes("image/webp")) {
+    return "WEBP";
+  }
+
+  return "JPEG";
 }
 
 function addFooter(doc: jsPDF, title: string) {
