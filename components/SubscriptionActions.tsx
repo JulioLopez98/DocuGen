@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 
-export function SubscriptionActions({ showPortal }: { showPortal: boolean }) {
+type SubscriptionActionsProps = {
+  plan: "free" | "pro" | "empresa";
+  hasCustomer: boolean;
+};
+
+export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const isPaid = plan !== "free";
 
   async function go(endpoint: "/api/create-checkout" | "/api/create-portal") {
     setLoading(endpoint);
@@ -29,15 +35,17 @@ export function SubscriptionActions({ showPortal }: { showPortal: boolean }) {
 
   return (
     <div className="flex flex-wrap gap-3">
-      <button
-        type="button"
-        onClick={() => go("/api/create-checkout")}
-        disabled={loading !== null}
-        className="focus-ring rounded-md bg-[#2d6a4f] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-      >
-        {loading === "/api/create-checkout" ? "Conectando..." : "Actualizar a Pro"}
-      </button>
-      {showPortal && (
+      {!isPaid && (
+        <button
+          type="button"
+          onClick={() => go("/api/create-checkout")}
+          disabled={loading !== null}
+          className="focus-ring rounded-md bg-[#2d6a4f] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          {loading === "/api/create-checkout" ? "Conectando..." : "Actualizar a Pro"}
+        </button>
+      )}
+      {isPaid && hasCustomer && (
         <button
           type="button"
           onClick={() => go("/api/create-portal")}

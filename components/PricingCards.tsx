@@ -1,14 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type PricingCardsProps = {
   compact?: boolean;
+  currentPlan?: "free" | "pro" | "empresa" | null;
 };
 
-export function PricingCards({ compact }: PricingCardsProps) {
+export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isPro = currentPlan === "pro" || currentPlan === "empresa";
 
   async function startCheckout() {
     setLoading(true);
@@ -37,17 +40,20 @@ export function PricingCards({ compact }: PricingCardsProps) {
       price: "0 €",
       description: "Para probar DocuGen con documentos puntuales.",
       features: ["3 documentos/mes", "Historial básico", "Exportación PDF y TXT"],
-      action: "Empezar gratis",
-      href: "/auth",
+      action: currentPlan ? "Plan inicial" : "Empezar gratis",
+      href: currentPlan ? "/dashboard" : "/auth",
+      disabled: currentPlan === "free",
     },
     {
       name: "Pro",
       price: "9 €/mes",
       description: "Para profesionales que generan documentación cada semana.",
       features: ["Documentos ilimitados", "Word preparado para Fase 2", "Marca personalizada preparada"],
-      action: loading ? "Conectando..." : "Actualizar a Pro",
-      onClick: startCheckout,
+      action: isPro ? "Plan actual" : loading ? "Conectando..." : "Actualizar a Pro",
+      onClick: isPro ? undefined : startCheckout,
+      href: isPro ? "/dashboard" : undefined,
       highlighted: true,
+      disabled: isPro,
     },
     {
       name: "Empresa",
@@ -92,15 +98,19 @@ export function PricingCards({ compact }: PricingCardsProps) {
               >
                 {card.action}
               </button>
-            ) : (
-              <a
-                href={card.href || "#"}
+            ) : card.href ? (
+              <Link
+                href={card.href}
                 className={`focus-ring mt-6 block w-full rounded-md px-4 py-3 text-center text-sm font-semibold ${
-                  card.disabled ? "bg-slate-200 text-slate-500" : "bg-[#2d6a4f] text-white"
+                  card.disabled ? "bg-[#d8f3dc] text-[#1f2933]" : "bg-[#2d6a4f] text-white"
                 }`}
               >
                 {card.action}
-              </a>
+              </Link>
+            ) : (
+              <span className="mt-6 block w-full rounded-md bg-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-500">
+                {card.action}
+              </span>
             )}
           </div>
         ))}

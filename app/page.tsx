@@ -2,13 +2,15 @@ import Link from "next/link";
 import { DocumentGallery } from "@/components/DocumentGallery";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { PricingCards } from "@/components/PricingCards";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseServerClient, type Profile } from "@/lib/supabase-server";
 
 export default async function HomePage() {
   const supabase = createSupabaseServerClient();
   const {
     data: { user },
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const { data: profile } =
+    supabase && user ? await supabase.from("profiles").select("*").eq("id", user.id).single<Profile>() : { data: null };
 
   return (
     <>
@@ -81,7 +83,7 @@ export default async function HomePage() {
       </section>
 
       <DocumentGallery />
-      <PricingCards />
+      <PricingCards currentPlan={profile?.plan} />
       <section className="container-page">
         <LegalDisclaimer />
       </section>
