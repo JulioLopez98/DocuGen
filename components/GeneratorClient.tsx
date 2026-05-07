@@ -21,6 +21,11 @@ type GeneratedDocument = {
   formData: Record<string, string>;
 };
 
+type GeneratorClientProps = {
+  initialDocType?: DocumentType;
+  initialFormData?: Record<string, string>;
+};
+
 const formComponents: Record<
   DocumentType,
   (props: {
@@ -39,12 +44,14 @@ const formComponents: Record<
   "acuerdo-colaboracion": AcuerdoColaboracion,
 };
 
-export function GeneratorClient() {
+export function GeneratorClient({ initialDocType, initialFormData }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selected, setSelected] = useState<DocumentType>(getDefaultDocumentType(searchParams.get("type")));
+  const [selected, setSelected] = useState<DocumentType>(initialDocType || getDefaultDocumentType(searchParams.get("type")));
   const [generated, setGenerated] = useState<GeneratedDocument | null>(null);
-  const [lastPayload, setLastPayload] = useState<{ docType: string; formData: Record<string, string> } | null>(null);
+  const [lastPayload, setLastPayload] = useState<{ docType: string; formData: Record<string, string> } | null>(
+    initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +96,7 @@ export function GeneratorClient() {
               setSelected(event.target.value as DocumentType);
               setGenerated(null);
               setError(null);
+              setLastPayload(null);
             }}
             className="focus-ring mt-2 w-full rounded-md border border-slate-300 px-3 py-3 text-sm"
           >
@@ -107,7 +115,12 @@ export function GeneratorClient() {
           <p className="text-sm font-semibold text-[#2d6a4f]">{config.category}</p>
           <h1 className="font-serif-display mt-1 text-3xl font-bold">{config.label}</h1>
         </div>
-        <SelectedForm onSubmit={submit} disabled={loading} defaultValues={lastPayload?.formData} />
+        <SelectedForm
+          key={`${selected}-${lastPayload ? "template" : "blank"}`}
+          onSubmit={submit}
+          disabled={loading}
+          defaultValues={lastPayload?.docType === selected ? lastPayload.formData : undefined}
+        />
         {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       </section>
 

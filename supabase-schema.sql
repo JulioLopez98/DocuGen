@@ -269,6 +269,10 @@ create policy "documents_update_own_or_admin" on public.documents
 for update using (user_id = auth.uid() or public.is_admin())
 with check (user_id = auth.uid() or public.is_admin());
 
+drop policy if exists "documents_delete_own_or_admin" on public.documents;
+create policy "documents_delete_own_or_admin" on public.documents
+for delete using (user_id = auth.uid() or public.is_admin());
+
 drop policy if exists "generation_events_select_own_or_admin" on public.generation_events;
 create policy "generation_events_select_own_or_admin" on public.generation_events
 for select using (user_id = auth.uid() or public.is_admin());
