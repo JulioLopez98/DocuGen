@@ -1,0 +1,129 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { documentTypes, requiresPro, type DocumentTypeConfig } from "@/lib/document-types";
+
+type CatalogExplorerProps = {
+  signedIn?: boolean;
+};
+
+const categories = ["Todos", ...Array.from(new Set(documentTypes.map((doc) => doc.category)))];
+
+export function CatalogExplorer({ signedIn = false }: CatalogExplorerProps) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("Todos");
+
+  const filteredDocuments = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return documentTypes.filter((doc) => {
+      const matchesCategory = category === "Todos" || doc.category === category;
+      const searchable = `${doc.label} ${doc.summary} ${doc.category} ${doc.seoDescription}`.toLowerCase();
+      const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+
+      return matchesCategory && matchesQuery;
+    });
+  }, [category, query]);
+
+  const groupedDocuments = useMemo(() => groupByCategory(filteredDocuments), [filteredDocuments]);
+
+  return (
+    <section className="space-y-6">
+      <div className="surface rounded-md p-5">
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <label>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar en el catalogo</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-4 py-3 text-sm transition focus:border-[#2d6a4f]"
+              placeholder="Contrato, privacidad, teletrabajo, reclamacion..."
+            />
+          </label>
+          <div className="flex flex-wrap gap-2 lg:max-w-xl lg:justify-end">
+            {categories.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setCategory(item)}
+                className={`focus-ring rounded-full border px-3 py-2 text-xs font-bold transition ${
+                  category === item
+                    ? "border-[#2d6a4f] bg-[#2d6a4f] text-white"
+                    : "border-[#d8f3dc] bg-white/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-600">
+          {filteredDocuments.length} documentos encontrados
+          {category !== "Todos" ? ` en ${category}` : ""}
+        </p>
+        <Link href="/precios" className="focus-ring btn-secondary px-4 py-2 text-sm">
+          Comparar Free y Pro
+        </Link>
+      </div>
+
+      {Object.entries(groupedDocuments).map(([groupName, docs]) => (
+        <section key={groupName} className="scroll-mt-24">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="font-serif-display text-3xl font-bold">{groupName}</h2>
+            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{docs.length}</span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {docs.map((doc) => {
+              const pro = requiresPro(doc);
+
+              return (
+                <article key={doc.type} className="surface-flat interactive flex h-full flex-col rounded-md p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{doc.category}</p>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        pro ? "bg-[#2d6a4f] text-white" : "bg-[#d8f3dc] text-[#2d6a4f]"
+                      }`}
+                    >
+                      {pro ? "Pro" : "Free"}
+                    </span>
+                  </div>
+                  <h3 className="mt-3 text-lg font-bold">{doc.label}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{doc.summary}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <Link href={`/${doc.type}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
+                      Ver ficha
+                    </Link>
+                    <Link
+                      href={signedIn ? `/generar?type=${doc.type}` : "/auth"}
+                      className="focus-ring btn-primary px-3 py-2 text-xs"
+                    >
+                      Crear
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+
+      {filteredDocuments.length === 0 && (
+        <div className="surface-flat rounded-md p-6 text-sm text-slate-600">
+          No hay documentos que coincidan con esa busqueda. Prueba con una categoria o termino mas general.
+        </div>
+      )}
+    </section>
+  );
+}
+
+function groupByCategory(items: readonly DocumentTypeConfig[]) {
+  return items.reduce<Record<string, DocumentTypeConfig[]>>((groups, item) => {
+    groups[item.category] = [...(groups[item.category] || []), item];
+    return groups;
+  }, {});
+}

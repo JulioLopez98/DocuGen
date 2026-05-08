@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DocumentGallery } from "@/components/DocumentGallery";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
+import { documentTypes } from "@/lib/document-types";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 const useCases = [
@@ -54,7 +55,7 @@ export default async function HomePage() {
             </div>
             <div className="mt-8 grid max-w-2xl gap-3 text-sm sm:grid-cols-3">
               {[
-                ["8", "tipos de documento"],
+                [documentTypes.length.toString(), "tipos de documento"],
                 ["3", "gratis al mes"],
                 ["PDF", "TXT y Word Pro"],
               ].map(([value, label]) => (

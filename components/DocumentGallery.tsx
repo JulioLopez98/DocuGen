@@ -25,8 +25,8 @@ export function DocumentGallery() {
             Una seleccion de documentos habituales. El generador completo incluye {documentTypes.length} tipos organizados por categoria.
           </p>
         </div>
-        <Link href="/generar" className="focus-ring btn-secondary px-4 py-3 text-sm">
-          Abrir generador
+        <Link href="/catalogo" className="focus-ring btn-secondary px-4 py-3 text-sm">
+          Ver catalogo completo
         </Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -49,7 +49,7 @@ export function DocumentGallery() {
           <p className="text-sm leading-6 text-slate-600">
             Hay mas documentos laborales, legales, ecommerce, digitales e inmobiliarios dentro del generador.
           </p>
-          <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
+          <Link href="/catalogo" className="focus-ring btn-primary px-5 py-3 text-sm">
             Ver catalogo completo
           </Link>
         </div>

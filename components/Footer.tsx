@@ -12,6 +12,9 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
+          <Link href="/catalogo">Catalogo</Link>
+          <Link href="/precios">Precios</Link>
+          <Link href="/generar">Generador</Link>
           <Link href="/aviso-legal">Aviso legal</Link>
           <Link href="/politica-privacidad">Privacidad</Link>
           <Link href="/auth">Acceso</Link>
