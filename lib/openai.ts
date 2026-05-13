@@ -5,7 +5,7 @@ export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
 export const PREMIUM_MODEL = process.env.OPENAI_MODEL_PREMIUM || "gpt-4.1";
 
 export const documentInstructions =
-  "Eres un asistente experto en redaccion de documentos profesionales para Espana. Generas borradores claros, utiles, sobrios y adaptados al contexto espanol. No das asesoramiento legal definitivo ni prometes validez legal. Mantienes el formato natural de cada documento: una carta debe sonar a carta, una propuesta a propuesta comercial, un acta a acta, un email a email y un contrato a contrato. No inventes datos no proporcionados. Usa [PENDIENTE DE COMPLETAR] cuando falte informacion necesaria. Incluye siempre un aviso final indicando que el documento es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.";
+  "Eres un asistente experto en redaccion de documentos profesionales para Espana. Generas borradores claros, utiles, sobrios y adaptados al contexto espanol. No das asesoramiento legal definitivo ni prometes validez legal. Mantienes el formato natural de cada documento: una carta debe sonar a carta, una propuesta a propuesta comercial, un acta a acta, un email a email y un contrato a contrato. No inventes datos no proporcionados. Usa [PENDIENTE DE COMPLETAR] cuando falte informacion necesaria. No copies literalmente ejemplos ni datos sensibles. Incluye siempre un aviso final breve indicando que el documento es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.";
 
 const categoryRules: Record<string, string> = {
   Comercial:
@@ -29,8 +29,14 @@ const categoryRules: Record<string, string> = {
 };
 
 const typeRules: Partial<Record<DocumentType, string>> = {
+  "contrato-freelance":
+    "Regla especial: redacta como contrato de prestacion de servicios entre profesional independiente y cliente. Incluye objeto, alcance, entregables, precio, forma de pago, duracion, obligaciones, propiedad intelectual si procede, confidencialidad proporcionada, resolucion y firmas. No incluyas relacion laboral si no se aporta.",
   "carta-presentacion":
-    "Regla especial: escribe una carta en primera persona, natural y creible. No uses secciones numeradas, clausulas, partes identificadas ni bloque de firmas legal. Debe caber aproximadamente en una pagina. Evita frases genericas; conecta experiencia y motivacion con el puesto y la empresa.",
+    "Regla especial: escribe una carta en primera persona, natural y creible. No uses secciones numeradas, clausulas, partes identificadas, autorizaciones legales ni bloque de firmas legal. Debe caber aproximadamente en una pagina. Evita frases genericas; conecta experiencia y motivacion con el puesto y la empresa. No menciones detalles irrelevantes aunque esten en motivacion si perjudican la candidatura; reformulalos profesionalmente.",
+  "carta-renuncia":
+    "Regla especial: redacta como carta breve de baja voluntaria, respetuosa y directa. No uses formato contractual, clausulas ni referencias legales innecesarias. Debe incluir fecha efectiva, preaviso si se aporta, agradecimiento opcional y cierre con nombre.",
+  "carta-reclamacion-empresa":
+    "Regla especial: redacta como carta formal, no como contrato. Expone hechos por orden, referencia, solicitud concreta, plazo razonable y cierre. Tono firme y educado, sin amenazas no justificadas.",
   "propuesta-proyecto":
     "Regla especial: suena como una propuesta comercial atractiva. Incluye resumen ejecutivo, objetivo, alcance, entregables, metodologia, calendario, inversion, condiciones y proximos pasos. No uses tono de contrato.",
   "presupuesto-comercial":
@@ -39,8 +45,16 @@ const typeRules: Partial<Record<DocumentType, string>> = {
     "Regla especial: estructura como politica RGPD/LOPDGDD prudente: responsable, finalidades, legitimacion, conservacion, destinatarios, derechos, seguridad, reclamacion ante AEPD y contacto. No inventes encargados, transferencias ni plazos.",
   "aviso-legal":
     "Regla especial: incluye identificacion del titular, objeto web, condiciones de uso, propiedad intelectual, responsabilidad, enlaces a privacidad/cookies si faltan como pendiente, legislacion y jurisdiccion.",
+  "terminos-condiciones-web":
+    "Regla especial: redacta terminos de uso o condiciones web para publicacion. Incluye titular, objeto, acceso/uso, compra o contratacion si procede, pagos, cancelaciones, propiedad intelectual, responsabilidad, contacto y legislacion. No incluyas firmas.",
   "politica-cookies":
     "Regla especial: no inventes cookies concretas. Si no se facilitan herramientas, usa [PENDIENTE DE COMPLETAR]. Incluye gestion/revocacion del consentimiento.",
+  "politica-devoluciones":
+    "Regla especial: redacta politica para ecommerce, clara para consumidores. Incluye plazo, condiciones del producto, procedimiento, costes, reembolso, excepciones y contacto. No prometas derechos o exclusiones no aportadas.",
+  "politica-envios":
+    "Regla especial: redacta politica de envios con zonas, plazos, costes, transportistas si se aportan, seguimiento, incidencias y contacto. No inventes transportistas ni plazos.",
+  "consentimiento-newsletter":
+    "Regla especial: redacta texto breve de consentimiento para formulario o landing. Debe ser claro, directo y apto para usuario final; no lo conviertas en politica larga.",
   "contrato-trabajo-indefinido":
     "Regla especial: maxima prudencia laboral. Incluye convenio, periodo de prueba, jornada, salario, vacaciones y centro de trabajo solo con datos aportados o pendientes. No generes clausulas abusivas.",
   "contrato-temporal":
@@ -52,13 +66,56 @@ const typeRules: Partial<Record<DocumentType, string>> = {
   "contrato-mantenimiento-web":
     "Regla especial: separa incluido/no incluido, tiempos de respuesta, horario, urgencias, seguridad, copias, cuota y terminacion. Evita SLA no proporcionados.",
   "acta-reunion":
-    "Regla especial: formato accionable. Incluye asistentes, agenda, puntos tratados, acuerdos, tareas, responsables y fechas. No incluyas aviso legal largo ni clausulas.",
+    "Regla especial: formato accionable. Incluye asistentes, agenda, puntos tratados, acuerdos, tareas, responsables y fechas. No incluyas aviso legal largo, clausulas, firmas legales ni lenguaje contractual.",
   "reclamacion-formal-email":
     "Regla especial: redacta como email con asunto, saludo, hechos, solicitud, plazo y cierre. Tono firme, educado y no agresivo.",
   "respuesta-reclamacion":
     "Regla especial: tono empatico y prudente. Acusa recibo, resume la reclamacion, explica posicion, solucion/plazos y canal de contacto. No admitas responsabilidad si no se indica.",
   "factura-proforma":
     "Regla especial: debe quedar claro que es proforma y no factura definitiva. Usa formato ordenado con conceptos, base, impuestos, total, validez y pago.",
+  "acuerdo-nda":
+    "Regla especial: NDA sencillo y equilibrado. Define informacion confidencial, uso permitido, obligaciones, exclusiones, duracion, devolucion/destruccion, jurisdiccion y firmas. No incluyas penalizaciones si no se aportan.",
+  "acuerdo-confidencialidad-ampliado":
+    "Regla especial: NDA avanzado. Separa definiciones, informacion cubierta, obligaciones, medidas de proteccion, exclusiones, uso permitido, retorno/destruccion, duracion, consecuencias proporcionadas, jurisdiccion y firmas.",
+  "acuerdo-colaboracion":
+    "Regla especial: acuerdo equilibrado entre partes. Define objeto, responsabilidades de cada parte, coordinacion, duracion, condiciones economicas, confidencialidad si procede, terminacion y firmas.",
+  "prestacion-servicios-empresa":
+    "Regla especial: contrato B2B de servicios. Concreta alcance, entregables, facturacion, pagos, obligaciones, propiedad intelectual/confidencialidad si procede, terminacion y firmas.",
+  "acuerdo-socios-basico":
+    "Regla especial: borrador prudente de acuerdo entre socios. Incluye aportaciones, participaciones, roles, decisiones, dedicacion, salida, confidencialidad y resolucion de conflictos. No sustituyas pacto societario profesional.",
+  "compraventa-sencilla":
+    "Regla especial: contrato sencillo de compraventa de bien mueble o acuerdo simple. Identifica bien, estado, precio, pago, entrega, manifestaciones basicas y firmas. No lo conviertas en escritura ni compraventa inmobiliaria.",
+  "certificado-prestacion-servicios":
+    "Regla especial: certificado breve, formal y verificable. No uses clausulas. Incluye quien certifica, a quien se certifica, servicio, periodo, fecha y firma sencilla.",
+  "condiciones-generales-venta":
+    "Regla especial: condiciones generales para venta o ecommerce. Usa lenguaje publicable y claro: vendedor, proceso de compra, precios, pagos, envios/entrega, devoluciones/desistimiento si procede, garantias, atencion al cliente y responsabilidad.",
+  "pacto-no-competencia":
+    "Regla especial: mucha prudencia. Incluye ambito, actividades, territorio, duracion y compensacion solo si se aportan. Resalta revision profesional por posible impacto laboral/mercantil.",
+  "cesion-derechos-pi":
+    "Regla especial: identifica obra, derechos cedidos, modalidad, territorio, duracion, exclusividad, contraprestacion, autoria/creditos si procede y firmas. No asumas cesion total si no se indica.",
+  "contrato-arras":
+    "Regla especial: marca como [PENDIENTE DE COMPLETAR] cualquier dato de inmueble, cargas, tipo de arras o plazo no aportado. Recomienda revision profesional antes de firmar.",
+  "inventario-inmueble":
+    "Regla especial: formato de anexo/inventario. Organiza por estancias, mobiliario, llaves, contadores, estado, observaciones y firmas. No redactes contrato de alquiler completo.",
+  "orden-compra":
+    "Regla especial: documento operativo, no contrato extenso. Incluye comprador, proveedor, referencia, conceptos, cantidades si se aportan, importe, entrega, pago y contacto.",
+  "albaran-entrega":
+    "Regla especial: documento de entrega/recepcion. Lista productos o materiales, cantidades si se aportan, estado, observaciones, fecha/lugar y firmas de entrega/recepcion.",
+};
+
+const forbiddenByIntent: Partial<Record<DocumentType, string>> = {
+  "carta-presentacion": "Prohibido: clausulas, partes identificadas, encabezados juridicos, firmas legales, autorizaciones de datos, tono de contrato.",
+  "carta-renuncia": "Prohibido: clausulas contractuales, amenazas, exposiciones largas, asesoramiento laboral definitivo.",
+  "acta-reunion": "Prohibido: clausulas, obligaciones contractuales extensas, firmas legales, lenguaje de contrato.",
+  "presupuesto-comercial": "Prohibido: convertirlo en contrato, clausulas juridicas largas, jurisdiccion salvo que se aporte.",
+  "propuesta-proyecto": "Prohibido: tono legalista, clausulas numeradas, amenazas de incumplimiento, lenguaje frio.",
+  "aviso-legal": "Prohibido: bloque de firmas, clausulas de contrato entre partes, datos tecnicos inventados.",
+  "politica-privacidad": "Prohibido: inventar encargados, transferencias internacionales, herramientas, plazos o bases legales no aportadas.",
+  "politica-cookies": "Prohibido: inventar nombres de cookies o herramientas de analitica/publicidad no aportadas.",
+  "politica-devoluciones": "Prohibido: prometer reembolsos, plazos o excepciones no aportadas.",
+  "politica-envios": "Prohibido: inventar transportistas, zonas, costes o plazos.",
+  "consentimiento-newsletter": "Prohibido: texto largo de politica completa, casillas premarcadas, consentimiento ambiguo.",
+  "factura-proforma": "Prohibido: presentarla como factura fiscal definitiva.",
 };
 
 export function getOpenAIClient() {
@@ -78,6 +135,9 @@ export function buildDocumentPrompt(config: DocumentTypeConfig, formData: Record
   const structureRules = getStructureRules(config);
   const familyRules = categoryRules[config.category] || "Usa una estructura profesional clara y adaptada al tipo de documento.";
   const specialRules = typeRules[config.type] || "No hay reglas especiales adicionales para este tipo.";
+  const forbiddenRules = forbiddenByIntent[config.type] || getDefaultForbiddenRules(config);
+  const outputStyle = getOutputStyle(config);
+  const missingFields = getMissingFields(config, formData);
 
   return `Genera un borrador profesional para Espana.
 
@@ -96,6 +156,12 @@ ${familyRules}
 Reglas especiales del tipo:
 ${specialRules}
 
+Reglas de estilo de salida:
+${outputStyle}
+
+Reglas de cosas prohibidas para este caso:
+${forbiddenRules}
+
 Instrucciones especificas configuradas:
 ${config.generationGuidance}
 
@@ -107,9 +173,21 @@ Reglas de calidad:
 - No conviertas cartas, emails, propuestas, actas, politicas web ni documentos comerciales simples en contratos.
 - No uses "clausulas" salvo en contratos, acuerdos legales o documentos que lo pidan de forma natural.
 - Mantiene un aviso final breve de revision profesional.
+- No incluyas explicaciones sobre como has generado el documento; devuelve solo el documento final.
+- Si el usuario aporta texto informal o poco profesional, reformulalo con tono profesional sin cambiar hechos.
 
 Firmas:
 ${config.includesSignatures ? "Incluye bloque final de firmas adaptado al documento." : "No incluyas bloque de firmas formal."}
+
+Campos pendientes detectados:
+${missingFields.length > 0 ? missingFields.map((field) => `- ${field}`).join("\n") : "- No se detectan campos vacios."}
+
+Checklist interno antes de responder:
+- El formato coincide con el tipo de documento.
+- No se han inventado datos.
+- Los campos vacios aparecen como [PENDIENTE DE COMPLETAR].
+- No hay clausulas en cartas, emails, actas o documentos web informativos.
+- El aviso final es breve y proporcionado.
 
 Datos proporcionados:
 ${values}`;
@@ -141,4 +219,56 @@ function getStructureRules(config: DocumentTypeConfig) {
   }
 
   return "Formato profesional: titulo, fecha si aporta valor, apartados claros, cuerpo conciso y aviso final.";
+}
+
+function getOutputStyle(config: DocumentTypeConfig) {
+  if (config.type === "carta-presentacion") {
+    return "Extension objetivo: 450-650 palabras como maximo. Estilo: cercano, profesional, en primera persona, sin sonar inflado. Usa parrafos, no listas.";
+  }
+
+  if (config.type.includes("email")) {
+    return "Extension objetivo: breve y accionable. Incluye asunto. Usa parrafos cortos y una solicitud clara.";
+  }
+
+  if (config.type.includes("politica") || config.type === "aviso-legal" || config.type === "terminos-condiciones-web") {
+    return "Estilo publicable en web: encabezados claros, frases comprensibles, sin latinismos ni exceso legalista. Evita firmas.";
+  }
+
+  if (config.category === "Comercial") {
+    return "Estilo comercial: escaneable, orientado a decision, con apartados claros. Usa listas para conceptos, entregables o condiciones.";
+  }
+
+  if (config.category === "Laboral") {
+    return "Estilo laboral: formal, prudente y preciso. Marca como pendiente cualquier convenio, causa, salario, jornada o dato sensible no proporcionado.";
+  }
+
+  if (config.category === "Digital") {
+    return "Estilo tecnico-comercial: concreto, sin jerga innecesaria, separando alcance, exclusiones, entregables, revisiones y dependencias.";
+  }
+
+  if (config.includesSignatures) {
+    return "Estilo formal: clausulas o apartados numerados solo si encajan, lenguaje claro, cierre y firmas.";
+  }
+
+  return "Estilo profesional: claro, sobrio, facil de editar y sin relleno.";
+}
+
+function getDefaultForbiddenRules(config: DocumentTypeConfig) {
+  if (config.category === "Web") {
+    return "Prohibido: firmas, datos tecnicos inventados, herramientas no indicadas, afirmaciones absolutas de cumplimiento.";
+  }
+
+  if (config.category === "Comercial" && !config.includesSignatures) {
+    return "Prohibido: convertirlo en contrato extenso, anadir jurisdiccion o penalizaciones no solicitadas.";
+  }
+
+  if (config.category === "Profesional" && !config.includesSignatures) {
+    return "Prohibido: lenguaje contractual, clausulas juridicas, partes reunidas, firmas legales.";
+  }
+
+  return "Prohibido: inventar datos, garantizar validez legal, anadir obligaciones no derivadas de la informacion aportada.";
+}
+
+function getMissingFields(config: DocumentTypeConfig, formData: Record<string, string>) {
+  return config.fields.filter((field) => !formData[field.name]?.trim()).map((field) => field.label);
 }
