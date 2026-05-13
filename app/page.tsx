@@ -1,8 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { DocumentGallery } from "@/components/DocumentGallery";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { documentTypes } from "@/lib/document-types";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+
+export const metadata: Metadata = {
+  title: "Generador de documentos profesionales con IA",
+  description:
+    "Genera contratos, presupuestos, propuestas, cartas y documentos web adaptados al contexto espanol. Crea borradores claros y editables en minutos.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "DocuGen - Generador de documentos profesionales con IA",
+    description:
+      "Contratos, presupuestos, propuestas y documentos web adaptados al contexto espanol. Borradores con IA listos para revisar.",
+    url: "/",
+    type: "website",
+  },
+};
 
 const useCases = [
   {

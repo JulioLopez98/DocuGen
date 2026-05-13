@@ -1,7 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { HistoryClient } from "@/components/HistoryClient";
 import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
+
+export const metadata: Metadata = {
+  title: "Historial",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function HistoryPage() {
   const { supabase, profile } = await getCurrentProfile();

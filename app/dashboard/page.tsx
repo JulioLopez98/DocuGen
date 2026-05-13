@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PlanBadge } from "@/components/PlanBadge";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
@@ -7,6 +8,14 @@ import { documentTypes, getDocumentConfig, requiresPro } from "@/lib/document-ty
 import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
 
 type DashboardDocumentConfig = (typeof documentTypes)[number];
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardPage() {
   const { supabase, user, profile } = await getCurrentProfile();

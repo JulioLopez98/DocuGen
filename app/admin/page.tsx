@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/EmptyState";
 import { getDocumentConfig } from "@/lib/document-types";
@@ -22,6 +23,14 @@ type AdminDocument = {
   tokens_input: number | null;
   tokens_output: number | null;
   created_at: string;
+};
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminPage() {

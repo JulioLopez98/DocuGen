@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BrandSettingsForm } from "@/components/BrandSettingsForm";
 import { DangerZone } from "@/components/DangerZone";
@@ -8,6 +9,14 @@ import { SettingsTabs } from "@/components/SettingsTabs";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
 import { UsageBar } from "@/components/UsageBar";
 import { getCurrentProfile, type BrandSettings } from "@/lib/supabase-server";
+
+export const metadata: Metadata = {
+  title: "Ajustes",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function SettingsPage() {
   const { supabase, user, profile } = await getCurrentProfile();

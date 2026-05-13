@@ -1,8 +1,17 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
 import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
+
+export const metadata: Metadata = {
+  title: "Generador",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type Props = {
   searchParams?: {

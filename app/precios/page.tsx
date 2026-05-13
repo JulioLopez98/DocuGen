@@ -1,8 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { PricingCards } from "@/components/PricingCards";
 import { documentTypes, requiresPro } from "@/lib/document-types";
 import { createSupabaseServerClient, type Profile } from "@/lib/supabase-server";
+
+export const metadata: Metadata = {
+  title: "Precios de DocuGen",
+  description:
+    "Compara DocuGen Free y Pro. Empieza con 3 documentos gratis al mes y desbloquea documentos ilimitados, Word y marca personalizada con Pro.",
+  alternates: {
+    canonical: "/precios",
+  },
+  openGraph: {
+    title: "Precios de DocuGen | Free y Pro",
+    description:
+      "Empieza gratis y actualiza a Pro cuando necesites documentos ilimitados, exportacion Word y marca personalizada.",
+    url: "/precios",
+    type: "website",
+  },
+};
 
 type DocumentTypeItem = (typeof documentTypes)[number];
 

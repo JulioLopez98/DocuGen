@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { documentTypes, requiresPro, type DocumentType } from "@/lib/document-types";
 import { getCurrentProfile } from "@/lib/supabase-server";
@@ -11,6 +12,14 @@ const recommendedTypes: DocumentType[] = [
   "aviso-legal",
   "factura-proforma",
 ];
+
+export const metadata: Metadata = {
+  title: "Primer documento",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function OnboardingPage() {
   const { supabase, user, profile } = await getCurrentProfile();

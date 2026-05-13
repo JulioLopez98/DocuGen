@@ -20,6 +20,13 @@ export const metadata: Metadata = {
     url: "/catalogo",
     type: "website",
   },
+  keywords: [
+    "catalogo documentos IA",
+    "plantillas documentos profesionales",
+    "generador contratos",
+    "generador presupuestos",
+    "documentos web Espana",
+  ],
 };
 
 export default async function CatalogPage() {

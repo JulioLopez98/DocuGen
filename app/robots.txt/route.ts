@@ -3,7 +3,9 @@ export async function GET() {
   const body = `User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /auth
 Disallow: /dashboard
+Disallow: /generar
 Disallow: /historial
 Disallow: /ajustes
 Disallow: /onboarding

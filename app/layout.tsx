@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   applicationName: "DocuGen",
+  manifest: "/manifest.webmanifest",
   title: {
     default: "DocuGen - Generador de documentos profesionales con IA",
     template: "%s | DocuGen",
@@ -23,12 +24,21 @@ export const metadata: Metadata = {
     siteName: "DocuGen",
     locale: "es_ES",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "DocuGen - Generador de documentos profesionales con IA",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "DocuGen - Generador de documentos profesionales con IA",
     description:
       "Genera borradores profesionales con IA para el mercado espanol. Exporta PDF, TXT y Word con Pro.",
+    images: ["/twitter-image"],
   },
   robots: {
     index: true,
