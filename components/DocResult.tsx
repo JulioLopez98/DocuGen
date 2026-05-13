@@ -46,6 +46,11 @@ export function DocResult({
         <div>
           <p className="text-sm font-semibold text-[#2d6a4f]">Resultado generado</p>
           <h2 className="mt-1 text-xl font-bold">{title}</h2>
+          {documentId && (
+            <p className="mt-1 text-xs text-slate-500">
+              Guardado automaticamente en tu historial. Puedes descargarlo, copiarlo o reutilizarlo cuando quieras.
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <button

@@ -13,6 +13,7 @@ export async function Header() {
         { href: "/dashboard", label: "Dashboard" },
         { href: "/generar", label: "Generar" },
         { href: "/catalogo", label: "Catalogo" },
+        { href: "/plantillas", label: "Plantillas" },
         { href: "/historial", label: "Historial" },
         { href: "/precios", label: "Precios" },
         { href: "/ajustes", label: "Ajustes" },

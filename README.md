@@ -81,6 +81,18 @@ Copia el signing secret en `STRIPE_WEBHOOK_SECRET`. Eventos usados: `checkout.se
 
 Resend y React Email están preparados para Fase 2 con `lib/resend.ts`, `emails/welcome.tsx` y `emails/document-ready.tsx`. Añade `RESEND_API_KEY` cuando se integren envíos.
 
+## Biblioteca de plantillas
+
+La ruta protegida `/plantillas` queda preparada como entrada comercial y funcional para la futura biblioteca de documentos propios. La idea de esta fase es permitir que un usuario Pro suba Word/PDF, extraer estructura, tono y cláusulas reutilizables, y generar documentos nuevos manteniendo el estilo de su empresa.
+
+Antes de activarla por completo conviene implementar:
+
+- Subida de archivos con Supabase Storage.
+- Tabla de plantillas con estado de procesamiento.
+- Extracción de texto y estructura.
+- Vista previa editable antes de guardar.
+- Revisión manual antes de compartir plantillas con otros usuarios.
+
 ## Comandos
 
 ```bash

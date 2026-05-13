@@ -38,12 +38,13 @@ export default async function DashboardPage() {
 
   const allDocuments = documents || [];
   const recentDocuments = allDocuments.slice(0, 5);
+  const lastDocument = recentDocuments[0];
+  const listedRecentDocuments = lastDocument ? recentDocuments.filter((doc) => doc.id !== lastDocument.id) : recentDocuments;
   const remaining = Math.max(3 - profile.docs_this_month, 0);
   const isFree = profile.plan === "free";
   const mostUsedTypes = getMostUsedTypes(allDocuments);
   const hasBrand = Boolean(brandSettings?.company_name || brandSettings?.cif || brandSettings?.address || brandSettings?.logo_url);
   const recommendedDocuments = getRecommendedDocuments(allDocuments, isFree);
-  const lastDocument = recentDocuments[0];
   const nextStep = getNextStep({ isFree, remaining, hasDocuments: allDocuments.length > 0, hasBrand, canUseBrand: profile.plan !== "free" });
   const displayName = user?.email?.split("@")[0] || "tu espacio";
 
@@ -176,7 +177,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
             )}
-            {recentDocuments.map((doc) => (
+            {listedRecentDocuments.map((doc) => (
               <article key={doc.id} className="py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>

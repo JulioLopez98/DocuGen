@@ -9,6 +9,7 @@ Disallow: /generar
 Disallow: /historial
 Disallow: /ajustes
 Disallow: /onboarding
+Disallow: /plantillas
 
 Sitemap: ${baseUrl}/sitemap.xml
 `;

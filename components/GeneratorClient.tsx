@@ -217,6 +217,16 @@ export function GeneratorClient({
             </p>
           )}
         </section>
+
+        <section className="surface-flat rounded-md p-5">
+          <p className="text-sm font-bold text-[#2d6a4f]">No encuentras tu documento?</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Estamos preparando un generador libre para pedir documentos a medida y revisar cuales merece la pena sumar al catalogo oficial.
+          </p>
+          <Link href="/catalogo" className="focus-ring btn-ghost mt-4 px-3 py-2 text-sm">
+            Revisar catalogo completo
+          </Link>
+        </section>
       </aside>
 
       <section className="surface rounded-md p-6">

@@ -55,6 +55,11 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
           {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripcion"}
         </button>
       )}
+      {isPaid && !hasCustomer && (
+        <p className="rounded-md bg-[#faf9f6] px-3 py-2 text-sm text-slate-600">
+          Plan activo. El portal de Stripe aparecera cuando exista un cliente de facturacion asociado.
+        </p>
+      )}
       {error && <p className="w-full text-sm text-red-700">{error}</p>}
     </div>
   );

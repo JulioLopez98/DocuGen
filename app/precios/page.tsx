@@ -28,6 +28,7 @@ const comparisonRows = [
   { label: "Plantillas disponibles", free: "Esenciales", pro: "Catalogo completo + Pro" },
   { label: "Exportacion", free: "PDF y TXT", pro: "PDF, TXT y Word" },
   { label: "Marca personalizada", free: "No incluida", pro: "Logo y datos de empresa" },
+  { label: "Biblioteca de plantillas", free: "No incluida", pro: "Preparada para Pro" },
   { label: "Modelo IA", free: "Modelo estandar", pro: "Modelo premium configurado" },
   { label: "Historial", free: "Basico", pro: "Completo, reutilizable y descargable" },
   { label: "Suscripcion", free: "Sin tarjeta", pro: "Gestion desde portal Stripe" },
