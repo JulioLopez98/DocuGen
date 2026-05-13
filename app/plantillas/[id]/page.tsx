@@ -97,10 +97,13 @@ export default async function TemplateDetailPage({ params }: Props) {
             </article>
           ) : (
             <div className="mt-5 rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6]/70 p-6">
-              <p className="font-semibold">Pendiente de extraccion</p>
+              <p className="font-semibold">
+                {template.status === "failed" ? "No se pudo extraer texto automaticamente" : "Pendiente de extraccion"}
+              </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                En la siguiente fase anadiremos el procesamiento basico para extraer texto de DOCX y preparar PDF para
-                analisis posterior.
+                {template.file_type === "docx"
+                  ? "Pulsa procesar plantilla para extraer texto basico del DOCX."
+                  : "Por ahora la extraccion automatica esta disponible solo para DOCX. PDF y DOC quedan preparados para una fase posterior."}
               </p>
             </div>
           )}

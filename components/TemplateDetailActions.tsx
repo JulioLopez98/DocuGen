@@ -15,7 +15,7 @@ type ApiError = {
 
 export function TemplateDetailActions({ template }: TemplateDetailActionsProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState<"download" | "delete" | null>(null);
+  const [loading, setLoading] = useState<"download" | "delete" | "process" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function downloadOriginal() {
@@ -76,8 +76,37 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
     }
   }
 
+  async function processTemplate() {
+    setLoading("process");
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/templates/${template.id}/process`, { method: "POST" });
+      const payload = (await response.json()) as ApiError;
+
+      if (!response.ok) {
+        setError(payload.message || "No se pudo procesar la plantilla.");
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <div className="grid gap-2">
+      <button
+        type="button"
+        onClick={processTemplate}
+        disabled={loading !== null}
+        className="focus-ring btn-secondary px-4 py-3 text-sm disabled:opacity-60"
+      >
+        {loading === "process" ? "Procesando..." : template.status === "ready" ? "Procesar de nuevo" : "Procesar plantilla"}
+      </button>
       <button
         type="button"
         onClick={downloadOriginal}

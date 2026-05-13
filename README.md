@@ -127,6 +127,13 @@ La fase 1.6 añade `/plantillas/[id]` como ficha privada de plantilla:
 - Estado de procesamiento.
 - Espacio preparado para texto extraído, resumen y errores.
 
+La fase 1.5 añade procesamiento básico:
+
+- `POST /api/templates/[id]/process`.
+- Extracción básica de texto para archivos DOCX.
+- Guardado de `extracted_text`, `summary`, `extracted_metadata` y estado `ready`.
+- PDF y DOC quedan marcados como no soportados todavía, con mensaje claro.
+
 ## Comandos
 
 ```bash
