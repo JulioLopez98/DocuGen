@@ -1,3 +1,4 @@
+import { catalogCategories } from "@/lib/catalog";
 import { documentTypes } from "@/lib/document-types";
 
 export async function GET() {
@@ -9,6 +10,7 @@ export async function GET() {
     "/precios",
     "/generar",
     "/dashboard",
+    ...catalogCategories.map((category) => `/catalogo/${category.slug}`),
     ...documentTypes.map((doc) => `/${doc.type}`),
   ];
   const now = new Date().toISOString();

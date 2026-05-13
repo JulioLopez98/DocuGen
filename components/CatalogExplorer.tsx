@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { documentTypes, requiresPro, type DocumentTypeConfig } from "@/lib/document-types";
+import { useEffect, useMemo, useState } from "react";
+import { catalogCategories, getCatalogCategoryByName, groupDocumentsByCategory } from "@/lib/catalog";
+import { documentTypes, requiresPro } from "@/lib/document-types";
 
 type CatalogExplorerProps = {
   signedIn?: boolean;
+  initialCategory?: string;
 };
 
-const categories = ["Todos", ...Array.from(new Set(documentTypes.map((doc) => doc.category)))];
-
-export function CatalogExplorer({ signedIn = false }: CatalogExplorerProps) {
+export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }: CatalogExplorerProps) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("Todos");
+  const [category, setCategory] = useState(initialCategory);
+
+  useEffect(() => {
+    setCategory(initialCategory);
+  }, [initialCategory]);
 
   const filteredDocuments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -26,7 +30,7 @@ export function CatalogExplorer({ signedIn = false }: CatalogExplorerProps) {
     });
   }, [category, query]);
 
-  const groupedDocuments = useMemo(() => groupByCategory(filteredDocuments), [filteredDocuments]);
+  const groupedDocuments = useMemo(() => groupDocumentsByCategory(filteredDocuments), [filteredDocuments]);
 
   return (
     <section className="space-y-6">
@@ -42,19 +46,14 @@ export function CatalogExplorer({ signedIn = false }: CatalogExplorerProps) {
             />
           </label>
           <div className="flex flex-wrap gap-2 lg:max-w-xl lg:justify-end">
-            {categories.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setCategory(item)}
-                className={`focus-ring rounded-full border px-3 py-2 text-xs font-bold transition ${
-                  category === item
-                    ? "border-[#2d6a4f] bg-[#2d6a4f] text-white"
-                    : "border-[#d8f3dc] bg-white/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
-                }`}
-              >
-                {item}
-              </button>
+            <CategoryLink active={category === "Todos"} href="/catalogo" label="Todos" />
+            {catalogCategories.map((item) => (
+              <CategoryLink
+                key={item.slug}
+                active={category === item.name}
+                href={`/catalogo/${item.slug}`}
+                label={item.name}
+              />
             ))}
           </div>
         </div>
@@ -63,7 +62,7 @@ export function CatalogExplorer({ signedIn = false }: CatalogExplorerProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-600">
           {filteredDocuments.length} documentos encontrados
-          {category !== "Todos" ? ` en ${category}` : ""}
+          {category !== "Todos" ? ` en ${getCatalogCategoryByName(category)?.title || category}` : ""}
         </p>
         <Link href="/precios" className="focus-ring btn-secondary px-4 py-2 text-sm">
           Comparar Free y Pro
@@ -121,9 +120,15 @@ export function CatalogExplorer({ signedIn = false }: CatalogExplorerProps) {
   );
 }
 
-function groupByCategory(items: readonly DocumentTypeConfig[]) {
-  return items.reduce<Record<string, DocumentTypeConfig[]>>((groups, item) => {
-    groups[item.category] = [...(groups[item.category] || []), item];
-    return groups;
-  }, {});
+function CategoryLink({ active, href, label }: { active: boolean; href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className={`focus-ring rounded-full border px-3 py-2 text-xs font-bold transition ${
+        active ? "border-[#2d6a4f] bg-[#2d6a4f] text-white" : "border-[#d8f3dc] bg-white/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
+      }`}
+    >
+      {label}
+    </Link>
+  );
 }
