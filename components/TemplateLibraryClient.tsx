@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import type { DocumentTemplateRow } from "@/lib/supabase-server";
@@ -285,6 +286,9 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    <Link href={`/plantillas/${template.id}`} className="focus-ring btn-primary px-3 py-2 text-xs">
+                      Abrir
+                    </Link>
                     <button
                       type="button"
                       onClick={() => downloadOriginal(template)}

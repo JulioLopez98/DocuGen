@@ -120,6 +120,13 @@ Las fases 1.3 y 1.4 convierten `/plantillas` en una biblioteca funcional para Pr
 - Borrado de plantilla y archivo.
 - Pantalla bloqueada para usuarios Free.
 
+La fase 1.6 añade `/plantillas/[id]` como ficha privada de plantilla:
+
+- Metadatos del archivo.
+- Descarga y borrado desde detalle.
+- Estado de procesamiento.
+- Espacio preparado para texto extraído, resumen y errores.
+
 ## Comandos
 
 ```bash
