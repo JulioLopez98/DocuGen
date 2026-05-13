@@ -4,6 +4,7 @@ import type { RefinementMode } from "@/lib/refinement";
 import { defaultTemplateUsageMode, templateUsageLabels, type TemplateUsageMode } from "@/lib/template-usage";
 
 export type TemplateReference = {
+  id?: string;
   name: string;
   category: string | null;
   summary: string | null;

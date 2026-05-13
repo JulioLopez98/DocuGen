@@ -86,7 +86,21 @@ export async function POST(request: Request) {
         doc_type: config.type,
         doc_label: config.label,
         content,
-        form_data: payload.formData,
+        form_data: {
+          ...payload.formData,
+          ...(templateReference
+            ? {
+                __template_reference: JSON.stringify({
+                  id: templateReference.id,
+                  name: templateReference.name,
+                  usageMode: templateReference.usageMode,
+                }),
+              }
+            : {}),
+        },
+        reference_template_id: templateReference?.id || null,
+        reference_template_name: templateReference?.name || null,
+        template_usage_mode: templateReference?.usageMode || null,
         model_used: model,
         tokens_input: response.usage?.input_tokens ?? null,
         tokens_output: response.usage?.output_tokens ?? null,
@@ -167,6 +181,7 @@ async function getTemplateReference(
   }
 
   return {
+    id: template.id,
     name: template.name,
     category: template.category,
     summary: template.summary,

@@ -148,6 +148,12 @@ La fase 2.2/2.3 mejora el uso de plantillas:
 - `POST /api/generate` acepta `templateUsageMode`.
 - El prompt adapta las instrucciones segun el modo elegido y prioriza siempre los datos del formulario.
 
+La fase 2.4 guarda la relacion entre documento y plantilla:
+
+- Nuevas columnas opcionales en `documents`: `reference_template_id`, `reference_template_name`, `template_usage_mode`.
+- SQL incremental: `supabase-template-generation-2.4.sql`.
+- Cada documento generado con plantilla conserva la referencia usada para mostrarla luego en historial.
+
 Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
 
 ## Comandos

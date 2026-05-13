@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import type { TemplateUsageMode } from "@/lib/template-usage";
 
 export type Profile = {
   id: string;
@@ -20,6 +21,9 @@ export type DocumentRow = {
   doc_label: string;
   content: string;
   form_data: Record<string, string>;
+  reference_template_id: string | null;
+  reference_template_name: string | null;
+  template_usage_mode: TemplateUsageMode | null;
   model_used: string | null;
   tokens_input: number | null;
   tokens_output: number | null;

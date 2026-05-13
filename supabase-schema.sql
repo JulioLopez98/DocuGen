@@ -37,6 +37,9 @@ create table if not exists public.documents (
   doc_label text not null,
   content text not null,
   form_data jsonb not null default '{}',
+  reference_template_id uuid references public.document_templates(id) on delete set null,
+  reference_template_name text,
+  template_usage_mode text check (template_usage_mode in ('structure_tone', 'structure', 'tone', 'light')),
   model_used text,
   tokens_input integer,
   tokens_output integer,
@@ -116,6 +119,7 @@ create index if not exists profiles_plan_idx on public.profiles(plan);
 create index if not exists profiles_stripe_customer_id_idx on public.profiles(stripe_customer_id);
 create index if not exists documents_user_created_idx on public.documents(user_id, created_at desc);
 create index if not exists documents_workspace_idx on public.documents(workspace_id);
+create index if not exists documents_reference_template_idx on public.documents(reference_template_id);
 create index if not exists generation_events_user_created_idx on public.generation_events(user_id, created_at desc);
 create index if not exists workspace_members_user_idx on public.workspace_members(user_id);
 create index if not exists document_templates_user_created_idx on public.document_templates(user_id, created_at desc);
