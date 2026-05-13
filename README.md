@@ -206,6 +206,13 @@ La fase 3.4 refuerza el prompt libre:
 - Tratamiento de peticiones ambiguas con campos `[PENDIENTE DE COMPLETAR]`.
 - Prohibicion de inventar datos o prometer validez legal.
 
+La fase 3.5 mejora historial para documentos libres:
+
+- Badge `Personalizado` y categoria `A medida`.
+- Filtro `A medida`.
+- Detalle adaptado para `doc_type = custom`.
+- Regeneracion de documentos personalizados usando `/api/custom-generate`.
+
 ## Comandos
 
 ```bash

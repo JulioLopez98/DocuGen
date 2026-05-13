@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
-import type { DocumentRow } from "@/lib/supabase-server";
+import type { DocumentRequestTone, DocumentRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 type HistoryClientProps = {
@@ -93,15 +93,11 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
     setError(null);
 
     try {
-      const response = await fetch("/api/generate", {
+      const custom = isCustomDocument(doc);
+      const response = await fetch(custom ? "/api/custom-generate" : "/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          docType: doc.doc_type,
-          formData: stripInternalFormData(doc.form_data),
-          referenceTemplateId: doc.reference_template_id,
-          templateUsageMode: doc.template_usage_mode || undefined,
-        }),
+        body: JSON.stringify(custom ? buildCustomRegeneratePayload(doc.form_data) : buildCatalogRegeneratePayload(doc)),
       });
       const payload = (await response.json()) as GenerateResponse;
 
@@ -178,6 +174,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
             >
               <option value="all">Todos</option>
+              <option value="custom">A medida</option>
               {documentTypes.map((doc) => (
                 <option key={doc.type} value={doc.type}>
                   {doc.label}
@@ -242,6 +239,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
             <h2 className="eyebrow">{group.label}</h2>
             {group.documents.map((doc) => {
               const config = getDocumentConfig(doc.doc_type);
+              const custom = isCustomDocument(doc);
               const createdAt = new Date(doc.created_at);
               const preview = doc.content.length > 900 ? `${doc.content.slice(0, 900)}...` : doc.content;
               const isBusy = busyId === doc.id;
@@ -253,8 +251,9 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">{doc.doc_label}</h3>
                         <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-semibold text-[#1f2933]">
-                          {config?.category || "Documento"}
+                          {custom ? "A medida" : config?.category || "Documento"}
                         </span>
+                        {custom && <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">Personalizado</span>}
                         {doc.reference_template_id && (
                           <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">
                             Con plantilla
@@ -284,9 +283,11 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                       <Link href={`/historial/${doc.id}`} className="focus-ring btn-primary px-3 py-2 text-sm">
                         Ver detalle
                       </Link>
-                      <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
-                        Usar como plantilla
-                      </Link>
+                      {!custom && (
+                        <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
+                          Usar como plantilla
+                        </Link>
+                      )}
                       {doc.reference_template_id && (
                         <Link
                           href={`/generar?type=${doc.doc_type}&referenceTemplateId=${doc.reference_template_id}`}
@@ -314,7 +315,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                           void downloadDocumentPdf({
                             title: doc.doc_label,
                             content: doc.content,
-                            includesSignatures: config?.includesSignatures,
+                            includesSignatures: config?.includesSignatures ?? false,
                             brandSettings,
                           })
                         }
@@ -335,7 +336,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                           downloadDocumentDocx({
                             title: doc.doc_label,
                             content: doc.content,
-                            includesSignatures: config?.includesSignatures,
+                            includesSignatures: config?.includesSignatures ?? false,
                             canExportDocx,
                           })
                         }
@@ -375,7 +376,9 @@ function filterAndSortDocuments(documents: DocumentRow[], query: string, typeFil
     .filter((doc) => {
       const config = getDocumentConfig(doc.doc_type);
       const matchesType = typeFilter === "all" || doc.doc_type === typeFilter;
-      const searchable = `${doc.doc_label} ${doc.content} ${config?.label || ""} ${config?.category || ""}`.toLowerCase();
+      const searchable = `${doc.doc_label} ${doc.content} ${config?.label || ""} ${config?.category || ""} ${
+        isCustomDocument(doc) ? "custom a medida personalizado documento" : ""
+      }`.toLowerCase();
       const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
 
       return matchesType && matchesQuery;
@@ -411,4 +414,28 @@ function groupDocumentsByMonth(documents: DocumentRow[]) {
 
 function stripInternalFormData(formData: Record<string, string>) {
   return Object.fromEntries(Object.entries(formData).filter(([key]) => !key.startsWith("__")));
+}
+
+function isCustomDocument(doc: DocumentRow) {
+  return doc.doc_type === "custom";
+}
+
+function buildCatalogRegeneratePayload(doc: DocumentRow) {
+  return {
+    docType: doc.doc_type,
+    formData: stripInternalFormData(doc.form_data),
+    referenceTemplateId: doc.reference_template_id,
+    templateUsageMode: doc.template_usage_mode || undefined,
+  };
+}
+
+function buildCustomRegeneratePayload(formData: Record<string, string>) {
+  return {
+    title: formData.title || "Documento personalizado",
+    description: formData.description || formData.required_data || "Regenera este documento personalizado con los datos disponibles.",
+    intendedUse: formData.intended_use || undefined,
+    tone: (formData.tone as DocumentRequestTone) || "formal",
+    sector: formData.sector || undefined,
+    requiredData: formData.required_data || undefined,
+  };
 }
