@@ -52,6 +52,21 @@ create table if not exists public.generation_events (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.document_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  description text not null,
+  intended_use text,
+  tone text not null default 'formal' check (tone in ('formal', 'comercial', 'laboral_prudente', 'legal_prudente', 'email', 'carta', 'natural')),
+  sector text,
+  generated_document_id uuid references public.documents(id) on delete set null,
+  status text not null default 'submitted' check (status in ('submitted', 'reviewing', 'approved', 'rejected', 'converted')),
+  admin_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.brand_settings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -121,6 +136,9 @@ create index if not exists documents_user_created_idx on public.documents(user_i
 create index if not exists documents_workspace_idx on public.documents(workspace_id);
 create index if not exists documents_reference_template_idx on public.documents(reference_template_id);
 create index if not exists generation_events_user_created_idx on public.generation_events(user_id, created_at desc);
+create index if not exists document_requests_user_created_idx on public.document_requests(user_id, created_at desc);
+create index if not exists document_requests_status_idx on public.document_requests(status);
+create index if not exists document_requests_generated_document_idx on public.document_requests(generated_document_id);
 create index if not exists workspace_members_user_idx on public.workspace_members(user_id);
 create index if not exists document_templates_user_created_idx on public.document_templates(user_id, created_at desc);
 create index if not exists document_templates_workspace_idx on public.document_templates(workspace_id);
@@ -151,6 +169,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists document_templates_set_updated_at on public.document_templates;
 create trigger document_templates_set_updated_at
 before update on public.document_templates
+for each row execute function public.set_updated_at();
+
+drop trigger if exists document_requests_set_updated_at on public.document_requests;
+create trigger document_requests_set_updated_at
+before update on public.document_requests
 for each row execute function public.set_updated_at();
 
 drop trigger if exists chat_sessions_set_updated_at on public.chat_sessions;
@@ -252,6 +275,7 @@ alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
 alter table public.documents enable row level security;
 alter table public.generation_events enable row level security;
+alter table public.document_requests enable row level security;
 alter table public.brand_settings enable row level security;
 alter table public.document_templates enable row level security;
 alter table public.referrals enable row level security;
@@ -317,6 +341,23 @@ for select using (user_id = auth.uid() or public.is_admin());
 drop policy if exists "generation_events_insert_own" on public.generation_events;
 create policy "generation_events_insert_own" on public.generation_events
 for insert with check (user_id = auth.uid());
+
+drop policy if exists "document_requests_select_own_or_admin" on public.document_requests;
+create policy "document_requests_select_own_or_admin" on public.document_requests
+for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "document_requests_insert_own" on public.document_requests;
+create policy "document_requests_insert_own" on public.document_requests
+for insert with check (user_id = auth.uid());
+
+drop policy if exists "document_requests_update_own_or_admin" on public.document_requests;
+create policy "document_requests_update_own_or_admin" on public.document_requests
+for update using (user_id = auth.uid() or public.is_admin())
+with check (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "document_requests_delete_admin" on public.document_requests;
+create policy "document_requests_delete_admin" on public.document_requests
+for delete using (public.is_admin());
 
 drop policy if exists "brand_settings_select_own_or_admin" on public.brand_settings;
 create policy "brand_settings_select_own_or_admin" on public.brand_settings

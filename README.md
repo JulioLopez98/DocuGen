@@ -171,6 +171,17 @@ Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
 
 Para cerrar QA de calidad de generacion con plantillas, usa `TEMPLATE_GENERATION_QA.md`.
 
+## Generador libre
+
+La fase 3.1 prepara el modelo de datos para el flujo `No encuentro mi documento`:
+
+- Tabla `document_requests`.
+- SQL incremental: `supabase-custom-generator-3.1.sql`.
+- Estados `submitted`, `reviewing`, `approved`, `rejected` y `converted`.
+- Tonos controlados para peticiones libres.
+- Relacion opcional con el documento generado.
+- RLS para que el usuario vea sus solicitudes y admin pueda revisarlas.
+
 ## Comandos
 
 ```bash

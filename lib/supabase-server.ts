@@ -66,6 +66,32 @@ export type DocumentTemplateRow = {
   updated_at: string;
 };
 
+export type DocumentRequestStatus = "submitted" | "reviewing" | "approved" | "rejected" | "converted";
+
+export type DocumentRequestTone =
+  | "formal"
+  | "comercial"
+  | "laboral_prudente"
+  | "legal_prudente"
+  | "email"
+  | "carta"
+  | "natural";
+
+export type DocumentRequestRow = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  intended_use: string | null;
+  tone: DocumentRequestTone;
+  sector: string | null;
+  generated_document_id: string | null;
+  status: DocumentRequestStatus;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export function hasSupabaseServerEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
