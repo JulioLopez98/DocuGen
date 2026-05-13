@@ -182,6 +182,16 @@ La fase 3.1 prepara el modelo de datos para el flujo `No encuentro mi documento`
 - Relacion opcional con el documento generado.
 - RLS para que el usuario vea sus solicitudes y admin pueda revisarlas.
 
+La fase 3.2 añade `POST /api/custom-generate`:
+
+- Valida sesion y payload con Zod.
+- Respeta limite Free de 3 documentos al mes.
+- Reutiliza rate limit por usuario.
+- Genera con OpenAI Responses API.
+- Guarda el resultado en `documents` con `doc_type = custom`.
+- Crea una fila en `document_requests`.
+- Incrementa `docs_this_month` y envia email de documento listo si Resend esta configurado.
+
 ## Comandos
 
 ```bash

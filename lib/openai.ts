@@ -12,6 +12,15 @@ export type TemplateReference = {
   usageMode?: TemplateUsageMode;
 };
 
+export type CustomDocumentPromptInput = {
+  title: string;
+  description: string;
+  intendedUse?: string | null;
+  tone: string;
+  sector?: string | null;
+  requiredData?: string | null;
+};
+
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
 export const PREMIUM_MODEL = process.env.OPENAI_MODEL_PREMIUM || "gpt-4.1";
 
@@ -249,6 +258,39 @@ Reglas adicionales para la variante:
 
 Documento actual a mejorar:
 ${content}`;
+}
+
+export function buildCustomDocumentPrompt(input: CustomDocumentPromptInput) {
+  return `Genera un borrador profesional personalizado para Espana.
+
+Tipo solicitado por el usuario:
+${input.title}
+
+Descripcion de lo que necesita:
+${input.description}
+
+Uso previsto:
+${input.intendedUse || "[PENDIENTE DE COMPLETAR]"}
+
+Tono solicitado:
+${input.tone}
+
+Sector:
+${input.sector || "[PENDIENTE DE COMPLETAR]"}
+
+Datos que debe incluir:
+${input.requiredData || "[PENDIENTE DE COMPLETAR]"}
+
+Reglas para documento libre:
+- Crea un borrador util y estructurado aunque el documento no exista en el catalogo.
+- No afirmes que el documento es definitivo, valido legalmente o suficiente sin revision.
+- No inventes datos, importes, fechas, nombres, NIF/CIF, domicilios, jurisdicciones, normativas especificas ni obligaciones no aportadas.
+- Si falta informacion necesaria, usa exactamente [PENDIENTE DE COMPLETAR].
+- Si el documento parece legal, laboral, fiscal, societario, inmobiliario o de proteccion de datos, usa tono prudente y recomienda revision profesional.
+- Si la peticion es ambigua, crea una estructura razonable con campos pendientes y apartados editables.
+- No generes contenido fraudulento, enganoso, abusivo o destinado a eludir obligaciones legales.
+- Incluye al final un aviso breve indicando que es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
+- Devuelve solo el documento final, sin explicar el proceso.`;
 }
 
 function getStructureRules(config: DocumentTypeConfig) {
