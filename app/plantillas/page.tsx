@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
-import { getCurrentProfile } from "@/lib/supabase-server";
+import { TemplateLibraryClient } from "@/components/TemplateLibraryClient";
+import { getCurrentProfile, type DocumentTemplateRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Plantillas",
@@ -12,14 +14,6 @@ export const metadata: Metadata = {
   },
 };
 
-const upcomingFeatures = [
-  "Subida de documentos Word y PDF propios",
-  "Biblioteca privada por usuario y workspace",
-  "Extraccion de texto para usar documentos como referencia",
-  "Generacion siguiendo estructura, tono y clausulas internas",
-  "Base preparada para estilo documental de empresa",
-];
-
 export default async function TemplatesPage() {
   const { supabase, profile } = await getCurrentProfile();
 
@@ -28,6 +22,14 @@ export default async function TemplatesPage() {
   }
 
   const isFree = profile.plan === "free";
+  const { data: templates } = isFree
+    ? { data: [] }
+    : await supabase
+        .from("document_templates")
+        .select("*")
+        .eq("user_id", profile.id)
+        .order("created_at", { ascending: false })
+        .returns<DocumentTemplateRow[]>();
 
   return (
     <section className="container-page py-10">
@@ -39,8 +41,8 @@ export default async function TemplatesPage() {
               Tu biblioteca de documentos propios
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              La proxima fase de DocuGen permitira subir documentos Word/PDF de tu empresa para generar nuevos
-              borradores siguiendo tu estructura, tono, estilo y clausulas habituales.
+              Sube documentos Word/PDF de tu empresa para construir una biblioteca privada. En esta primera version
+              puedes guardar, descargar y borrar plantillas; despues las usaremos como referencia de generacion.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {isFree ? (
@@ -48,9 +50,9 @@ export default async function TemplatesPage() {
                   Desbloquear con Pro
                 </Link>
               ) : (
-                <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
-                  Seguir generando
-                </Link>
+                <a href="#subir-plantilla" className="focus-ring btn-primary px-5 py-3 text-sm">
+                  Subir plantilla
+                </a>
               )}
               <Link href="/catalogo" className="focus-ring btn-secondary px-5 py-3 text-sm">
                 Ver catalogo actual
@@ -63,11 +65,11 @@ export default async function TemplatesPage() {
               <p className="text-sm font-bold text-[#2d6a4f]">Estado</p>
               <PlanBadge plan={profile.plan} />
             </div>
-            <p className="mt-4 font-serif-display text-3xl font-bold">{isFree ? "Proximamente Pro" : "Proximamente"}</p>
+            <p className="mt-4 font-serif-display text-3xl font-bold">{isFree ? "Solo Pro" : `${templates?.length || 0} guardadas`}</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               {isFree
-                ? "La biblioteca de plantillas estara orientada a usuarios Pro y Empresa."
-                : "Tu plan ya esta preparado para usar esta funcion cuando activemos la subida de plantillas."}
+                ? "La biblioteca de plantillas esta orientada a usuarios Pro y Empresa."
+                : "Tu biblioteca ya acepta archivos PDF, DOC y DOCX de hasta 10 MB."}
             </p>
           </aside>
         </div>
@@ -76,8 +78,8 @@ export default async function TemplatesPage() {
       <section className="mt-6 grid gap-4 md:grid-cols-3">
         {[
           ["1", "Sube documentos", "Word/PDF con plantillas, ejemplos, clausulas o documentos anteriores."],
-          ["2", "DocuGen extrae estructura", "Se analizara el texto para detectar tono, apartados y patrones utiles."],
-          ["3", "Genera con referencia", "Podras crear nuevos documentos inspirados en tu biblioteca privada."],
+          ["2", "Guarda tu biblioteca", "Cada archivo queda asociado a tu cuenta y protegido con RLS."],
+          ["3", "Prepara el siguiente salto", "Despues extraeremos texto y lo conectaremos con la generacion."],
         ].map(([step, title, text]) => (
           <article key={step} className="surface-flat rounded-md p-5">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2d6a4f] text-sm font-bold text-white">
@@ -89,24 +91,19 @@ export default async function TemplatesPage() {
         ))}
       </section>
 
-      <section className="surface mt-6 rounded-md p-6">
-        <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-          <div>
-            <p className="eyebrow">Roadmap</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Lo que vamos a construir</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Esta pantalla queda lista como punto de entrada para el Template Library MVP.
-            </p>
-          </div>
-          <div className="grid gap-3">
-            {upcomingFeatures.map((feature) => (
-              <div key={feature} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4 text-sm font-semibold">
-                {feature}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div id="subir-plantilla" className="mt-6 scroll-mt-24">
+        {isFree ? (
+          <EmptyState
+            eyebrow="Funcion Pro"
+            title="Desbloquea la biblioteca de plantillas"
+            description="Con Pro podras subir documentos propios, conservarlos en una biblioteca privada y prepararlos para generar nuevos borradores con tu estilo."
+            primaryAction={{ href: "/precios", label: "Ver planes Pro" }}
+            secondaryAction={{ href: "/generar", label: "Seguir generando" }}
+          />
+        ) : (
+          <TemplateLibraryClient userId={profile.id} initialTemplates={templates || []} />
+        )}
+      </div>
     </section>
   );
 }

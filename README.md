@@ -111,6 +111,15 @@ La fase 1.2 añade APIs protegidas:
 
 El `POST /api/templates` espera `name`, `originalFilename`, `fileType`, `storagePath` y opcionalmente `description`, `category`, `mimeType` y `fileSize`. La ruta `storagePath` debe empezar por el id del usuario autenticado.
 
+Las fases 1.3 y 1.4 convierten `/plantillas` en una biblioteca funcional para Pro:
+
+- Listado de plantillas guardadas.
+- Subida directa de PDF, DOC y DOCX a Supabase Storage.
+- Registro automático en `document_templates`.
+- Descarga del archivo original.
+- Borrado de plantilla y archivo.
+- Pantalla bloqueada para usuarios Free.
+
 ## Comandos
 
 ```bash
