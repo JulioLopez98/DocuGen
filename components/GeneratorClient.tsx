@@ -9,6 +9,7 @@ import { DocResult } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
+import type { DocumentTemplateRow } from "@/lib/supabase-server";
 
 type GeneratedDocument = {
   id: string;
@@ -18,12 +19,22 @@ type GeneratedDocument = {
   formData: Record<string, string>;
 };
 
+type GenerateRequestPayload = {
+  docType: string;
+  formData: Record<string, string>;
+  referenceTemplateId?: string | null;
+};
+
+type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary">;
+
 type GeneratorClientProps = {
   initialDocType?: DocumentType;
   initialFormData?: Record<string, string>;
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
   plan?: "free" | "pro" | "empresa";
+  referenceTemplates?: TemplateOption[];
+  initialReferenceTemplateId?: string;
 };
 
 export function GeneratorClient({
@@ -32,18 +43,23 @@ export function GeneratorClient({
   canExportDocx = false,
   brandSettings,
   plan = "free",
+  referenceTemplates = [],
+  initialReferenceTemplateId,
 }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selected, setSelected] = useState<DocumentType>(initialDocType || getDefaultDocumentType(searchParams.get("type")));
   const [generated, setGenerated] = useState<GeneratedDocument | null>(null);
-  const [lastPayload, setLastPayload] = useState<{ docType: string; formData: Record<string, string> } | null>(
+  const [lastPayload, setLastPayload] = useState<GenerateRequestPayload | null>(
     initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
   );
   const [loading, setLoading] = useState(false);
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
+  const [referenceTemplateId, setReferenceTemplateId] = useState(
+    referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
+  );
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
@@ -62,13 +78,17 @@ export function GeneratorClient({
   async function submit(payload: { docType: string; formData: Record<string, string> }) {
     setLoading(true);
     setError(null);
-    setLastPayload(payload);
+    const requestPayload: GenerateRequestPayload = {
+      ...payload,
+      referenceTemplateId: referenceTemplateId || null,
+    };
+    setLastPayload(requestPayload);
 
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(requestPayload),
       });
       const data = (await response.json()) as GeneratedDocument & { message?: string };
 
@@ -217,6 +237,42 @@ export function GeneratorClient({
             </p>
           )}
         </section>
+
+        {plan !== "free" && (
+          <section className="surface-flat rounded-md p-5">
+            <p className="text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Usa una plantilla procesada para orientar estructura y tono. DocuGen no debe copiar datos concretos del archivo.
+            </p>
+            {referenceTemplates.length > 0 ? (
+              <label className="mt-4 block">
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Referencia</span>
+                <select
+                  value={referenceTemplateId}
+                  onChange={(event) => setReferenceTemplateId(event.target.value)}
+                  className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                >
+                  <option value="">Sin plantilla</option>
+                  {referenceTemplates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <div className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4">
+                <p className="text-sm font-semibold">No hay plantillas listas</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Sube y procesa una plantilla DOCX para usarla como referencia.
+                </p>
+                <Link href="/plantillas" className="focus-ring btn-ghost mt-3 px-3 py-2 text-xs">
+                  Ir a plantillas
+                </Link>
+              </div>
+            )}
+          </section>
+        )}
 
         <section className="surface-flat rounded-md p-5">
           <p className="text-sm font-bold text-[#2d6a4f]">No encuentras tu documento?</p>

@@ -4,7 +4,7 @@ import { buildDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClie
 import { generatePayloadSchema, getDocumentConfig, requiresPro } from "@/lib/document-types";
 import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
-import { requireUser, type Profile } from "@/lib/supabase-server";
+import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 
 const errorResponse = (status: number, error: string, message: string) =>
   NextResponse.json({ error, message }, { status });
@@ -44,6 +44,14 @@ export async function POST(request: Request) {
       return errorResponse(403, "pro_required", "Este tipo de documento esta disponible solo en DocuGen Pro.");
     }
 
+    const templateReference = payload.referenceTemplateId
+      ? await getTemplateReference(supabase, user.id, profile, payload.referenceTemplateId)
+      : null;
+
+    if (templateReference instanceof NextResponse) {
+      return templateReference;
+    }
+
     const rateLimit = await checkGenerationRateLimit(supabase, user.id, profile.plan);
 
     if (!rateLimit.allowed) {
@@ -60,7 +68,7 @@ export async function POST(request: Request) {
     const response = await openai.responses.create({
       model,
       instructions: documentInstructions,
-      input: buildDocumentPrompt(config, payload.formData),
+      input: buildDocumentPrompt(config, payload.formData, templateReference),
       temperature: 0.3,
       max_output_tokens: 4000,
     });
@@ -128,4 +136,38 @@ export async function POST(request: Request) {
     console.error("generate_error", error);
     return errorResponse(500, "generation_failed", "No se pudo generar el documento.");
   }
+}
+
+async function getTemplateReference(
+  supabase: NonNullable<Awaited<ReturnType<typeof requireUser>>["supabase"]>,
+  userId: string,
+  profile: Profile,
+  templateId: string,
+) {
+  if (profile.plan === "free") {
+    return errorResponse(403, "pro_required", "Las plantillas de referencia estan disponibles solo en DocuGen Pro.");
+  }
+
+  const { data: template, error } = await supabase
+    .from("document_templates")
+    .select("*")
+    .eq("id", templateId)
+    .eq("user_id", userId)
+    .single<DocumentTemplateRow>();
+
+  if (error || !template) {
+    console.error("reference_template_not_found", error);
+    return errorResponse(404, "template_not_found", "No se encontro la plantilla de referencia.");
+  }
+
+  if (template.status !== "ready" || !template.extracted_text) {
+    return errorResponse(400, "template_not_ready", "Procesa la plantilla antes de usarla como referencia.");
+  }
+
+  return {
+    name: template.name,
+    category: template.category,
+    summary: template.summary,
+    extractedText: template.extracted_text,
+  };
 }

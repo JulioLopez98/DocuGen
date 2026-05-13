@@ -72,6 +72,14 @@ export default async function TemplateDetailPage({ params }: Props) {
             <MetaLine label="Actualizada" value={updatedAt.toLocaleDateString("es-ES")} />
           </div>
           <div className="mt-5">
+            {template.status === "ready" && template.extracted_text && (
+              <Link
+                href={`/generar?referenceTemplateId=${template.id}`}
+                className="focus-ring btn-primary mb-2 px-4 py-3 text-center text-sm"
+              >
+                Usar en generador
+              </Link>
+            )}
             <TemplateDetailActions template={template} />
           </div>
         </aside>

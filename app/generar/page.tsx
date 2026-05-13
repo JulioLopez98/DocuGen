@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
-import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Generador",
@@ -16,12 +16,14 @@ export const metadata: Metadata = {
 type Props = {
   searchParams?: {
     templateId?: string;
+    referenceTemplateId?: string;
     type?: string;
   };
 };
 
 export default async function GeneratePage({ searchParams }: Props) {
   const templateId = searchParams?.templateId;
+  const requestedReferenceTemplateId = searchParams?.referenceTemplateId;
   const { supabase, profile } = await getCurrentProfile();
   let initialDocType: DocumentType | undefined;
   let initialFormData: Record<string, string> | undefined;
@@ -41,6 +43,17 @@ export default async function GeneratePage({ searchParams }: Props) {
     supabase && profile && profile.plan !== "free"
       ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
       : { data: null };
+  const { data: referenceTemplates } =
+    supabase && profile && profile.plan !== "free"
+      ? await supabase
+          .from("document_templates")
+          .select("id,name,category,summary")
+          .eq("user_id", profile.id)
+          .eq("status", "ready")
+          .not("extracted_text", "is", null)
+          .order("created_at", { ascending: false })
+          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary">[]>()
+      : { data: [] };
 
   return (
     <section className="container-page py-10">
@@ -64,6 +77,8 @@ export default async function GeneratePage({ searchParams }: Props) {
           canExportDocx={profile?.plan !== "free"}
           brandSettings={brandSettings || null}
           plan={profile?.plan}
+          referenceTemplates={referenceTemplates || []}
+          initialReferenceTemplateId={requestedReferenceTemplateId}
         />
       </Suspense>
       <div className="mt-8">

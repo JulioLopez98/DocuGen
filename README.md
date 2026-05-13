@@ -134,6 +134,13 @@ La fase 1.5 añade procesamiento básico:
 - Guardado de `extracted_text`, `summary`, `extracted_metadata` y estado `ready`.
 - PDF y DOC quedan marcados como no soportados todavía, con mensaje claro.
 
+La fase 1.7 conecta plantillas con el generador:
+
+- `/generar` muestra un selector de plantillas procesadas.
+- `POST /api/generate` acepta `referenceTemplateId`.
+- La API valida que la plantilla sea del usuario, esté `ready` y tenga texto extraído.
+- El prompt usa la plantilla solo como referencia de estructura y tono, sin copiar datos concretos.
+
 ## Comandos
 
 ```bash

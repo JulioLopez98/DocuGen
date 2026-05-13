@@ -2,6 +2,13 @@ import OpenAI from "openai";
 import type { DocumentType, DocumentTypeConfig } from "@/lib/document-types";
 import type { RefinementMode } from "@/lib/refinement";
 
+export type TemplateReference = {
+  name: string;
+  category: string | null;
+  summary: string | null;
+  extractedText: string;
+};
+
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
 export const PREMIUM_MODEL = process.env.OPENAI_MODEL_PREMIUM || "gpt-4.1";
 
@@ -140,7 +147,7 @@ export function getOpenAIClient() {
   });
 }
 
-export function buildDocumentPrompt(config: DocumentTypeConfig, formData: Record<string, string>) {
+export function buildDocumentPrompt(config: DocumentTypeConfig, formData: Record<string, string>, templateReference?: TemplateReference | null) {
   const values = config.fields
     .map((field) => `- ${field.label} (${field.name}): ${formData[field.name] || "[PENDIENTE DE COMPLETAR]"}`)
     .join("\n");
@@ -150,6 +157,7 @@ export function buildDocumentPrompt(config: DocumentTypeConfig, formData: Record
   const forbiddenRules = forbiddenByIntent[config.type] || getDefaultForbiddenRules(config);
   const outputStyle = getOutputStyle(config);
   const missingFields = getMissingFields(config, formData);
+  const templateBlock = templateReference ? buildTemplateReferenceBlock(templateReference) : "No se ha seleccionado plantilla de referencia.";
 
   return `Genera un borrador profesional para Espana.
 
@@ -200,6 +208,9 @@ Checklist interno antes de responder:
 - Los campos vacios aparecen como [PENDIENTE DE COMPLETAR].
 - No hay clausulas en cartas, emails, actas o documentos web informativos.
 - El aviso final es breve y proporcionado.
+
+Plantilla de referencia:
+${templateBlock}
 
 Datos proporcionados:
 ${values}`;
@@ -315,4 +326,20 @@ function getDefaultForbiddenRules(config: DocumentTypeConfig) {
 
 function getMissingFields(config: DocumentTypeConfig, formData: Record<string, string>) {
   return config.fields.filter((field) => !formData[field.name]?.trim()).map((field) => field.label);
+}
+
+function buildTemplateReferenceBlock(reference: TemplateReference) {
+  return `Nombre: ${reference.name}
+Categoria: ${reference.category || "[PENDIENTE DE COMPLETAR]"}
+Resumen: ${reference.summary || "[PENDIENTE DE COMPLETAR]"}
+
+Instrucciones para usar la plantilla:
+- Usala solo como referencia de estructura, tono, orden de apartados y estilo.
+- No copies literalmente clausulas completas salvo que sean genericas y encajen con los datos aportados.
+- No reutilices datos personales, importes, nombres, direcciones, emails, fechas ni condiciones concretas de la plantilla.
+- Si hay conflicto entre la plantilla y los datos del formulario, manda siempre la informacion del formulario.
+- Mantiene las reglas del tipo de documento seleccionado por encima de la plantilla.
+
+Texto extraido de la plantilla:
+${reference.extractedText.slice(0, 12000)}`;
 }
