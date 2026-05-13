@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { buildCustomDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
+import { buildCustomDocumentPrompt, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type Profile } from "@/lib/supabase-server";
@@ -47,8 +47,8 @@ export async function POST(request: Request) {
       return errorResponse(404, "profile_not_found", "No se encontró tu perfil.");
     }
 
-    if (profile.plan === "free" && profile.docs_this_month >= 3) {
-      return errorResponse(403, "limit_reached", "Has alcanzado el límite de 3 documentos gratuitos este mes.");
+    if (profile.plan === "free") {
+      return errorResponse(403, "pro_required", "Los documentos a medida están disponibles en DocuGen Pro.");
     }
 
     const rateLimit = await checkGenerationRateLimit(supabase, user.id, profile.plan);
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para generar documentos.");
     }
 
-    const model = profile.plan === "free" ? DEFAULT_MODEL : PREMIUM_MODEL;
+    const model = PREMIUM_MODEL;
     const response = await openai.responses.create({
       model,
       instructions: documentInstructions,

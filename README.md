@@ -225,6 +225,8 @@ La fase 3.7 cierra QA del generador libre:
 - Pruebas de flujo usuario, historial, admin, limites Free y seguridad del prompt.
 - Verificacion tecnica con `npm run lint` y `npm run build`.
 
+El modo `A medida` queda reservado para planes Pro y Empresa. Los usuarios Free lo ven bloqueado con CTA de upgrade y la API responde `pro_required` si intentan usarlo directamente.
+
 ## Comandos
 
 ```bash

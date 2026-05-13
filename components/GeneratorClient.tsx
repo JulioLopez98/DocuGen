@@ -75,6 +75,7 @@ export function GeneratorClient({
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
+  const customProLocked = plan === "free";
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
   const isTemplateMode = Boolean(initialFormData && initialDocType);
@@ -225,7 +226,10 @@ export function GeneratorClient({
                 generatorMode === "custom" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
               }`}
             >
-              A medida
+              <span className="inline-flex items-center gap-2">
+                A medida
+                {customProLocked && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] text-white">Pro</span>}
+              </span>
             </button>
           </div>
         </section>
@@ -416,7 +420,7 @@ export function GeneratorClient({
         <section className="surface-flat rounded-md p-5">
           <p className="text-sm font-bold text-[#2d6a4f]">No encuentras tu documento?</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Describe lo que necesitas y DocuGen generara un borrador personalizado sin anadirlo automaticamente al catalogo.
+            Describe lo que necesitas y DocuGen generara un borrador personalizado. Disponible en Pro por su coste y complejidad.
           </p>
           <button
             type="button"
@@ -447,7 +451,24 @@ export function GeneratorClient({
           </div>
           {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
         </div>
-        {generatorMode === "custom" ? (
+        {generatorMode === "custom" && customProLocked ? (
+          <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
+            <p className="eyebrow">Funcion Pro</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no estan en el catalogo</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              El modo a medida permite pedir documentos por escrito, con instrucciones libres, tono especifico y contexto propio.
+              Lo reservamos para Pro porque usa prompts mas avanzados y tiene mayor coste de generacion.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
+                Desbloquear Pro
+              </Link>
+              <button type="button" onClick={() => setGeneratorMode("catalog")} className="focus-ring btn-secondary px-5 py-3 text-sm">
+                Volver al catalogo
+              </button>
+            </div>
+          </div>
+        ) : generatorMode === "custom" ? (
           <CustomDocumentForm onSubmit={submitCustom} disabled={loading} />
         ) : proLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
