@@ -154,6 +154,13 @@ La fase 2.4 guarda la relacion entre documento y plantilla:
 - SQL incremental: `supabase-template-generation-2.4.sql`.
 - Cada documento generado con plantilla conserva la referencia usada para mostrarla luego en historial.
 
+La fase 2.5 mejora historial:
+
+- Badge `Con plantilla` en documentos generados con referencia.
+- Link a la plantilla usada.
+- Acciones para crear otro documento con la misma plantilla.
+- La regeneracion conserva `referenceTemplateId` y `templateUsageMode`.
+
 Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
 
 ## Comandos

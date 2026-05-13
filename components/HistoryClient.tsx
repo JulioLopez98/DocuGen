@@ -8,6 +8,7 @@ import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
 import type { DocumentRow } from "@/lib/supabase-server";
+import { templateUsageLabels } from "@/lib/template-usage";
 
 type HistoryClientProps = {
   documents: DocumentRow[];
@@ -95,7 +96,12 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ docType: doc.doc_type, formData: doc.form_data }),
+        body: JSON.stringify({
+          docType: doc.doc_type,
+          formData: stripInternalFormData(doc.form_data),
+          referenceTemplateId: doc.reference_template_id,
+          templateUsageMode: doc.template_usage_mode || undefined,
+        }),
       });
       const payload = (await response.json()) as GenerateResponse;
 
@@ -249,11 +255,22 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                         <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-semibold text-[#1f2933]">
                           {config?.category || "Documento"}
                         </span>
+                        {doc.reference_template_id && (
+                          <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">
+                            Con plantilla
+                          </span>
+                        )}
                       </div>
                       <p className="mt-1 text-xs text-slate-500">
                         Creado el {createdAt.toLocaleDateString("es-ES")} a las{" "}
                         {createdAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                       </p>
+                      {doc.reference_template_id && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          Referencia: {doc.reference_template_name || "Plantilla"} ·{" "}
+                          {doc.template_usage_mode ? templateUsageLabels[doc.template_usage_mode] : "Modo no registrado"}
+                        </p>
+                      )}
                     </div>
                     <span className="text-sm font-semibold text-[#2d6a4f] group-open:hidden">Desplegar</span>
                     <span className="hidden text-sm font-semibold text-[#2d6a4f] group-open:inline">Plegar</span>
@@ -270,6 +287,19 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                       <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
                         Usar como plantilla
                       </Link>
+                      {doc.reference_template_id && (
+                        <Link
+                          href={`/generar?type=${doc.doc_type}&referenceTemplateId=${doc.reference_template_id}`}
+                          className="focus-ring btn-secondary px-3 py-2 text-sm"
+                        >
+                          Mismo estilo
+                        </Link>
+                      )}
+                      {doc.reference_template_id && (
+                        <Link href={`/plantillas/${doc.reference_template_id}`} className="focus-ring btn-ghost px-3 py-2 text-sm">
+                          Ver plantilla
+                        </Link>
+                      )}
                       <button
                         type="button"
                         onClick={() => regenerate(doc)}
@@ -377,4 +407,8 @@ function groupDocumentsByMonth(documents: DocumentRow[]) {
     label,
     documents: groupedDocuments,
   }));
+}
+
+function stripInternalFormData(formData: Record<string, string>) {
+  return Object.fromEntries(Object.entries(formData).filter(([key]) => !key.startsWith("__")));
 }

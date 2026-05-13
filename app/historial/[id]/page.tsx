@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { DocResult } from "@/components/DocResult";
 import { getDocumentConfig } from "@/lib/document-types";
 import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
+import { templateUsageLabels } from "@/lib/template-usage";
 
 type Props = {
   params: {
@@ -59,6 +60,10 @@ export default async function HistoryDetailPage({ params }: Props) {
               <MetaLine label="Tipo" value={config?.label || document.doc_type} />
               <MetaLine label="Modelo" value={document.model_used || "No registrado"} />
               <MetaLine label="Word" value={profile.plan !== "free" ? "Disponible" : "Solo Pro"} />
+              {document.reference_template_id && (
+                <MetaLine label="Plantilla" value={document.reference_template_name || "Plantilla usada"} />
+              )}
+              {document.template_usage_mode && <MetaLine label="Modo" value={templateUsageLabels[document.template_usage_mode]} />}
             </div>
             <div className="mt-5 grid gap-2">
               <Link href={`/generar?templateId=${document.id}`} className="focus-ring btn-primary px-4 py-3 text-sm">
@@ -67,6 +72,19 @@ export default async function HistoryDetailPage({ params }: Props) {
               <Link href={`/generar?type=${document.doc_type}`} className="focus-ring btn-secondary px-4 py-3 text-sm">
                 Crear otro igual
               </Link>
+              {document.reference_template_id && (
+                <Link
+                  href={`/generar?type=${document.doc_type}&referenceTemplateId=${document.reference_template_id}`}
+                  className="focus-ring btn-secondary px-4 py-3 text-sm"
+                >
+                  Crear con misma plantilla
+                </Link>
+              )}
+              {document.reference_template_id && (
+                <Link href={`/plantillas/${document.reference_template_id}`} className="focus-ring btn-ghost px-4 py-3 text-sm">
+                  Ver plantilla usada
+                </Link>
+              )}
             </div>
           </aside>
         </div>
