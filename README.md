@@ -141,6 +141,8 @@ La fase 1.7 conecta plantillas con el generador:
 - La API valida que la plantilla sea del usuario, esté `ready` y tenga texto extraído.
 - El prompt usa la plantilla solo como referencia de estructura y tono, sin copiar datos concretos.
 
+Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
+
 ## Comandos
 
 ```bash
