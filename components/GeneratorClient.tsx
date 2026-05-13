@@ -33,7 +33,7 @@ type GenerateRequestPayload = {
   templateUsageMode?: TemplateUsageMode;
 };
 
-type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary">;
+type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at">;
 
 type GeneratorClientProps = {
   initialDocType?: DocumentType;
@@ -75,6 +75,7 @@ export function GeneratorClient({
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
   const isTemplateMode = Boolean(initialFormData && initialDocType);
+  const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
 
   function selectDocument(type: DocumentType) {
     setSelected(type);
@@ -281,7 +282,28 @@ export function GeneratorClient({
                 </Link>
               </div>
             )}
-            {referenceTemplateId && (
+            {selectedReferenceTemplate && (
+              <div className="mt-4 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                      {selectedReferenceTemplate.category || "Plantilla"}
+                    </p>
+                    <h3 className="mt-1 font-bold">{selectedReferenceTemplate.name}</h3>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      {selectedReferenceTemplate.summary || "Sin resumen extraido."}
+                    </p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Procesada el {new Date(selectedReferenceTemplate.created_at).toLocaleDateString("es-ES")}
+                    </p>
+                  </div>
+                  <Link href={`/plantillas/${selectedReferenceTemplate.id}`} className="focus-ring btn-ghost px-3 py-2 text-xs">
+                    Abrir
+                  </Link>
+                </div>
+              </div>
+            )}
+            {selectedReferenceTemplate && (
               <div className="mt-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Como usarla</p>
                 <div className="mt-2 grid gap-2">
@@ -301,6 +323,10 @@ export function GeneratorClient({
                     </button>
                   ))}
                 </div>
+                <p className="mt-3 rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
+                  Esta referencia orienta la estructura y el estilo. Los datos del formulario tienen prioridad y la IA
+                  no debe reutilizar nombres, importes, fechas ni condiciones concretas de la plantilla.
+                </p>
               </div>
             )}
           </section>

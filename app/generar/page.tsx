@@ -47,12 +47,12 @@ export default async function GeneratePage({ searchParams }: Props) {
     supabase && profile && profile.plan !== "free"
       ? await supabase
           .from("document_templates")
-          .select("id,name,category,summary")
+          .select("id,name,category,summary,created_at")
           .eq("user_id", profile.id)
           .eq("status", "ready")
           .not("extracted_text", "is", null)
           .order("created_at", { ascending: false })
-          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary">[]>()
+          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at">[]>()
       : { data: [] };
 
   return (

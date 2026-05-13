@@ -161,6 +161,12 @@ La fase 2.5 mejora historial:
 - Acciones para crear otro documento con la misma plantilla.
 - La regeneracion conserva `referenceTemplateId` y `templateUsageMode`.
 
+La fase 2.1 mejora el selector de plantillas en `/generar`:
+
+- Muestra categoria, resumen y fecha de la plantilla seleccionada.
+- Enlace directo a la ficha de plantilla.
+- Aviso claro de que la referencia no debe copiar datos concretos.
+
 Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
 
 ## Comandos
