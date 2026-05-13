@@ -8,6 +8,7 @@ import { FormShell } from "@/components/forms/FormShell";
 import { DocResult } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
 import type { PdfBrandSettings } from "@/lib/pdf";
+import type { RefinementMode } from "@/lib/refinement";
 
 type GeneratedDocument = {
   id: string;
@@ -40,6 +41,7 @@ export function GeneratorClient({
     initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
   );
   const [loading, setLoading] = useState(false);
+  const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
 
@@ -80,6 +82,40 @@ export function GeneratorClient({
       setError("No se pudo conectar con el generador.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function refineGenerated(mode: RefinementMode) {
+    if (!generated) {
+      return;
+    }
+
+    setRefiningMode(mode);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/refine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          docType: generated.docType,
+          formData: generated.formData,
+          content: generated.content,
+          mode,
+        }),
+      });
+      const data = (await response.json()) as GeneratedDocument & { message?: string };
+
+      if (!response.ok) {
+        setError(data.message || "No se pudo crear la variante.");
+        return;
+      }
+
+      setGenerated(data);
+    } catch {
+      setError("No se pudo conectar con el generador.");
+    } finally {
+      setRefiningMode(null);
     }
   }
 
@@ -226,12 +262,16 @@ export function GeneratorClient({
       {generated && (
         <div className="lg:col-span-2">
           <DocResult
+            documentId={generated.id}
+            docType={generated.docType}
             title={generated.docLabel}
             content={generated.content}
             includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures}
             canExportDocx={canExportDocx}
             brandSettings={brandSettings}
             onRegenerate={() => lastPayload && submit(lastPayload)}
+            onRefine={refineGenerated}
+            refiningMode={refiningMode}
           />
         </div>
       )}

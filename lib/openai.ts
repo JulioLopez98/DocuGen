@@ -1,8 +1,20 @@
 import OpenAI from "openai";
 import type { DocumentType, DocumentTypeConfig } from "@/lib/document-types";
+import type { RefinementMode } from "@/lib/refinement";
 
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
 export const PREMIUM_MODEL = process.env.OPENAI_MODEL_PREMIUM || "gpt-4.1";
+
+const refinementRules: Record<RefinementMode, string> = {
+  formal:
+    "Haz el documento mas formal, sobrio y preciso. Mantiene estructura, datos, marcadores pendientes y aviso final. No anadas datos nuevos.",
+  brief:
+    "Haz el documento mas breve y directo. Reduce redundancias, conserva datos esenciales, marcadores pendientes, obligaciones importantes y aviso final. No elimines informacion critica.",
+  commercial:
+    "Haz el documento mas orientado a cliente y conversion cuando encaje. Mejora claridad, beneficios, proximos pasos y lectura comercial. No conviertas contratos o documentos legales en publicidad.",
+  natural:
+    "Haz el documento mas natural, humano y fluido. Reduce rigidez innecesaria sin perder profesionalidad. No cambies hechos, datos, condiciones ni avisos.",
+};
 
 export const documentInstructions =
   "Eres un asistente experto en redaccion de documentos profesionales para Espana. Generas borradores claros, utiles, sobrios y adaptados al contexto espanol. No das asesoramiento legal definitivo ni prometes validez legal. Mantienes el formato natural de cada documento: una carta debe sonar a carta, una propuesta a propuesta comercial, un acta a acta, un email a email y un contrato a contrato. No inventes datos no proporcionados. Usa [PENDIENTE DE COMPLETAR] cuando falte informacion necesaria. No copies literalmente ejemplos ni datos sensibles. Incluye siempre un aviso final breve indicando que el documento es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.";
@@ -191,6 +203,38 @@ Checklist interno antes de responder:
 
 Datos proporcionados:
 ${values}`;
+}
+
+export function buildRefinementPrompt({
+  config,
+  formData,
+  content,
+  mode,
+}: {
+  config: DocumentTypeConfig;
+  formData: Record<string, string>;
+  content: string;
+  mode: RefinementMode;
+}) {
+  const basePrompt = buildDocumentPrompt(config, formData);
+  const refinementRule = refinementRules[mode];
+
+  return `${basePrompt}
+
+Tarea de refinamiento:
+${refinementRule}
+
+Reglas adicionales para la variante:
+- Reescribe el documento completo, no devuelvas solo cambios parciales.
+- Conserva los datos proporcionados y los marcadores [PENDIENTE DE COMPLETAR].
+- No cambies importes, fechas, partes, condiciones ni hechos.
+- No inventes informacion nueva.
+- Mantiene el formato adecuado al tipo de documento.
+- Mantiene el aviso final breve de revision profesional.
+- Devuelve solo la nueva version del documento.
+
+Documento actual a mejorar:
+${content}`;
 }
 
 function getStructureRules(config: DocumentTypeConfig) {

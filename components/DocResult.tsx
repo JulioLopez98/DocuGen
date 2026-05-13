@@ -1,27 +1,38 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
+import { refinementLabels, type RefinementMode } from "@/lib/refinement";
 
 type DocResultProps = {
+  documentId?: string;
+  docType?: string;
   title: string;
   content: string;
   includesSignatures?: boolean;
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
   onRegenerate?: () => void;
+  onRefine?: (mode: RefinementMode) => void;
+  refiningMode?: RefinementMode | null;
 };
 
 export function DocResult({
+  documentId,
+  docType,
   title,
   content,
   includesSignatures,
   canExportDocx = false,
   brandSettings,
   onRegenerate,
+  onRefine,
+  refiningMode = null,
 }: DocResultProps) {
   const [copied, setCopied] = useState(false);
+  const refinementModes = Object.entries(refinementLabels) as [RefinementMode, string][];
 
   async function copyText() {
     await navigator.clipboard.writeText(content);
@@ -81,6 +92,50 @@ export function DocResult({
           )}
         </div>
       </div>
+      {onRefine && (
+        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Mejorar esta version</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Crea una variante guardada en el historial sin perder esta version.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {refinementModes.map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onRefine(mode)}
+                  disabled={refiningMode !== null}
+                  className="focus-ring btn-secondary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {refiningMode === mode ? "Mejorando..." : label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {(documentId || docType) && (
+        <div className="mt-4 flex flex-wrap gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
+          {documentId && (
+            <Link href={`/historial/${documentId}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
+              Ver en historial
+            </Link>
+          )}
+          {documentId && (
+            <Link href={`/generar?templateId=${documentId}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
+              Usar como plantilla
+            </Link>
+          )}
+          {docType && (
+            <Link href={`/generar?type=${docType}`} className="focus-ring btn-ghost px-3 py-2 text-xs">
+              Crear otro parecido
+            </Link>
+          )}
+        </div>
+      )}
       <article className="mt-5 whitespace-pre-wrap rounded-md bg-[#faf9f6] p-5 text-sm leading-7">{content}</article>
     </section>
   );
