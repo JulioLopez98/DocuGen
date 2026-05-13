@@ -103,6 +103,14 @@ La fase 1.1 deja creada la base de datos:
 - RLS para que cada usuario acceda solo a sus plantillas.
 - Subida limitada por policies a planes `pro` y `empresa`.
 
+La fase 1.2 añade APIs protegidas:
+
+- `GET /api/templates`: lista las plantillas del usuario.
+- `POST /api/templates`: registra una plantilla ya subida al bucket `document-templates`.
+- `DELETE /api/templates/[id]`: borra el registro y el archivo original.
+
+El `POST /api/templates` espera `name`, `originalFilename`, `fileType`, `storagePath` y opcionalmente `description`, `category`, `mimeType` y `fileSize`. La ruta `storagePath` debe empezar por el id del usuario autenticado.
+
 ## Comandos
 
 ```bash
