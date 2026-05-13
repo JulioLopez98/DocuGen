@@ -213,6 +213,12 @@ La fase 3.5 mejora historial para documentos libres:
 - Detalle adaptado para `doc_type = custom`.
 - Regeneracion de documentos personalizados usando `/api/custom-generate`.
 
+La fase 3.6 añade solicitudes libres en admin:
+
+- `/admin` lista las ultimas filas de `document_requests`.
+- Muestra estado, tono, sector, uso previsto y enlace al documento generado.
+- Incluye contadores rapidos de solicitudes nuevas, en revision y convertidas.
+
 ## Comandos
 
 ```bash
