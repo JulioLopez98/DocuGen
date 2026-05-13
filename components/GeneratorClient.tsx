@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { CustomDocumentForm, type CustomDocumentFormValues } from "@/components/CustomDocumentForm";
 import { FormShell } from "@/components/forms/FormShell";
 import { DocResult } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
@@ -65,6 +66,7 @@ export function GeneratorClient({
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
+  const [generatorMode, setGeneratorMode] = useState<"catalog" | "custom">("catalog");
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
@@ -83,6 +85,32 @@ export function GeneratorClient({
     setError(null);
     setLastPayload(null);
     router.replace(`/generar?type=${type}`, { scroll: false });
+  }
+
+  async function submitCustom(payload: CustomDocumentFormValues) {
+    setLoading(true);
+    setError(null);
+    setLastPayload(null);
+
+    try {
+      const response = await fetch("/api/custom-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as GeneratedDocument & { message?: string };
+
+      if (!response.ok) {
+        setError(data.message || "No se pudo generar el documento a medida.");
+        return;
+      }
+
+      setGenerated(data);
+    } catch {
+      setError("No se pudo conectar con el generador.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function submit(payload: { docType: string; formData: Record<string, string> }) {
@@ -153,6 +181,39 @@ export function GeneratorClient({
   return (
     <div className="grid gap-8 lg:grid-cols-[390px_1fr]">
       <aside className="space-y-4">
+        <section className="surface rounded-md p-5">
+          <p className="eyebrow">Modo</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setGeneratorMode("catalog");
+                setGenerated(null);
+                setError(null);
+              }}
+              className={`focus-ring rounded-md border px-3 py-3 text-sm font-bold transition ${
+                generatorMode === "catalog" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
+              }`}
+            >
+              Catalogo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setGeneratorMode("custom");
+                setGenerated(null);
+                setError(null);
+              }}
+              className={`focus-ring rounded-md border px-3 py-3 text-sm font-bold transition ${
+                generatorMode === "custom" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
+              }`}
+            >
+              A medida
+            </button>
+          </div>
+        </section>
+
+        {generatorMode === "catalog" && (
         <section className="surface rounded-md p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -226,7 +287,9 @@ export function GeneratorClient({
             )}
           </div>
         </section>
+        )}
 
+        {generatorMode === "catalog" && (
         <section className="surface-flat rounded-md p-5">
           <p className="text-sm font-bold text-[#2d6a4f]">Seleccionado</p>
           <h3 className="font-serif-display mt-2 text-2xl font-bold">{config.label}</h3>
@@ -248,8 +311,9 @@ export function GeneratorClient({
             </p>
           )}
         </section>
+        )}
 
-        {plan !== "free" && (
+        {generatorMode === "catalog" && plan !== "free" && (
           <section className="surface-flat rounded-md p-5">
             <p className="text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -335,26 +399,40 @@ export function GeneratorClient({
         <section className="surface-flat rounded-md p-5">
           <p className="text-sm font-bold text-[#2d6a4f]">No encuentras tu documento?</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Estamos preparando un generador libre para pedir documentos a medida y revisar cuales merece la pena sumar al catalogo oficial.
+            Describe lo que necesitas y DocuGen generara un borrador personalizado sin anadirlo automaticamente al catalogo.
           </p>
-          <Link href="/catalogo" className="focus-ring btn-ghost mt-4 px-3 py-2 text-sm">
-            Revisar catalogo completo
-          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setGeneratorMode("custom");
+              setGenerated(null);
+              setError(null);
+            }}
+            className="focus-ring btn-ghost mt-4 px-3 py-2 text-sm"
+          >
+            Crear a medida
+          </button>
         </section>
       </aside>
 
       <section className="surface rounded-md p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-5">
           <div>
-            <p className="text-sm font-semibold text-[#2d6a4f]">{config.category}</p>
-            <h1 className="font-serif-display mt-1 text-3xl font-bold">{config.label}</h1>
+            <p className="text-sm font-semibold text-[#2d6a4f]">{generatorMode === "catalog" ? config.category : "Documento a medida"}</p>
+            <h1 className="font-serif-display mt-1 text-3xl font-bold">
+              {generatorMode === "catalog" ? config.label : "No encuentro mi documento"}
+            </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo.
+              {generatorMode === "catalog"
+                ? "Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo."
+                : "Explica que documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos utiles."}
             </p>
           </div>
           {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
         </div>
-        {proLocked ? (
+        {generatorMode === "custom" ? (
+          <CustomDocumentForm onSubmit={submitCustom} disabled={loading} />
+        ) : proLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
             <p className="eyebrow">Documento Pro</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Desbloquea {config.label.toLowerCase()}</h2>
@@ -390,7 +468,7 @@ export function GeneratorClient({
             docType={generated.docType}
             title={generated.docLabel}
             content={generated.content}
-            includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures}
+            includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures ?? false}
             canExportDocx={canExportDocx}
             brandSettings={brandSettings}
             onRegenerate={() => lastPayload && submit(lastPayload)}

@@ -192,6 +192,13 @@ La fase 3.2 añade `POST /api/custom-generate`:
 - Crea una fila en `document_requests`.
 - Incrementa `docs_this_month` y envia email de documento listo si Resend esta configurado.
 
+La fase 3.3 añade UI en `/generar`:
+
+- Selector de modo `Catalogo` / `A medida`.
+- Formulario `No encuentro mi documento`.
+- Llamada a `/api/custom-generate`.
+- Resultado integrado con exportacion PDF/TXT/Word Pro e historial.
+
 ## Comandos
 
 ```bash
