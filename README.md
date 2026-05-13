@@ -50,6 +50,8 @@ RESEND_API_KEY=
 
 El SQL crea perfiles, workspaces, documentos, límites, referidos, tablas de chat, bucket `brand-logos`, triggers y RLS.
 
+Para activar solo la primera fase de biblioteca de plantillas sobre una base ya creada, ejecuta `supabase-template-library-1.1.sql`. Ese script crea la tabla `document_templates`, sus policies RLS y el bucket privado `document-templates`.
+
 ## Stripe
 
 1. Crea un producto Pro mensual de 9 € y copia su Price ID en `STRIPE_PRICE_ID_PRO`.
@@ -92,6 +94,14 @@ Antes de activarla por completo conviene implementar:
 - Extracción de texto y estructura.
 - Vista previa editable antes de guardar.
 - Revisión manual antes de compartir plantillas con otros usuarios.
+
+La fase 1.1 deja creada la base de datos:
+
+- Tabla `document_templates`.
+- Estados `uploaded`, `processing`, `ready` y `failed`.
+- Bucket privado `document-templates`.
+- RLS para que cada usuario acceda solo a sus plantillas.
+- Subida limitada por policies a planes `pro` y `empresa`.
 
 ## Comandos
 

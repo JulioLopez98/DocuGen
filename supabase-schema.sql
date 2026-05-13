@@ -61,6 +61,30 @@ create table if not exists public.brand_settings (
   unique (user_id)
 );
 
+create table if not exists public.document_templates (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  workspace_id uuid references public.workspaces(id) on delete set null,
+  name text not null,
+  description text,
+  category text,
+  original_filename text not null,
+  file_type text not null check (file_type in ('pdf', 'docx', 'doc')),
+  mime_type text,
+  file_size integer,
+  storage_bucket text not null default 'document-templates',
+  storage_path text not null,
+  status text not null default 'uploaded' check (status in ('uploaded', 'processing', 'ready', 'failed')),
+  extracted_text text,
+  extracted_metadata jsonb not null default '{}',
+  summary text,
+  notes text,
+  error_message text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (storage_bucket, storage_path)
+);
+
 create table if not exists public.referrals (
   id uuid primary key default gen_random_uuid(),
   referrer_id uuid not null references auth.users(id) on delete cascade,
@@ -94,6 +118,9 @@ create index if not exists documents_user_created_idx on public.documents(user_i
 create index if not exists documents_workspace_idx on public.documents(workspace_id);
 create index if not exists generation_events_user_created_idx on public.generation_events(user_id, created_at desc);
 create index if not exists workspace_members_user_idx on public.workspace_members(user_id);
+create index if not exists document_templates_user_created_idx on public.document_templates(user_id, created_at desc);
+create index if not exists document_templates_workspace_idx on public.document_templates(workspace_id);
+create index if not exists document_templates_status_idx on public.document_templates(status);
 create index if not exists chat_sessions_user_idx on public.chat_sessions(user_id);
 create index if not exists chat_messages_session_idx on public.chat_messages(session_id, created_at);
 
@@ -115,6 +142,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists brand_settings_set_updated_at on public.brand_settings;
 create trigger brand_settings_set_updated_at
 before update on public.brand_settings
+for each row execute function public.set_updated_at();
+
+drop trigger if exists document_templates_set_updated_at on public.document_templates;
+create trigger document_templates_set_updated_at
+before update on public.document_templates
 for each row execute function public.set_updated_at();
 
 drop trigger if exists chat_sessions_set_updated_at on public.chat_sessions;
@@ -217,6 +249,7 @@ alter table public.workspace_members enable row level security;
 alter table public.documents enable row level security;
 alter table public.generation_events enable row level security;
 alter table public.brand_settings enable row level security;
+alter table public.document_templates enable row level security;
 alter table public.referrals enable row level security;
 alter table public.chat_sessions enable row level security;
 alter table public.chat_messages enable row level security;
@@ -294,6 +327,30 @@ create policy "brand_settings_update_own_or_admin" on public.brand_settings
 for update using (user_id = auth.uid() or public.is_admin())
 with check (user_id = auth.uid() or public.is_admin());
 
+drop policy if exists "document_templates_select_own_workspace_or_admin" on public.document_templates;
+create policy "document_templates_select_own_workspace_or_admin" on public.document_templates
+for select using (user_id = auth.uid() or public.is_workspace_member(workspace_id) or public.is_admin());
+
+drop policy if exists "document_templates_insert_paid_own" on public.document_templates;
+create policy "document_templates_insert_paid_own" on public.document_templates
+for insert with check (
+  user_id = auth.uid()
+  and (workspace_id is null or public.is_workspace_member(workspace_id))
+  and exists (
+    select 1 from public.profiles
+    where id = auth.uid() and plan in ('pro', 'empresa')
+  )
+);
+
+drop policy if exists "document_templates_update_own_or_admin" on public.document_templates;
+create policy "document_templates_update_own_or_admin" on public.document_templates
+for update using (user_id = auth.uid() or public.is_admin())
+with check (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "document_templates_delete_own_or_admin" on public.document_templates;
+create policy "document_templates_delete_own_or_admin" on public.document_templates
+for delete using (user_id = auth.uid() or public.is_admin());
+
 drop policy if exists "referrals_select_related_or_admin" on public.referrals;
 create policy "referrals_select_related_or_admin" on public.referrals
 for select using (referrer_id = auth.uid() or referred_id = auth.uid() or public.is_admin());
@@ -348,3 +405,55 @@ drop policy if exists "brand_logos_user_update" on storage.objects;
 create policy "brand_logos_user_update" on storage.objects
 for update using (bucket_id = 'brand-logos' and auth.role() = 'authenticated')
 with check (bucket_id = 'brand-logos' and auth.role() = 'authenticated');
+
+insert into storage.buckets (id, name, public)
+values ('document-templates', 'document-templates', false)
+on conflict (id) do update set public = false;
+
+drop policy if exists "document_templates_storage_select_own_or_admin" on storage.objects;
+create policy "document_templates_storage_select_own_or_admin" on storage.objects
+for select using (
+  bucket_id = 'document-templates'
+  and (
+    (storage.foldername(name))[1] = auth.uid()::text
+    or public.is_admin()
+  )
+);
+
+drop policy if exists "document_templates_storage_insert_paid_own" on storage.objects;
+create policy "document_templates_storage_insert_paid_own" on storage.objects
+for insert with check (
+  bucket_id = 'document-templates'
+  and (storage.foldername(name))[1] = auth.uid()::text
+  and exists (
+    select 1 from public.profiles
+    where id = auth.uid() and plan in ('pro', 'empresa')
+  )
+);
+
+drop policy if exists "document_templates_storage_update_own_or_admin" on storage.objects;
+create policy "document_templates_storage_update_own_or_admin" on storage.objects
+for update using (
+  bucket_id = 'document-templates'
+  and (
+    (storage.foldername(name))[1] = auth.uid()::text
+    or public.is_admin()
+  )
+)
+with check (
+  bucket_id = 'document-templates'
+  and (
+    (storage.foldername(name))[1] = auth.uid()::text
+    or public.is_admin()
+  )
+);
+
+drop policy if exists "document_templates_storage_delete_own_or_admin" on storage.objects;
+create policy "document_templates_storage_delete_own_or_admin" on storage.objects
+for delete using (
+  bucket_id = 'document-templates'
+  and (
+    (storage.foldername(name))[1] = auth.uid()::text
+    or public.is_admin()
+  )
+);

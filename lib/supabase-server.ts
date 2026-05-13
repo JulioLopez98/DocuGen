@@ -37,6 +37,31 @@ export type BrandSettings = {
   updated_at: string;
 };
 
+export type DocumentTemplateStatus = "uploaded" | "processing" | "ready" | "failed";
+
+export type DocumentTemplateRow = {
+  id: string;
+  user_id: string;
+  workspace_id: string | null;
+  name: string;
+  description: string | null;
+  category: string | null;
+  original_filename: string;
+  file_type: "pdf" | "docx" | "doc";
+  mime_type: string | null;
+  file_size: number | null;
+  storage_bucket: string;
+  storage_path: string;
+  status: DocumentTemplateStatus;
+  extracted_text: string | null;
+  extracted_metadata: Record<string, unknown>;
+  summary: string | null;
+  notes: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export function hasSupabaseServerEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
