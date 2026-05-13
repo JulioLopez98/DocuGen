@@ -261,6 +261,10 @@ ${content}`;
 }
 
 export function buildCustomDocumentPrompt(input: CustomDocumentPromptInput) {
+  const riskRules = getCustomRiskRules(input);
+  const toneRules = getCustomToneRules(input.tone);
+  const ambiguityRules = getCustomAmbiguityRules(input);
+
   return `Genera un borrador profesional personalizado para Espana.
 
 Tipo solicitado por el usuario:
@@ -281,6 +285,15 @@ ${input.sector || "[PENDIENTE DE COMPLETAR]"}
 Datos que debe incluir:
 ${input.requiredData || "[PENDIENTE DE COMPLETAR]"}
 
+Reglas de tono:
+${toneRules}
+
+Reglas de riesgo:
+${riskRules}
+
+Reglas si falta informacion:
+${ambiguityRules}
+
 Reglas para documento libre:
 - Crea un borrador util y estructurado aunque el documento no exista en el catalogo.
 - No afirmes que el documento es definitivo, valido legalmente o suficiente sin revision.
@@ -289,8 +302,80 @@ Reglas para documento libre:
 - Si el documento parece legal, laboral, fiscal, societario, inmobiliario o de proteccion de datos, usa tono prudente y recomienda revision profesional.
 - Si la peticion es ambigua, crea una estructura razonable con campos pendientes y apartados editables.
 - No generes contenido fraudulento, enganoso, abusivo o destinado a eludir obligaciones legales.
+- No des instrucciones para evadir contratos, impuestos, derechos laborales, proteccion de datos, garantias, consumidores o autoridades.
+- No incluyas citas legales concretas salvo que sean ampliamente necesarias y se formulen con prudencia.
+- No uses formulas agresivas, amenazas o acusaciones si el usuario no aporta hechos verificables.
+- Si el usuario pide una carta/email, usa formato natural de carta/email. Si pide contrato/acuerdo, usa apartados o clausulas numeradas solo cuando proceda.
+- Incluye titulo, fecha si aporta valor y secciones claras.
 - Incluye al final un aviso breve indicando que es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
 - Devuelve solo el documento final, sin explicar el proceso.`;
+}
+
+function getCustomToneRules(tone: string) {
+  if (tone === "Comercial") {
+    return "- Prioriza claridad, propuesta de valor, condiciones escaneables y cierre orientado a accion.\n- Evita lenguaje juridico excesivo salvo que sea imprescindible.";
+  }
+
+  if (tone === "Laboral prudente") {
+    return "- Usa tono formal, neutral y cuidadoso.\n- Marca salario, convenio, jornada, categoria, fecha efectiva, preaviso o causa como [PENDIENTE DE COMPLETAR] si faltan.\n- Recomienda revision laboral si puede afectar a derechos u obligaciones.";
+  }
+
+  if (tone === "Legal prudente") {
+    return "- Usa estructura formal, partes identificadas, objeto, obligaciones, duracion, consecuencias proporcionadas y jurisdiccion solo si se aporta.\n- Evita garantizar validez o suficiencia legal.";
+  }
+
+  if (tone === "Email") {
+    return "- Formato email: asunto, saludo, cuerpo breve por parrafos, solicitud clara, plazo si procede y despedida.\n- No uses clausulas ni bloque de firmas legal.";
+  }
+
+  if (tone === "Carta") {
+    return "- Formato carta: destinatario si se conoce, fecha, saludo, cuerpo natural, cierre cordial y firma textual sencilla.\n- No uses estructura contractual salvo que el usuario lo pida expresamente.";
+  }
+
+  if (tone === "Natural") {
+    return "- Usa lenguaje profesional pero humano, directo y facil de leer.\n- Evita rigidez, tecnicismos innecesarios y formulas grandilocuentes.";
+  }
+
+  return "- Usa tono formal, claro, sobrio y profesional.\n- Prioriza precision, estructura y facilidad de edicion.";
+}
+
+function getCustomRiskRules(input: CustomDocumentPromptInput) {
+  const text = `${input.title} ${input.description} ${input.intendedUse || ""} ${input.sector || ""}`.toLowerCase();
+  const highRiskTerms = [
+    "despido",
+    "baja",
+    "renuncia",
+    "contrato",
+    "nda",
+    "confidencialidad",
+    "reclamacion",
+    "demanda",
+    "impuesto",
+    "iva",
+    "rgpd",
+    "privacidad",
+    "arrendamiento",
+    "arras",
+    "socios",
+    "participaciones",
+  ];
+  const hasRisk = highRiskTerms.some((term) => text.includes(term));
+
+  if (!hasRisk) {
+    return "- No se detecta una materia especialmente sensible, pero mantiene el aviso final y no inventes datos.";
+  }
+
+  return "- Se detecta posible materia legal, laboral, fiscal, inmobiliaria, societaria o de datos.\n- Redacta con especial prudencia.\n- Usa [PENDIENTE DE COMPLETAR] para datos criticos.\n- Incluye recordatorio de revision profesional antes de uso con efectos legales o profesionales.";
+}
+
+function getCustomAmbiguityRules(input: CustomDocumentPromptInput) {
+  const providedSignals = [input.intendedUse, input.sector, input.requiredData].filter((value) => value?.trim()).length;
+
+  if (providedSignals >= 2) {
+    return "- Hay contexto suficiente para redactar un borrador especifico.\n- Usa los datos aportados y no anadas supuestos externos.";
+  }
+
+  return "- La peticion puede ser ambigua.\n- Crea un borrador con estructura razonable y campos [PENDIENTE DE COMPLETAR].\n- No rellenes lagunas con datos inventados.\n- Incluye apartados editables para que el usuario pueda completar informacion clave.";
 }
 
 function getStructureRules(config: DocumentTypeConfig) {

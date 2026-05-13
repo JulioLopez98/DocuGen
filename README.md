@@ -199,6 +199,13 @@ La fase 3.3 añade UI en `/generar`:
 - Llamada a `/api/custom-generate`.
 - Resultado integrado con exportacion PDF/TXT/Word Pro e historial.
 
+La fase 3.4 refuerza el prompt libre:
+
+- Reglas especificas por tono.
+- Heuristicas de riesgo legal, laboral, fiscal, inmobiliario, societario y datos.
+- Tratamiento de peticiones ambiguas con campos `[PENDIENTE DE COMPLETAR]`.
+- Prohibicion de inventar datos o prometer validez legal.
+
 ## Comandos
 
 ```bash
