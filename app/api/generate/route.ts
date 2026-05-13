@@ -5,6 +5,7 @@ import { generatePayloadSchema, getDocumentConfig, requiresPro } from "@/lib/doc
 import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
+import type { TemplateUsageMode } from "@/lib/template-usage";
 
 const errorResponse = (status: number, error: string, message: string) =>
   NextResponse.json({ error, message }, { status });
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     const templateReference = payload.referenceTemplateId
-      ? await getTemplateReference(supabase, user.id, profile, payload.referenceTemplateId)
+      ? await getTemplateReference(supabase, user.id, profile, payload.referenceTemplateId, payload.templateUsageMode)
       : null;
 
     if (templateReference instanceof NextResponse) {
@@ -143,6 +144,7 @@ async function getTemplateReference(
   userId: string,
   profile: Profile,
   templateId: string,
+  usageMode: TemplateUsageMode,
 ) {
   if (profile.plan === "free") {
     return errorResponse(403, "pro_required", "Las plantillas de referencia estan disponibles solo en DocuGen Pro.");
@@ -169,5 +171,6 @@ async function getTemplateReference(
     category: template.category,
     summary: template.summary,
     extractedText: template.extracted_text,
+    usageMode,
   };
 }

@@ -141,6 +141,13 @@ La fase 1.7 conecta plantillas con el generador:
 - La API valida que la plantilla sea del usuario, esté `ready` y tenga texto extraído.
 - El prompt usa la plantilla solo como referencia de estructura y tono, sin copiar datos concretos.
 
+La fase 2.2/2.3 mejora el uso de plantillas:
+
+- Selector de modo de uso en `/generar`.
+- Modos: estructura + tono, solo estructura, tono y estilo, inspiración ligera.
+- `POST /api/generate` acepta `templateUsageMode`.
+- El prompt adapta las instrucciones segun el modo elegido y prioriza siempre los datos del formulario.
+
 Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
 
 ## Comandos

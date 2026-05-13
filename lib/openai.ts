@@ -1,12 +1,14 @@
 import OpenAI from "openai";
 import type { DocumentType, DocumentTypeConfig } from "@/lib/document-types";
 import type { RefinementMode } from "@/lib/refinement";
+import { defaultTemplateUsageMode, templateUsageLabels, type TemplateUsageMode } from "@/lib/template-usage";
 
 export type TemplateReference = {
   name: string;
   category: string | null;
   summary: string | null;
   extractedText: string;
+  usageMode?: TemplateUsageMode;
 };
 
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
@@ -329,17 +331,36 @@ function getMissingFields(config: DocumentTypeConfig, formData: Record<string, s
 }
 
 function buildTemplateReferenceBlock(reference: TemplateReference) {
+  const usageMode = reference.usageMode || defaultTemplateUsageMode;
+
   return `Nombre: ${reference.name}
 Categoria: ${reference.category || "[PENDIENTE DE COMPLETAR]"}
 Resumen: ${reference.summary || "[PENDIENTE DE COMPLETAR]"}
+Modo de uso: ${templateUsageLabels[usageMode]}
 
 Instrucciones para usar la plantilla:
-- Usala solo como referencia de estructura, tono, orden de apartados y estilo.
-- No copies literalmente clausulas completas salvo que sean genericas y encajen con los datos aportados.
+- ${getTemplateUsageInstruction(usageMode)}
+- No copies literalmente clausulas completas salvo que sean genericas, breves y encajen con los datos aportados.
 - No reutilices datos personales, importes, nombres, direcciones, emails, fechas ni condiciones concretas de la plantilla.
 - Si hay conflicto entre la plantilla y los datos del formulario, manda siempre la informacion del formulario.
 - Mantiene las reglas del tipo de documento seleccionado por encima de la plantilla.
 
 Texto extraido de la plantilla:
 ${reference.extractedText.slice(0, 12000)}`;
+}
+
+function getTemplateUsageInstruction(mode: TemplateUsageMode) {
+  if (mode === "structure") {
+    return "Usa la plantilla principalmente como mapa de secciones, orden de apartados y nivel de detalle. No imites necesariamente el tono ni el wording.";
+  }
+
+  if (mode === "tone") {
+    return "Usa la plantilla principalmente como referencia de tono, formalidad, longitud y estilo de redaccion. No repliques su estructura exacta si el tipo documental pide otra.";
+  }
+
+  if (mode === "light") {
+    return "Usa la plantilla solo como inspiracion suave. Prioriza claramente el tipo documental, los datos del formulario y las reglas de DocuGen.";
+  }
+
+  return "Usa la plantilla como referencia de estructura, tono, orden de apartados y estilo, sin copiar datos concretos.";
 }

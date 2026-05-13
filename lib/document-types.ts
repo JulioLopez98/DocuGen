@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { defaultTemplateUsageMode, templateUsageModes } from "@/lib/template-usage";
 
 export type DocumentType =
   | "contrato-freelance"
@@ -870,6 +871,7 @@ export const generatePayloadSchema = z.object({
   docType: z.enum(documentTypeValues),
   formData: z.record(z.string(), z.string().trim().max(4000)),
   referenceTemplateId: z.string().uuid().optional().nullable(),
+  templateUsageMode: z.enum(templateUsageModes).optional().default(defaultTemplateUsageMode),
 });
 
 export type GeneratePayload = z.infer<typeof generatePayloadSchema>;

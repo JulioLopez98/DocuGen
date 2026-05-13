@@ -10,6 +10,13 @@ import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, 
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
 import type { DocumentTemplateRow } from "@/lib/supabase-server";
+import {
+  defaultTemplateUsageMode,
+  templateUsageDescriptions,
+  templateUsageLabels,
+  templateUsageModes,
+  type TemplateUsageMode,
+} from "@/lib/template-usage";
 
 type GeneratedDocument = {
   id: string;
@@ -23,6 +30,7 @@ type GenerateRequestPayload = {
   docType: string;
   formData: Record<string, string>;
   referenceTemplateId?: string | null;
+  templateUsageMode?: TemplateUsageMode;
 };
 
 type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary">;
@@ -60,6 +68,7 @@ export function GeneratorClient({
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
+  const [templateUsageMode, setTemplateUsageMode] = useState<TemplateUsageMode>(defaultTemplateUsageMode);
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
@@ -81,6 +90,7 @@ export function GeneratorClient({
     const requestPayload: GenerateRequestPayload = {
       ...payload,
       referenceTemplateId: referenceTemplateId || null,
+      templateUsageMode,
     };
     setLastPayload(requestPayload);
 
@@ -269,6 +279,28 @@ export function GeneratorClient({
                 <Link href="/plantillas" className="focus-ring btn-ghost mt-3 px-3 py-2 text-xs">
                   Ir a plantillas
                 </Link>
+              </div>
+            )}
+            {referenceTemplateId && (
+              <div className="mt-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Como usarla</p>
+                <div className="mt-2 grid gap-2">
+                  {templateUsageModes.map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setTemplateUsageMode(mode)}
+                      className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
+                        templateUsageMode === mode
+                          ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                          : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                      }`}
+                    >
+                      <span className="font-bold">{templateUsageLabels[mode]}</span>
+                      <span className="mt-1 block text-xs leading-5 text-slate-500">{templateUsageDescriptions[mode]}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </section>
