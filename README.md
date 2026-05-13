@@ -219,6 +219,12 @@ La fase 3.6 añade solicitudes libres en admin:
 - Muestra estado, tono, sector, uso previsto y enlace al documento generado.
 - Incluye contadores rapidos de solicitudes nuevas, en revision y convertidas.
 
+La fase 3.7 cierra QA del generador libre:
+
+- Checklist reproducible en `CUSTOM_GENERATOR_QA.md`.
+- Pruebas de flujo usuario, historial, admin, limites Free y seguridad del prompt.
+- Verificacion tecnica con `npm run lint` y `npm run build`.
+
 ## Comandos
 
 ```bash

@@ -21,7 +21,7 @@ import {
 
 type GeneratedDocument = {
   id: string;
-  docType: DocumentType;
+  docType: string;
   docLabel: string;
   content: string;
   formData: Record<string, string>;
@@ -62,6 +62,7 @@ export function GeneratorClient({
   const [lastPayload, setLastPayload] = useState<GenerateRequestPayload | null>(
     initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
   );
+  const [lastCustomPayload, setLastCustomPayload] = useState<CustomDocumentFormValues | null>(null);
   const [loading, setLoading] = useState(false);
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +92,7 @@ export function GeneratorClient({
     setLoading(true);
     setError(null);
     setLastPayload(null);
+    setLastCustomPayload(payload);
 
     try {
       const response = await fetch("/api/custom-generate", {
@@ -110,6 +112,21 @@ export function GeneratorClient({
       setError("No se pudo conectar con el generador.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function regenerateGenerated() {
+    if (!generated) {
+      return;
+    }
+
+    if (generated.docType === "custom" && lastCustomPayload) {
+      void submitCustom(lastCustomPayload);
+      return;
+    }
+
+    if (lastPayload) {
+      void submit(lastPayload);
     }
   }
 
@@ -465,13 +482,13 @@ export function GeneratorClient({
         <div className="lg:col-span-2">
           <DocResult
             documentId={generated.id}
-            docType={generated.docType}
+            docType={generated.docType === "custom" ? undefined : generated.docType}
             title={generated.docLabel}
             content={generated.content}
             includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures ?? false}
             canExportDocx={canExportDocx}
             brandSettings={brandSettings}
-            onRegenerate={() => lastPayload && submit(lastPayload)}
+            onRegenerate={regenerateGenerated}
             onRefine={refineGenerated}
             refiningMode={refiningMode}
           />
