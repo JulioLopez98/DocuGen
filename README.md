@@ -169,6 +169,8 @@ La fase 2.1 mejora el selector de plantillas en `/generar`:
 
 Para cerrar QA de esta fase, usa `TEMPLATE_LIBRARY_QA.md`.
 
+Para cerrar QA de calidad de generacion con plantillas, usa `TEMPLATE_GENERATION_QA.md`.
+
 ## Comandos
 
 ```bash
