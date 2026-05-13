@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import type { BrandSettings } from "@/lib/supabase-server";
 
@@ -30,6 +31,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const hasLogo = Boolean(form.logo_url);
+  const hasBrandData = Boolean(form.company_name || form.cif || form.address || form.logo_url);
 
   function updateField(field: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -97,19 +99,13 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
 
   if (!isPro) {
     return (
-      <div className="surface rounded-md p-6">
-        <p className="eyebrow">Marca Pro</p>
-        <h2 className="font-serif-display mt-3 text-3xl font-bold">Identidad de marca</h2>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
-          Anade nombre de empresa, CIF, direccion y logo para preparar documentos con una presencia mas corporativa.
-        </p>
-        <div className="mt-6 rounded-md bg-[#d8f3dc] p-4 text-sm text-[#1f2933]">
-          Esta funcion esta disponible solo en DocuGen Pro.
-        </div>
-        <Link href="/precios" className="focus-ring btn-primary mt-6 px-4 py-2 text-sm">
-          Ver planes Pro
-        </Link>
-      </div>
+      <EmptyState
+        eyebrow="Marca Pro"
+        title="Identidad de marca para tus exportaciones"
+        description="Anade nombre de empresa, CIF, direccion y logo para preparar documentos con una presencia mas corporativa. Esta funcion esta disponible en DocuGen Pro."
+        primaryAction={{ href: "/precios", label: "Ver planes Pro" }}
+        secondaryAction={{ href: "/generar", label: "Seguir generando" }}
+      />
     );
   }
 
@@ -122,6 +118,12 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
             Estos datos se usaran en exportaciones Word y PDF, y quedan listos para plantillas avanzadas.
           </p>
+          {!hasBrandData && (
+            <p className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">
+              Aun no tienes marca configurada. Completa al menos el nombre de empresa o sube un logo para que aparezca en
+              tus exportaciones.
+            </p>
+          )}
         </div>
         <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
           Pro activo

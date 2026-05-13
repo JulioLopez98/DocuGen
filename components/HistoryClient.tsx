@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { EmptyState } from "@/components/EmptyState";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
@@ -114,16 +115,21 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
 
   if (documents.length === 0) {
     return (
-      <div className="surface rounded-md p-8">
-        <p className="eyebrow">Sin documentos</p>
-        <h2 className="font-serif-display mt-3 text-3xl font-bold">Tu historial empezara aqui</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-          Cuando generes tu primer borrador, podras abrirlo, descargarlo, reutilizarlo como plantilla o borrarlo desde esta pantalla.
-        </p>
-        <Link href="/generar" className="focus-ring btn-primary mt-6 px-5 py-3 text-sm">
-          Crear primer documento
-        </Link>
-      </div>
+      <EmptyState
+        eyebrow="Historial vacio"
+        title="Tu historial empezara aqui"
+        description="Cuando generes tu primer borrador, podras abrirlo, descargarlo, reutilizarlo como plantilla o borrarlo desde esta pantalla."
+        primaryAction={{ href: "/generar", label: "Crear primer documento" }}
+        secondaryAction={{ href: "/catalogo", label: "Explorar catalogo" }}
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
+          {["Contrato freelance", "Presupuesto comercial", "Carta de presentacion"].map((item) => (
+            <div key={item} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4 text-sm font-semibold">
+              {item}
+            </div>
+          ))}
+        </div>
+      </EmptyState>
     );
   }
 
@@ -207,10 +213,23 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
       {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {filteredDocuments.length === 0 ? (
-        <div className="surface-flat rounded-md p-6">
-          <p className="font-semibold">No hay resultados con esos filtros.</p>
-          <p className="mt-1 text-sm text-slate-600">Prueba con otro texto, otro tipo de documento o limpia los filtros.</p>
-        </div>
+        <EmptyState
+          eyebrow="Sin resultados"
+          title="No hay documentos con esos filtros"
+          description="Prueba con otro texto, cambia el tipo de documento o vuelve a la vista completa del historial."
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setTypeFilter("all");
+              setSortMode("newest");
+            }}
+            className="focus-ring btn-primary px-5 py-3 text-sm"
+          >
+            Limpiar filtros
+          </button>
+        </EmptyState>
       ) : (
         groupedByMonth.map((group) => (
           <section key={group.label} className="grid gap-3">

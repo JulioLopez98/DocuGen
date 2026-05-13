@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 import { FormShell } from "@/components/forms/FormShell";
 import { DocResult } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
@@ -148,9 +149,13 @@ export function GeneratorClient({
               </details>
             ))}
             {groupedDocuments.length === 0 && (
-              <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm text-slate-600">
-                No hay documentos que coincidan con esa busqueda.
-              </div>
+              <EmptyState
+                eyebrow="Sin coincidencias"
+                title="No encontramos ese documento"
+                description="Prueba con una palabra mas general como contrato, web, carta o presupuesto."
+                variant="flat"
+                secondaryAction={{ href: "/catalogo", label: "Ver catalogo" }}
+              />
             )}
           </div>
         </section>

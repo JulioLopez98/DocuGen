@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandSettingsForm } from "@/components/BrandSettingsForm";
 import { DangerZone } from "@/components/DangerZone";
+import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
 import { SettingsTabs } from "@/components/SettingsTabs";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
@@ -118,13 +119,28 @@ export default async function SettingsPage() {
                 <section className="surface rounded-md p-6">
                   <p className="eyebrow">Datos</p>
                   <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos guardados</h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    Tienes <strong>{documentCount || 0}</strong> documentos en tu historial. Puedes consultarlos,
-                    descargarlos o reutilizarlos como plantilla.
-                  </p>
-                  <Link href="/historial" className="focus-ring btn-secondary mt-6 px-4 py-3 text-sm">
-                    Abrir historial
-                  </Link>
+                  {documentCount ? (
+                    <>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                        Tienes <strong>{documentCount}</strong> documentos en tu historial. Puedes consultarlos,
+                        descargarlos o reutilizarlos como plantilla.
+                      </p>
+                      <Link href="/historial" className="focus-ring btn-secondary mt-6 px-4 py-3 text-sm">
+                        Abrir historial
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="mt-5">
+                      <EmptyState
+                        eyebrow="Historial vacio"
+                        title="Aun no hay documentos que gestionar"
+                        description="Cuando generes tu primer borrador, esta seccion te permitira revisar el historial y limpiar tus datos."
+                        variant="flat"
+                        primaryAction={{ href: "/generar", label: "Crear primer documento" }}
+                        secondaryAction={{ href: "/catalogo", label: "Explorar catalogo" }}
+                      />
+                    </div>
+                  )}
                 </section>
                 <DangerZone />
               </div>

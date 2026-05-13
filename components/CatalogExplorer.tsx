@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { EmptyState } from "@/components/EmptyState";
 import { catalogCategories, getCatalogCategoryByName, groupDocumentsByCategory } from "@/lib/catalog";
 import { documentTypes, requiresPro } from "@/lib/document-types";
 
@@ -112,9 +113,13 @@ export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }:
       ))}
 
       {filteredDocuments.length === 0 && (
-        <div className="surface-flat rounded-md p-6 text-sm text-slate-600">
-          No hay documentos que coincidan con esa busqueda. Prueba con una categoria o termino mas general.
-        </div>
+        <EmptyState
+          eyebrow="Sin coincidencias"
+          title="No encontramos documentos con esa busqueda"
+          description="Prueba con una palabra mas general como contrato, web, reclamacion o presupuesto. Tambien puedes volver al catalogo completo."
+          primaryAction={{ href: "/catalogo", label: "Ver todo el catalogo" }}
+          secondaryAction={{ href: signedIn ? "/generar" : "/auth", label: signedIn ? "Abrir generador" : "Empezar gratis" }}
+        />
       )}
     </section>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { EmptyState } from "@/components/EmptyState";
 import { getDocumentConfig } from "@/lib/document-types";
 import { createSupabaseServiceClient, getCurrentProfile } from "@/lib/supabase-server";
 
@@ -148,7 +149,15 @@ export default async function AdminPage() {
                 </div>
               </div>
             ))}
-            {popularTypes.length === 0 && <p className="text-sm text-slate-600">Aun no hay documentos generados.</p>}
+            {popularTypes.length === 0 && (
+              <EmptyState
+                eyebrow="Sin documentos"
+                title="Todavia no hay tipos populares"
+                description="Cuando los usuarios generen documentos, aqui veras que categorias y tipos empiezan a traccionar."
+                variant="flat"
+                primaryAction={{ href: "/catalogo", label: "Ver catalogo" }}
+              />
+            )}
           </div>
         </section>
 
@@ -167,6 +176,15 @@ export default async function AdminPage() {
                 </div>
               </article>
             ))}
+            {recentUsers.length === 0 && (
+              <EmptyState
+                eyebrow="Sin usuarios"
+                title="Aun no hay altas registradas"
+                description="Cuando entren los primeros usuarios, apareceran aqui con su plan y fecha de registro."
+                variant="flat"
+                primaryAction={{ href: "/dashboard", label: "Volver al dashboard" }}
+              />
+            )}
           </div>
         </section>
       </div>
@@ -202,7 +220,15 @@ export default async function AdminPage() {
               </article>
             );
           })}
-          {recentDocuments.length === 0 && <p className="py-4 text-sm text-slate-600">Sin actividad todavia.</p>}
+          {recentDocuments.length === 0 && (
+            <EmptyState
+              eyebrow="Sin actividad"
+              title="Todavia no hay documentos recientes"
+              description="La actividad aparecera aqui cuando los usuarios empiecen a generar borradores."
+              variant="flat"
+              primaryAction={{ href: "/generar", label: "Crear documento de prueba" }}
+            />
+          )}
         </div>
       </section>
     </section>
