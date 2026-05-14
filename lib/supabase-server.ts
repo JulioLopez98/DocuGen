@@ -92,6 +92,25 @@ export type DocumentRequestRow = {
   updated_at: string;
 };
 
+export type CommunityDocumentTypeStatus = "draft" | "reviewing" | "approved" | "published" | "rejected";
+
+export type CommunityDocumentTypeRow = {
+  id: string;
+  source_request_id: string | null;
+  created_by: string | null;
+  slug: string;
+  label: string;
+  description: string;
+  category: string | null;
+  status: CommunityDocumentTypeStatus;
+  required_plan: "free" | "pro" | "empresa";
+  prompt_brief: string;
+  suggested_fields: Array<{ name: string; label: string; type: "text" | "textarea" | "date" | "email" }>;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export function hasSupabaseServerEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }

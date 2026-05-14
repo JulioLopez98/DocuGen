@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
-import type { DocumentRequestRow, DocumentRequestStatus } from "@/lib/supabase-server";
+import type { CommunityDocumentTypeRow, DocumentRequestRow, DocumentRequestStatus } from "@/lib/supabase-server";
 
 type AdminDocumentRequestsProps = {
   requests: DocumentRequestRow[];
+  communityTypes: CommunityDocumentTypeRow[];
 };
 
 type EditableRequestState = {
@@ -25,7 +26,7 @@ const statusOptions: Array<{ value: DocumentRequestStatus; label: string; helper
 
 const statusLabels = Object.fromEntries(statusOptions.map((option) => [option.value, option.label])) as Record<DocumentRequestStatus, string>;
 
-export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) {
+export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumentRequestsProps) {
   const router = useRouter();
   const [editableRequests, setEditableRequests] = useState<Record<string, EditableRequestState>>(() =>
     Object.fromEntries(
@@ -39,8 +40,10 @@ export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) 
     ),
   );
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [convertedId, setConvertedId] = useState<string | null>(null);
 
   const requestCounts = useMemo(() => countRequestStatuses(requests), [requests]);
 
@@ -87,6 +90,31 @@ export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) 
     }
   }
 
+  async function convertRequest(id: string) {
+    setConvertingId(id);
+    setError(null);
+    setConvertedId(null);
+
+    try {
+      const response = await fetch(`/api/admin/document-requests/${id}/convert`, {
+        method: "POST",
+      });
+      const data = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        setError(data.message || "No se pudo crear el candidato.");
+        return;
+      }
+
+      setConvertedId(id);
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setConvertingId(null);
+    }
+  }
+
   return (
     <section className="surface mt-4 rounded-md p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -105,6 +133,37 @@ export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) 
         </div>
       </div>
 
+      {communityTypes.length > 0 && (
+        <div className="mb-5 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Candidatos creados</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Definiciones internas nacidas de solicitudes. Todavía no forman parte del catálogo público.
+              </p>
+            </div>
+            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+              {communityTypes.length} recientes
+            </span>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {communityTypes.slice(0, 6).map((type) => (
+              <div key={type.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold">{type.label}</p>
+                    <p className="mt-1 text-xs text-slate-500">{type.category || "A medida"} · {type.status}</p>
+                  </div>
+                  <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-[10px] font-bold uppercase text-white">
+                    {type.required_plan}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {error && <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <div className="grid gap-3">
@@ -114,7 +173,9 @@ export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) 
             admin_notes: request.admin_notes || "",
           };
           const isBusy = busyId === request.id;
+          const isConverting = convertingId === request.id;
           const isSaved = savedId === request.id;
+          const isConverted = convertedId === request.id || request.status === "converted";
 
           return (
             <article key={request.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
@@ -138,6 +199,14 @@ export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) 
                         Ver documento
                       </Link>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => void convertRequest(request.id)}
+                      disabled={isConverting || isConverted}
+                      className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isConverted ? "Candidato creado" : isConverting ? "Creando..." : "Convertir a candidato"}
+                    </button>
                   </div>
                 </div>
 

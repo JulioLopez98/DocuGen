@@ -4,7 +4,12 @@ import { redirect } from "next/navigation";
 import { AdminDocumentRequests } from "@/components/AdminDocumentRequests";
 import { EmptyState } from "@/components/EmptyState";
 import { getDocumentConfig } from "@/lib/document-types";
-import { createSupabaseServiceClient, getCurrentProfile, type DocumentRequestRow } from "@/lib/supabase-server";
+import {
+  createSupabaseServiceClient,
+  getCurrentProfile,
+  type CommunityDocumentTypeRow,
+  type DocumentRequestRow,
+} from "@/lib/supabase-server";
 
 type AdminProfile = {
   id: string;
@@ -66,6 +71,7 @@ export default async function AdminPage() {
     docs30Result,
     events24Result,
     requestsResult,
+    communityTypesResult,
   ] = await Promise.all([
     adminClient.from("profiles").select("id,email,plan,role,docs_this_month,created_at").order("created_at", { ascending: false }).returns<AdminProfile[]>(),
     adminClient.from("documents").select("id,user_id,doc_type,doc_label,model_used,tokens_input,tokens_output,created_at").order("created_at", { ascending: false }).limit(200).returns<AdminDocument[]>(),
@@ -75,11 +81,13 @@ export default async function AdminPage() {
     adminClient.from("documents").select("id", { count: "exact", head: true }).gte("created_at", last30Days.toISOString()),
     adminClient.from("generation_events").select("id", { count: "exact", head: true }).gte("created_at", new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()),
     adminClient.from("document_requests").select("*").order("created_at", { ascending: false }).limit(30).returns<DocumentRequestRow[]>(),
+    adminClient.from("community_document_types").select("*").order("created_at", { ascending: false }).limit(20).returns<CommunityDocumentTypeRow[]>(),
   ]);
 
   const profiles = profilesResult.data || [];
   const documents = documentsResult.data || [];
   const documentRequests = requestsResult.data || [];
+  const communityTypes = communityTypesResult.data || [];
   const planCounts = countPlans(profiles);
   const estimatedMrr = planCounts.pro * 9 + planCounts.empresa * 39;
   const popularTypes = getPopularTypes(documents).slice(0, 8);
@@ -245,7 +253,7 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <AdminDocumentRequests requests={documentRequests} />
+      <AdminDocumentRequests requests={documentRequests} communityTypes={communityTypes} />
     </section>
   );
 }

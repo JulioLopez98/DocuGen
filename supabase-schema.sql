@@ -67,6 +67,24 @@ create table if not exists public.document_requests (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.community_document_types (
+  id uuid primary key default gen_random_uuid(),
+  source_request_id uuid references public.document_requests(id) on delete set null,
+  created_by uuid references auth.users(id) on delete set null,
+  slug text not null unique,
+  label text not null,
+  description text not null,
+  category text,
+  status text not null default 'draft' check (status in ('draft', 'reviewing', 'approved', 'published', 'rejected')),
+  required_plan text not null default 'pro' check (required_plan in ('free', 'pro', 'empresa')),
+  prompt_brief text not null,
+  suggested_fields jsonb not null default '[]',
+  admin_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (source_request_id)
+);
+
 create table if not exists public.brand_settings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -139,6 +157,8 @@ create index if not exists generation_events_user_created_idx on public.generati
 create index if not exists document_requests_user_created_idx on public.document_requests(user_id, created_at desc);
 create index if not exists document_requests_status_idx on public.document_requests(status);
 create index if not exists document_requests_generated_document_idx on public.document_requests(generated_document_id);
+create index if not exists community_document_types_status_idx on public.community_document_types(status);
+create index if not exists community_document_types_source_request_idx on public.community_document_types(source_request_id);
 create index if not exists workspace_members_user_idx on public.workspace_members(user_id);
 create index if not exists document_templates_user_created_idx on public.document_templates(user_id, created_at desc);
 create index if not exists document_templates_workspace_idx on public.document_templates(workspace_id);
@@ -174,6 +194,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists document_requests_set_updated_at on public.document_requests;
 create trigger document_requests_set_updated_at
 before update on public.document_requests
+for each row execute function public.set_updated_at();
+
+drop trigger if exists community_document_types_set_updated_at on public.community_document_types;
+create trigger community_document_types_set_updated_at
+before update on public.community_document_types
 for each row execute function public.set_updated_at();
 
 drop trigger if exists chat_sessions_set_updated_at on public.chat_sessions;
@@ -276,6 +301,7 @@ alter table public.workspace_members enable row level security;
 alter table public.documents enable row level security;
 alter table public.generation_events enable row level security;
 alter table public.document_requests enable row level security;
+alter table public.community_document_types enable row level security;
 alter table public.brand_settings enable row level security;
 alter table public.document_templates enable row level security;
 alter table public.referrals enable row level security;
@@ -357,6 +383,23 @@ with check (user_id = auth.uid() or public.is_admin());
 
 drop policy if exists "document_requests_delete_admin" on public.document_requests;
 create policy "document_requests_delete_admin" on public.document_requests
+for delete using (public.is_admin());
+
+drop policy if exists "community_document_types_select_admin_or_published" on public.community_document_types;
+create policy "community_document_types_select_admin_or_published" on public.community_document_types
+for select using (status = 'published' or public.is_admin());
+
+drop policy if exists "community_document_types_insert_admin" on public.community_document_types;
+create policy "community_document_types_insert_admin" on public.community_document_types
+for insert with check (public.is_admin());
+
+drop policy if exists "community_document_types_update_admin" on public.community_document_types;
+create policy "community_document_types_update_admin" on public.community_document_types
+for update using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "community_document_types_delete_admin" on public.community_document_types;
+create policy "community_document_types_delete_admin" on public.community_document_types
 for delete using (public.is_admin());
 
 drop policy if exists "brand_settings_select_own_or_admin" on public.brand_settings;

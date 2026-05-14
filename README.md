@@ -236,6 +236,14 @@ La fase 4.1 convierte el panel de solicitudes en una herramienta editable:
 - Notas internas por solicitud.
 - Los estados `approved` y `converted` preparan el camino para convertir solicitudes en catálogo oficial.
 
+La fase 4.2 permite convertir solicitudes en definiciones internas:
+
+- SQL incremental: `supabase-community-catalog-4.2.sql`.
+- Nueva tabla `community_document_types`.
+- API admin `POST /api/admin/document-requests/[id]/convert`.
+- Botón `Convertir a candidato` en `/admin`.
+- La solicitud pasa a `converted` y el candidato queda como `draft`, todavía sin publicarse en el catálogo.
+
 ## Comandos
 
 ```bash
