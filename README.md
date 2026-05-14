@@ -227,6 +227,15 @@ La fase 3.7 cierra QA del generador libre:
 
 El modo `A medida` queda reservado para planes Pro y Empresa. Los usuarios Free lo ven bloqueado con CTA de upgrade y la API responde `pro_required` si intentan usarlo directamente.
 
+## Catálogo comunitario
+
+La fase 4.1 convierte el panel de solicitudes en una herramienta editable:
+
+- API admin `PATCH /api/admin/document-requests/[id]`.
+- Edición de estado: nueva, en revisión, candidata, descartada y convertida.
+- Notas internas por solicitud.
+- Los estados `approved` y `converted` preparan el camino para convertir solicitudes en catálogo oficial.
+
 ## Comandos
 
 ```bash

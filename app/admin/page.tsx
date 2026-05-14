@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { AdminDocumentRequests } from "@/components/AdminDocumentRequests";
 import { EmptyState } from "@/components/EmptyState";
 import { getDocumentConfig } from "@/lib/document-types";
 import { createSupabaseServiceClient, getCurrentProfile, type DocumentRequestRow } from "@/lib/supabase-server";
@@ -79,7 +80,6 @@ export default async function AdminPage() {
   const profiles = profilesResult.data || [];
   const documents = documentsResult.data || [];
   const documentRequests = requestsResult.data || [];
-  const requestCounts = countRequestStatuses(documentRequests);
   const planCounts = countPlans(profiles);
   const estimatedMrr = planCounts.pro * 9 + planCounts.empresa * 39;
   const popularTypes = getPopularTypes(documents).slice(0, 8);
@@ -245,59 +245,7 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <section className="surface mt-4 rounded-md p-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="eyebrow">Generador libre</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Solicitudes a medida</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Peticiones creadas desde el flujo No encuentro mi documento. Sirven para detectar nuevos tipos candidatos.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <StatusPill label="Nuevas" value={requestCounts.submitted} />
-            <StatusPill label="Revision" value={requestCounts.reviewing} />
-            <StatusPill label="Convertidas" value={requestCounts.converted} />
-          </div>
-        </div>
-
-        <div className="grid gap-3">
-          {documentRequests.map((request) => (
-            <article key={request.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold">{request.title}</h3>
-                    <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
-                      {request.status}
-                    </span>
-                  </div>
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{request.description}</p>
-                  <p className="mt-2 text-xs text-slate-500">
-                    {request.sector || "Sin sector"} - {request.tone} - {new Date(request.created_at).toLocaleString("es-ES")}
-                  </p>
-                  {request.intended_use && <p className="mt-1 text-xs text-slate-500">Uso: {request.intended_use}</p>}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {request.generated_document_id && (
-                    <Link href={`/historial/${request.generated_document_id}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
-                      Ver documento
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </article>
-          ))}
-          {documentRequests.length === 0 && (
-            <EmptyState
-              eyebrow="Sin solicitudes"
-              title="Aun no hay documentos a medida"
-              description="Cuando los usuarios usen el generador libre, veras aqui que documentos piden y cuales conviene convertir en catalogo oficial."
-              variant="flat"
-            />
-          )}
-        </div>
-      </section>
+      <AdminDocumentRequests requests={documentRequests} />
     </section>
   );
 }
@@ -318,14 +266,6 @@ function SmallStat({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
       <p className="mt-2 font-serif-display text-2xl font-bold">{value}</p>
     </div>
-  );
-}
-
-function StatusPill({ label, value }: { label: string; value: number }) {
-  return (
-    <span className="rounded-full bg-[#d8f3dc] px-3 py-1 font-bold text-[#2d6a4f]">
-      {label}: {value}
-    </span>
   );
 }
 
@@ -354,16 +294,6 @@ function countPlans(profiles: AdminProfile[]) {
       return counts;
     },
     { free: 0, pro: 0, empresa: 0 },
-  );
-}
-
-function countRequestStatuses(requests: DocumentRequestRow[]) {
-  return requests.reduce(
-    (counts, request) => {
-      counts[request.status] += 1;
-      return counts;
-    },
-    { submitted: 0, reviewing: 0, approved: 0, rejected: 0, converted: 0 },
   );
 }
 
