@@ -105,9 +105,14 @@ export default async function AdminPage() {
             Vista interna con usuarios, actividad, documentos generados y senales de conversion.
           </p>
         </div>
-        <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
-          Volver al dashboard
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/catalogo-comunitario" className="focus-ring btn-primary px-4 py-3 text-sm">
+            Catálogo comunitario
+          </Link>
+          <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
+            Volver al dashboard
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

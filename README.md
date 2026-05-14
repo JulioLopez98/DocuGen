@@ -244,6 +244,13 @@ La fase 4.2 permite convertir solicitudes en definiciones internas:
 - Botón `Convertir a candidato` en `/admin`.
 - La solicitud pasa a `converted` y el candidato queda como `draft`, todavía sin publicarse en el catálogo.
 
+La fase 4.3 añade el catálogo comunitario privado:
+
+- Ruta admin `/admin/catalogo-comunitario`.
+- Lista candidatos internos con filtros por búsqueda, estado y categoría.
+- Muestra prompt base, campos sugeridos, plan requerido, notas y solicitud origen.
+- Sigue siendo privado: no se mezcla con el catálogo público ni con `/generar`.
+
 ## Comandos
 
 ```bash

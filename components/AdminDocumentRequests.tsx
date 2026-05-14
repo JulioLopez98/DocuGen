@@ -142,9 +142,14 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                 Definiciones internas nacidas de solicitudes. Todavía no forman parte del catálogo público.
               </p>
             </div>
-            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-              {communityTypes.length} recientes
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+                {communityTypes.length} recientes
+              </span>
+              <Link href="/admin/catalogo-comunitario" className="focus-ring btn-ghost px-3 py-2 text-xs">
+                Abrir catálogo privado
+              </Link>
+            </div>
           </div>
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             {communityTypes.slice(0, 6).map((type) => (
