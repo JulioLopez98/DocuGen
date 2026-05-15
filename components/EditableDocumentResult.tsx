@@ -29,13 +29,19 @@ type ImproveResponse = {
   message?: string;
 };
 
+type AiComparison = {
+  before: string;
+  after: string;
+  modeLabel: string;
+};
+
 const improveModes: Array<{ value: ImproveMode; label: string; description: string }> = [
-  { value: "formal", label: "Más formal", description: "Pulido profesional, sobrio y preciso." },
-  { value: "brief", label: "Más breve", description: "Reduce repeticiones y deja lo esencial." },
-  { value: "commercial", label: "Más comercial", description: "Mejora claridad, valor y próximos pasos." },
-  { value: "natural", label: "Más natural", description: "Suena más humano sin perder profesionalidad." },
-  { value: "legal_review", label: "Más prudente", description: "Refuerza claridad y cautela en documentos sensibles." },
-  { value: "custom", label: "Instrucción propia", description: "Indica exactamente qué quieres cambiar." },
+  { value: "formal", label: "Mas formal", description: "Pulido profesional, sobrio y preciso." },
+  { value: "brief", label: "Mas breve", description: "Reduce repeticiones y deja lo esencial." },
+  { value: "commercial", label: "Mas comercial", description: "Mejora claridad, valor y proximos pasos." },
+  { value: "natural", label: "Mas natural", description: "Suena mas humano sin perder profesionalidad." },
+  { value: "legal_review", label: "Mas prudente", description: "Refuerza claridad y cautela en documentos sensibles." },
+  { value: "custom", label: "Instruccion propia", description: "Indica exactamente que quieres cambiar." },
 ];
 
 export function EditableDocumentResult({
@@ -57,6 +63,7 @@ export function EditableDocumentResult({
   const [improving, setImproving] = useState(false);
   const [improveMode, setImproveMode] = useState<ImproveMode>("formal");
   const [customInstruction, setCustomInstruction] = useState("");
+  const [aiComparison, setAiComparison] = useState<AiComparison | null>(null);
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +103,7 @@ export function EditableDocumentResult({
       setSavedContent(data.document.content);
       setContent(data.document.content);
       setVersions(data.versions || versions);
+      setAiComparison(null);
       setSaveMessage("Cambios guardados");
       window.setTimeout(() => setSaveMessage(null), 1800);
     } catch {
@@ -106,7 +114,7 @@ export function EditableDocumentResult({
   }
 
   async function restoreVersion(version: DocumentVersionRow) {
-    if (!window.confirm(`¿Restaurar la versión ${version.version_number}? Se creará una nueva versión con ese contenido.`)) {
+    if (!window.confirm(`Restaurar la version ${version.version_number}? Se creara una nueva version con ese contenido.`)) {
       return;
     }
 
@@ -119,15 +127,16 @@ export function EditableDocumentResult({
       const data = (await response.json()) as SaveResponse;
 
       if (!response.ok || !data.document) {
-        setError(data.message || "No se pudo restaurar la versión.");
+        setError(data.message || "No se pudo restaurar la version.");
         return;
       }
 
       setSavedContent(data.document.content);
       setContent(data.document.content);
       setVersions(data.versions || versions);
+      setAiComparison(null);
       setEditing(false);
-      setSaveMessage(`Versión ${data.restoredFrom || version.version_number} restaurada`);
+      setSaveMessage(`Version ${data.restoredFrom || version.version_number} restaurada`);
       window.setTimeout(() => setSaveMessage(null), 2200);
     } catch {
       setError("No se pudo conectar con el servidor.");
@@ -158,10 +167,13 @@ export function EditableDocumentResult({
         return;
       }
 
-      setContent(data.document.content);
-      setEditing(true);
-      setSaveMessage("Mejora cargada en el editor. Revisa y guarda si te encaja.");
-      window.setTimeout(() => setSaveMessage(null), 3200);
+      setAiComparison({
+        before: content,
+        after: data.document.content,
+        modeLabel: improveModes.find((mode) => mode.value === improveMode)?.label || "Mejora IA",
+      });
+      setSaveMessage("Mejora lista para comparar.");
+      window.setTimeout(() => setSaveMessage(null), 2600);
     } catch {
       setError("No se pudo conectar con el servidor.");
     } finally {
@@ -169,10 +181,28 @@ export function EditableDocumentResult({
     }
   }
 
+  function applyAiComparison() {
+    if (!aiComparison) {
+      return;
+    }
+
+    setContent(aiComparison.after);
+    setEditing(true);
+    setSaveMessage("Mejora aplicada al editor. Revisa y guarda si te encaja.");
+    window.setTimeout(() => setSaveMessage(null), 3200);
+  }
+
+  function discardAiComparison() {
+    setAiComparison(null);
+    setSaveMessage("Mejora descartada");
+    window.setTimeout(() => setSaveMessage(null), 1800);
+  }
+
   function loadVersionInEditor(version: DocumentVersionRow) {
     setContent(version.content);
     setEditing(true);
-    setSaveMessage(`Versión ${version.version_number} cargada en el editor`);
+    setAiComparison(null);
+    setSaveMessage(`Version ${version.version_number} cargada en el editor`);
     window.setTimeout(() => setSaveMessage(null), 2200);
   }
 
@@ -184,7 +214,7 @@ export function EditableDocumentResult({
             <p className="text-sm font-semibold text-[#2d6a4f]">Documento editable</p>
             <h2 className="mt-1 text-xl font-bold">{title}</h2>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Puedes ajustar el texto, guardarlo en tu historial y exportar la versión final.
+              Puedes ajustar el texto, guardarlo en tu historial y exportar la version final.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -236,7 +266,7 @@ export function EditableDocumentResult({
                   ? "focus-ring btn-secondary px-3 py-2 text-sm"
                   : "focus-ring rounded-md border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
               }
-              title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
+              title={canExportDocx ? "Descargar Word" : "Word solo esta disponible en el plan Pro"}
             >
               {canExportDocx ? "Word" : "Word Pro"}
             </button>
@@ -275,7 +305,7 @@ export function EditableDocumentResult({
             <p className="text-sm font-semibold text-[#2d6a4f]">Mejorar con IA</p>
             <h3 className="mt-1 text-lg font-bold">Pulir el documento actual</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              La IA cargará una versión mejorada en el editor. No se guarda hasta que pulses Guardar.
+              La IA prepara una version mejorada para compararla antes de aplicarla. No se guarda hasta que pulses Guardar.
             </p>
           </div>
           <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Reversible</span>
@@ -298,13 +328,13 @@ export function EditableDocumentResult({
           </label>
 
           <label>
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Instrucción opcional</span>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Instruccion opcional</span>
             <input
               value={customInstruction}
               onChange={(event) => setCustomInstruction(event.target.value)}
               disabled={improveMode !== "custom"}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f] disabled:bg-slate-100 disabled:text-slate-400"
-              placeholder="Ej: hazlo más directo, cambia a tono email, elimina tecnicismos..."
+              placeholder="Ej: hazlo mas directo, cambia a tono email, elimina tecnicismos..."
             />
           </label>
 
@@ -323,13 +353,40 @@ export function EditableDocumentResult({
         </p>
       </aside>
 
+      {aiComparison && (
+        <aside className="surface rounded-md p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-[#2d6a4f]">Comparacion IA</p>
+              <h3 className="mt-1 text-lg font-bold">Antes y despues</h3>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Revisa la propuesta generada con el modo {aiComparison.modeLabel}. Puedes aplicarla al editor o descartarla.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={discardAiComparison} className="focus-ring btn-secondary px-3 py-2 text-sm">
+                Descartar
+              </button>
+              <button type="button" onClick={applyAiComparison} className="focus-ring btn-primary px-3 py-2 text-sm">
+                Aplicar al editor
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <ComparisonPanel title="Antes" content={aiComparison.before} tone="muted" />
+            <ComparisonPanel title="Despues" content={aiComparison.after} tone="highlight" />
+          </div>
+        </aside>
+      )}
+
       <aside className="surface rounded-md p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-[#2d6a4f]">Versiones</p>
             <h3 className="mt-1 text-lg font-bold">Historial de cambios</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Abre una versión para revisarla, copiarla o cargarla en el editor antes de restaurarla.
+              Abre una version para revisarla, copiarla o cargarla en el editor antes de restaurarla.
             </p>
           </div>
           <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
@@ -339,7 +396,7 @@ export function EditableDocumentResult({
 
         {versions.length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4 text-sm text-slate-600">
-            Aún no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
+            Aun no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
           </p>
         ) : (
           <div className="mt-4 grid gap-3">
@@ -352,7 +409,7 @@ export function EditableDocumentResult({
                   <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 p-3">
                     <div>
                       <p className="text-sm font-semibold">
-                        Versión {version.version_number}
+                        Version {version.version_number}
                         {isCurrent && <span className="ml-2 text-xs text-[#2d6a4f]">Actual</span>}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
@@ -373,7 +430,7 @@ export function EditableDocumentResult({
                         onClick={() => void copyVersion(version)}
                         className="focus-ring btn-ghost px-3 py-2 text-sm"
                       >
-                        {versionCopiedId === version.id ? "Copiada" : "Copiar versión"}
+                        {versionCopiedId === version.id ? "Copiada" : "Copiar version"}
                       </button>
                       <button
                         type="button"
@@ -400,6 +457,26 @@ export function EditableDocumentResult({
         )}
       </aside>
     </section>
+  );
+}
+
+function ComparisonPanel({ title, content, tone }: { title: string; content: string; tone: "muted" | "highlight" }) {
+  const stats = getDocumentStats(content);
+  const toneClass =
+    tone === "highlight"
+      ? "border-[#2d6a4f] bg-[#f4fbf5]"
+      : "border-slate-200 bg-white/75";
+
+  return (
+    <div className={`rounded-md border ${toneClass}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-inherit px-4 py-3">
+        <p className="text-sm font-bold">{title}</p>
+        <p className="text-xs text-slate-500">
+          {stats.words} palabras · {stats.characters} caracteres
+        </p>
+      </div>
+      <article className="max-h-[520px] overflow-auto whitespace-pre-wrap p-4 text-sm leading-7">{content}</article>
+    </div>
   );
 }
 

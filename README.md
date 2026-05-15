@@ -310,6 +310,13 @@ La fase 5.5 añade mejora con IA desde el editor:
 - Modos: más formal, más breve, más comercial, más natural, más prudente e instrucción propia.
 - La mejora se carga en el editor como cambios pendientes; el usuario debe revisarla y pulsar `Guardar`.
 
+La fase 5.6 añade comparación antes/después:
+
+- La mejora IA no se aplica directamente al editor.
+- Se muestra una comparación en dos columnas con texto actual y propuesta mejorada.
+- El usuario puede aplicar la propuesta al editor o descartarla.
+- Al aplicar, el contenido queda como cambio pendiente hasta pulsar `Guardar`.
+
 ## Comandos
 
 ```bash
