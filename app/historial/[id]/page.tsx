@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EditableDocumentResult } from "@/components/EditableDocumentResult";
 import { getDocumentConfig } from "@/lib/document-types";
-import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type DocumentRow, type DocumentVersionRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 type Props = {
@@ -32,6 +32,13 @@ export default async function HistoryDetailPage({ params }: Props) {
     profile.plan !== "free"
       ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
       : { data: null };
+  const { data: versions } = await supabase
+    .from("document_versions")
+    .select("id,document_id,user_id,version_number,content,change_summary,created_at")
+    .eq("document_id", document.id)
+    .eq("user_id", profile.id)
+    .order("version_number", { ascending: false })
+    .returns<DocumentVersionRow[]>();
 
   return (
     <section className="container-page py-10">
@@ -112,6 +119,7 @@ export default async function HistoryDetailPage({ params }: Props) {
         documentId={document.id}
         title={document.doc_label}
         initialContent={document.content}
+        initialVersions={versions || []}
         includesSignatures={config?.includesSignatures ?? false}
         canExportDocx={profile.plan !== "free"}
         brandSettings={brandSettings || null}

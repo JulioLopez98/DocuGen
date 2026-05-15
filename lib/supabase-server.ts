@@ -30,6 +30,16 @@ export type DocumentRow = {
   created_at: string;
 };
 
+export type DocumentVersionRow = {
+  id: string;
+  document_id: string;
+  user_id: string;
+  version_number: number;
+  content: string;
+  change_summary: string | null;
+  created_at: string;
+};
+
 export type BrandSettings = {
   id: string;
   user_id: string;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getDocumentVersions, getNextVersionNumber, insertDocumentVersions } from "@/lib/document-versions";
 import { createSupabaseServiceClient, requireUser } from "@/lib/supabase-server";
 
 const documentUpdateSchema = z.object({
@@ -25,6 +26,64 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const payload = documentUpdateSchema.parse(await request.json());
     const db = createSupabaseServiceClient() || supabase;
+    const { data: currentDocument, error: documentError } = await db
+      .from("documents")
+      .select("id,user_id,content")
+      .eq("id", params.id)
+      .eq("user_id", user.id)
+      .single<{ id: string; user_id: string; content: string }>();
+
+    if (documentError || !currentDocument) {
+      console.error("document_update_load_error", documentError);
+      return errorResponse(404, "document_not_found", "No se pudo encontrar el documento.");
+    }
+
+    if (currentDocument.content === payload.content) {
+      const { data: versions, error: versionsError } = await getDocumentVersions(db, params.id, user.id);
+
+      if (versionsError) {
+        console.error("document_versions_load_error", versionsError);
+      }
+
+      return NextResponse.json({ document: { id: currentDocument.id, content: currentDocument.content }, versions: versions || [] });
+    }
+
+    const { data: existingVersions, error: versionsLoadError } = await getDocumentVersions(db, params.id, user.id);
+
+    if (versionsLoadError) {
+      console.error("document_versions_load_error", versionsLoadError);
+      return errorResponse(500, "version_failed", "No se pudo preparar el historial de versiones.");
+    }
+
+    const versionsToInsert = [];
+    let nextVersionNumber = getNextVersionNumber(existingVersions || []);
+
+    if (!existingVersions || existingVersions.length === 0) {
+      versionsToInsert.push({
+        document_id: params.id,
+        user_id: user.id,
+        version_number: 1,
+        content: currentDocument.content,
+        change_summary: "Contenido original",
+      });
+      nextVersionNumber = 2;
+    }
+
+    versionsToInsert.push({
+      document_id: params.id,
+      user_id: user.id,
+      version_number: nextVersionNumber,
+      content: payload.content,
+      change_summary: "Edicion manual",
+    });
+
+    const { error: versionInsertError } = await insertDocumentVersions(db, versionsToInsert);
+
+    if (versionInsertError) {
+      console.error("document_version_insert_error", versionInsertError);
+      return errorResponse(500, "version_failed", "No se pudo guardar la version del documento.");
+    }
+
     const { data, error } = await db
       .from("documents")
       .update({ content: payload.content })
@@ -38,7 +97,13 @@ export async function PATCH(request: Request, { params }: Params) {
       return errorResponse(500, "update_failed", "No se pudo guardar el documento.");
     }
 
-    return NextResponse.json({ document: data });
+    const { data: versions, error: versionsError } = await getDocumentVersions(db, params.id, user.id);
+
+    if (versionsError) {
+      console.error("document_versions_reload_error", versionsError);
+    }
+
+    return NextResponse.json({ document: data, versions: versions || [] });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return errorResponse(400, "invalid_payload", "El documento no puede estar vacío.");

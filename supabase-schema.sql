@@ -46,6 +46,17 @@ create table if not exists public.documents (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.document_versions (
+  id uuid primary key default gen_random_uuid(),
+  document_id uuid not null references public.documents(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  version_number integer not null,
+  content text not null,
+  change_summary text,
+  created_at timestamptz not null default now(),
+  unique (document_id, version_number)
+);
+
 create table if not exists public.generation_events (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -153,6 +164,8 @@ create index if not exists profiles_stripe_customer_id_idx on public.profiles(st
 create index if not exists documents_user_created_idx on public.documents(user_id, created_at desc);
 create index if not exists documents_workspace_idx on public.documents(workspace_id);
 create index if not exists documents_reference_template_idx on public.documents(reference_template_id);
+create index if not exists document_versions_document_idx on public.document_versions(document_id, version_number desc);
+create index if not exists document_versions_user_created_idx on public.document_versions(user_id, created_at desc);
 create index if not exists generation_events_user_created_idx on public.generation_events(user_id, created_at desc);
 create index if not exists document_requests_user_created_idx on public.document_requests(user_id, created_at desc);
 create index if not exists document_requests_status_idx on public.document_requests(status);
@@ -299,6 +312,7 @@ alter table public.profiles enable row level security;
 alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
 alter table public.documents enable row level security;
+alter table public.document_versions enable row level security;
 alter table public.generation_events enable row level security;
 alter table public.document_requests enable row level security;
 alter table public.community_document_types enable row level security;
@@ -359,6 +373,29 @@ with check (user_id = auth.uid() or public.is_admin());
 drop policy if exists "documents_delete_own_or_admin" on public.documents;
 create policy "documents_delete_own_or_admin" on public.documents
 for delete using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "document_versions_select_own_or_admin" on public.document_versions;
+create policy "document_versions_select_own_or_admin" on public.document_versions
+for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "document_versions_insert_own_or_admin" on public.document_versions;
+create policy "document_versions_insert_own_or_admin" on public.document_versions
+for insert with check (
+  (
+    user_id = auth.uid()
+    and exists (
+      select 1
+      from public.documents
+      where documents.id = document_versions.document_id
+      and documents.user_id = auth.uid()
+    )
+  )
+  or public.is_admin()
+);
+
+drop policy if exists "document_versions_delete_admin" on public.document_versions;
+create policy "document_versions_delete_admin" on public.document_versions
+for delete using (public.is_admin());
 
 drop policy if exists "generation_events_select_own_or_admin" on public.generation_events;
 create policy "generation_events_select_own_or_admin" on public.generation_events

@@ -286,6 +286,15 @@ La fase 5.2 guarda cambios manuales:
 - `Restaurar` vuelve al último contenido guardado.
 - Las exportaciones usan siempre el contenido actual del editor.
 
+La fase 5.3 añade versiones restaurables:
+
+- SQL incremental: `supabase-document-versions-5.3.sql`.
+- Nueva tabla `document_versions` con RLS por usuario.
+- El primer guardado conserva el contenido original como versión 1.
+- Cada guardado manual crea una versión nueva.
+- El detalle de historial muestra versiones y permite restaurar una anterior.
+- Al restaurar se crea una versión nueva con el contenido recuperado, sin borrar el historial.
+
 ## Comandos
 
 ```bash
