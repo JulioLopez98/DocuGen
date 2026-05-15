@@ -373,19 +373,48 @@ function EmptyPanel({ title, text, href, action }: { title: string; text: string
 }
 
 function getMostUsedTypes(documents: DocumentRow[]) {
-  const counts = new Map<string, number>();
+  const counts = new Map<string, { count: number; label: string }>();
 
   for (const doc of documents) {
-    counts.set(doc.doc_type, (counts.get(doc.doc_type) || 0) + 1);
+    const current = counts.get(doc.doc_type);
+    counts.set(doc.doc_type, {
+      count: (current?.count || 0) + 1,
+      label: current?.label || getDisplayDocumentTypeLabel(doc),
+    });
   }
 
   return Array.from(counts.entries())
-    .map(([type, count]) => ({
+    .map(([type, item]) => ({
       type,
-      count,
-      label: getDocumentConfig(type)?.label || type,
+      count: item.count,
+      label: item.label,
     }))
     .sort((a, b) => b.count - a.count);
+}
+
+function getDisplayDocumentTypeLabel(doc: DocumentRow) {
+  const config = getDocumentConfig(doc.doc_type);
+
+  if (config) {
+    return config.label;
+  }
+
+  if (doc.doc_type === "custom") {
+    return "Documento a medida";
+  }
+
+  if (doc.doc_type.startsWith("community:")) {
+    return cleanCommunityLabel(doc.doc_label);
+  }
+
+  return "Documento personalizado";
+}
+
+function cleanCommunityLabel(label: string) {
+  return label
+    .replace(/\s+-\s+.+$/u, "")
+    .replace(/^Borrador\s+de\s+/iu, "")
+    .trim() || "Documento comunitario";
 }
 
 function getNextStep({
