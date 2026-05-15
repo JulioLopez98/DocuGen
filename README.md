@@ -338,6 +338,22 @@ La fase 5.9 mejora la claridad de limites y planes:
 - Los resultados generados explican que Word es Pro y enlazan a precios cuando el usuario esta en Free.
 - Los bloqueos quedan planteados como rutas claras de upgrade, no como errores.
 
+## Biblioteca de plantillas
+
+La fase 6.1 rediseña la biblioteca:
+
+- Métricas de total, listas, procesando y errores.
+- Búsqueda y filtros por estado/categoría.
+- Tarjetas con estado, archivo, texto extraído, resumen y acciones.
+- Procesado desde la propia biblioteca sin salir de la pantalla.
+
+La fase 6.2 mejora el uso de plantillas en el generador:
+
+- Selector visual de plantillas listas.
+- Opción clara para generar sin plantilla.
+- Vista previa de la plantilla seleccionada.
+- Modos de uso explicados como decisiones: parecerse bastante, usar orden, usar tono o inspiración suave.
+
 ## Comandos
 
 ```bash

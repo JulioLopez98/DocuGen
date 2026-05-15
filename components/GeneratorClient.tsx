@@ -481,26 +481,62 @@ export function GeneratorClient({
 
         {generatorMode === "catalog" && plan !== "free" && (
           <section className="surface-flat rounded-md p-5">
-            <p className="text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Usa una plantilla procesada para orientar estructura y tono. DocuGen no debe copiar datos concretos del archivo.
-            </p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Opcional: usa una plantilla propia para orientar estructura y tono sin copiar datos concretos.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+                {referenceTemplates.length} listas
+              </span>
+            </div>
             {referenceTemplates.length > 0 ? (
-              <label className="mt-4 block">
-                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Referencia</span>
-                <select
-                  value={referenceTemplateId}
-                  onChange={(event) => setReferenceTemplateId(event.target.value)}
-                  className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              <div className="mt-4 grid gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReferenceTemplateId("")}
+                  className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
+                    !referenceTemplateId ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                  }`}
                 >
-                  <option value="">Sin plantilla</option>
-                  {referenceTemplates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <span className="font-bold">Sin plantilla</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Genera solo con el formulario y las reglas de DocuGen.
+                  </span>
+                </button>
+                {referenceTemplates.slice(0, 5).map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => setReferenceTemplateId(template.id)}
+                    className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
+                      referenceTemplateId === template.id
+                        ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                        : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                    }`}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className="font-bold">{template.name}</span>
+                        <span className="mt-1 block text-xs leading-5 text-slate-500">
+                          {template.category || "Sin categoria"} · {new Date(template.created_at).toLocaleDateString("es-ES")}
+                        </span>
+                      </span>
+                      <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">Lista</span>
+                    </span>
+                    {template.summary && (
+                      <span className="mt-2 block max-h-10 overflow-hidden text-xs leading-5 text-slate-500">{template.summary}</span>
+                    )}
+                  </button>
+                ))}
+                {referenceTemplates.length > 5 && (
+                  <Link href="/plantillas" className="focus-ring btn-ghost px-3 py-2 text-xs">
+                    Ver todas las plantillas
+                  </Link>
+                )}
+              </div>
             ) : (
               <div className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4">
                 <p className="text-sm font-semibold">No hay plantillas listas</p>
@@ -513,7 +549,7 @@ export function GeneratorClient({
               </div>
             )}
             {selectedReferenceTemplate && (
-              <div className="mt-4 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <div className="mt-4 rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
@@ -531,12 +567,17 @@ export function GeneratorClient({
                     Abrir
                   </Link>
                 </div>
+                <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+                  <span className="rounded-md bg-white/75 px-3 py-2">Estructura: opcional</span>
+                  <span className="rounded-md bg-white/75 px-3 py-2">Tono: opcional</span>
+                  <span className="rounded-md bg-white/75 px-3 py-2">Datos: no se copian</span>
+                </div>
               </div>
             )}
             {selectedReferenceTemplate && (
               <div className="mt-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Como usarla</p>
-                <div className="mt-2 grid gap-2">
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {templateUsageModes.map((mode) => (
                     <button
                       key={mode}
@@ -548,7 +589,8 @@ export function GeneratorClient({
                           : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
                       }`}
                     >
-                      <span className="font-bold">{templateUsageLabels[mode]}</span>
+                      <span className="font-bold">{getTemplateUsageDecisionLabel(mode)}</span>
+                      <span className="mt-1 block text-xs font-semibold text-[#2d6a4f]">{templateUsageLabels[mode]}</span>
                       <span className="mt-1 block text-xs leading-5 text-slate-500">{templateUsageDescriptions[mode]}</span>
                     </button>
                   ))}
@@ -720,6 +762,22 @@ function InfoPill({ label, value }: { label: string; value: string }) {
       <span className="font-semibold text-[#1f2933]">{value}</span>
     </div>
   );
+}
+
+function getTemplateUsageDecisionLabel(mode: TemplateUsageMode) {
+  if (mode === "structure_tone") {
+    return "Quiero que se parezca bastante";
+  }
+
+  if (mode === "structure") {
+    return "Quiero su orden de apartados";
+  }
+
+  if (mode === "tone") {
+    return "Quiero su forma de escribir";
+  }
+
+  return "Solo quiero una referencia suave";
 }
 
 function CommunityForm({
