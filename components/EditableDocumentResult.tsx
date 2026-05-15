@@ -35,6 +35,13 @@ type AiComparison = {
   modeLabel: string;
 };
 
+type AssistedInstruction = {
+  id: string;
+  label: string;
+  description: string;
+  instruction: string;
+};
+
 const improveModes: Array<{ value: ImproveMode; label: string; description: string }> = [
   { value: "formal", label: "Mas formal", description: "Pulido profesional, sobrio y preciso." },
   { value: "brief", label: "Mas breve", description: "Reduce repeticiones y deja lo esencial." },
@@ -42,6 +49,51 @@ const improveModes: Array<{ value: ImproveMode; label: string; description: stri
   { value: "natural", label: "Mas natural", description: "Suena mas humano sin perder profesionalidad." },
   { value: "legal_review", label: "Mas prudente", description: "Refuerza claridad y cautela en documentos sensibles." },
   { value: "custom", label: "Instruccion propia", description: "Indica exactamente que quieres cambiar." },
+];
+
+const assistedInstructions: AssistedInstruction[] = [
+  {
+    id: "email",
+    label: "Convertir en email",
+    description: "Transforma el texto en asunto, saludo, cuerpo y cierre.",
+    instruction:
+      "Convierte el documento en un email profesional. Incluye asunto, saludo, cuerpo claro, solicitud o cierre accionable y despedida. Mantiene datos, hechos y aviso final si procede.",
+  },
+  {
+    id: "clarity",
+    label: "Hacer mas claro",
+    description: "Ordena ideas, mejora lectura y elimina ambiguedades.",
+    instruction:
+      "Reescribe el documento para que sea mas claro y facil de entender. Ordena ideas, reduce ambiguedades, mejora transiciones y conserva todos los datos importantes.",
+  },
+  {
+    id: "conditions",
+    label: "Anadir condiciones",
+    description: "Refuerza condiciones, plazos, pagos o responsabilidades.",
+    instruction:
+      "Anade o refuerza un apartado de condiciones cuando encaje: plazos, pagos, responsabilidades, entregables, aceptacion o siguientes pasos. No inventes datos; usa [PENDIENTE DE COMPLETAR] cuando falte informacion.",
+  },
+  {
+    id: "executive",
+    label: "Resumen ejecutivo",
+    description: "Anade una apertura breve para lectura rapida.",
+    instruction:
+      "Anade al inicio un resumen ejecutivo breve y profesional que explique objetivo, partes implicadas y puntos clave. Mantiene el resto del documento coherente.",
+  },
+  {
+    id: "risk",
+    label: "Detectar huecos",
+    description: "Marca informacion pendiente y puntos que conviene revisar.",
+    instruction:
+      "Revisa el documento para detectar informacion incompleta o ambigua. Integra marcadores [PENDIENTE DE COMPLETAR] donde falten datos relevantes y refuerza el aviso de revision profesional sin dar asesoramiento legal definitivo.",
+  },
+  {
+    id: "client",
+    label: "Orientar a cliente",
+    description: "Hace el texto mas comercial sin perder rigor.",
+    instruction:
+      "Mejora el documento para que sea mas orientado a cliente: mas claro, convincente y accionable. No cambies condiciones, importes, fechas ni obligaciones.",
+  },
 ];
 
 export function EditableDocumentResult({
@@ -61,6 +113,7 @@ export function EditableDocumentResult({
   const [versionCopiedId, setVersionCopiedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [improving, setImproving] = useState(false);
+  const [improvingLabel, setImprovingLabel] = useState<string | null>(null);
   const [improveMode, setImproveMode] = useState<ImproveMode>("formal");
   const [customInstruction, setCustomInstruction] = useState("");
   const [aiComparison, setAiComparison] = useState<AiComparison | null>(null);
@@ -145,10 +198,15 @@ export function EditableDocumentResult({
     }
   }
 
-  async function improveWithAi() {
+  async function improveWithAi(instruction?: AssistedInstruction) {
     setImproving(true);
+    setImprovingLabel(instruction?.label || improveModes.find((mode) => mode.value === improveMode)?.label || "Mejora IA");
     setError(null);
     setSaveMessage(null);
+
+    const requestMode: ImproveMode = instruction ? "custom" : improveMode;
+    const requestInstruction = instruction?.instruction || (improveMode === "custom" ? customInstruction : undefined);
+    const modeLabel = instruction?.label || improveModes.find((mode) => mode.value === improveMode)?.label || "Mejora IA";
 
     try {
       const response = await fetch(`/api/documents/${documentId}/improve`, {
@@ -156,8 +214,8 @@ export function EditableDocumentResult({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content,
-          mode: improveMode,
-          customInstruction: improveMode === "custom" ? customInstruction : undefined,
+          mode: requestMode,
+          customInstruction: requestInstruction,
         }),
       });
       const data = (await response.json()) as ImproveResponse;
@@ -170,7 +228,7 @@ export function EditableDocumentResult({
       setAiComparison({
         before: content,
         after: data.document.content,
-        modeLabel: improveModes.find((mode) => mode.value === improveMode)?.label || "Mejora IA",
+        modeLabel,
       });
       setSaveMessage("Mejora lista para comparar.");
       window.setTimeout(() => setSaveMessage(null), 2600);
@@ -178,6 +236,7 @@ export function EditableDocumentResult({
       setError("No se pudo conectar con el servidor.");
     } finally {
       setImproving(false);
+      setImprovingLabel(null);
     }
   }
 
@@ -351,6 +410,32 @@ export function EditableDocumentResult({
         <p className="mt-3 text-xs text-slate-500">
           {improveModes.find((mode) => mode.value === improveMode)?.description}
         </p>
+
+        <div className="mt-5 border-t border-[#d8f3dc] pt-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Edicion asistida</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Acciones rapidas para cambios habituales sin escribir instrucciones desde cero.
+              </p>
+            </div>
+            {improvingLabel && <span className="text-xs font-semibold text-[#2d6a4f]">Trabajando: {improvingLabel}</span>}
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {assistedInstructions.map((instruction) => (
+              <button
+                key={instruction.id}
+                type="button"
+                onClick={() => void improveWithAi(instruction)}
+                disabled={improving}
+                className="focus-ring rounded-md border border-[#d8f3dc] bg-white/75 p-3 text-left transition hover:border-[#2d6a4f] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="text-sm font-bold">{instruction.label}</span>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">{instruction.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </aside>
 
       {aiComparison && (

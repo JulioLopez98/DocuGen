@@ -317,6 +317,13 @@ La fase 5.6 añade comparación antes/después:
 - El usuario puede aplicar la propuesta al editor o descartarla.
 - Al aplicar, el contenido queda como cambio pendiente hasta pulsar `Guardar`.
 
+La fase 5.7 añade edición asistida por instrucciones:
+
+- Acciones rápidas dentro del editor: convertir en email, hacer más claro, añadir condiciones, resumen ejecutivo, detectar huecos y orientar a cliente.
+- Cada acción usa la misma API de mejora IA y muestra comparación antes/después.
+- El usuario puede seguir usando una instrucción propia cuando necesite un cambio específico.
+- Ninguna mejora se guarda automáticamente; siempre queda pendiente hasta pulsar `Guardar`.
+
 ## Comandos
 
 ```bash
