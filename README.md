@@ -295,6 +295,13 @@ La fase 5.3 añade versiones restaurables:
 - El detalle de historial muestra versiones y permite restaurar una anterior.
 - Al restaurar se crea una versión nueva con el contenido recuperado, sin borrar el historial.
 
+La fase 5.4 mejora la experiencia de versiones:
+
+- Cada versión puede desplegarse para revisar su contenido completo.
+- Las versiones se pueden copiar al portapapeles.
+- Una versión puede cargarse en el editor sin guardarla todavía.
+- La restauración definitiva sigue creando una versión nueva para conservar trazabilidad.
+
 ## Comandos
 
 ```bash

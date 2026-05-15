@@ -36,6 +36,7 @@ export function EditableDocumentResult({
   const [versions, setVersions] = useState(initialVersions);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [versionCopiedId, setVersionCopiedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -47,6 +48,12 @@ export function EditableDocumentResult({
     await navigator.clipboard.writeText(content);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function copyVersion(version: DocumentVersionRow) {
+    await navigator.clipboard.writeText(version.content);
+    setVersionCopiedId(version.id);
+    window.setTimeout(() => setVersionCopiedId(null), 1600);
   }
 
   async function saveDocument() {
@@ -80,7 +87,7 @@ export function EditableDocumentResult({
   }
 
   async function restoreVersion(version: DocumentVersionRow) {
-    if (!window.confirm(`Restaurar la version ${version.version_number}? Se creara una nueva version con ese contenido.`)) {
+    if (!window.confirm(`¿Restaurar la versión ${version.version_number}? Se creará una nueva versión con ese contenido.`)) {
       return;
     }
 
@@ -93,7 +100,7 @@ export function EditableDocumentResult({
       const data = (await response.json()) as SaveResponse;
 
       if (!response.ok || !data.document) {
-        setError(data.message || "No se pudo restaurar la version.");
+        setError(data.message || "No se pudo restaurar la versión.");
         return;
       }
 
@@ -101,7 +108,7 @@ export function EditableDocumentResult({
       setContent(data.document.content);
       setVersions(data.versions || versions);
       setEditing(false);
-      setSaveMessage(`Version ${data.restoredFrom || version.version_number} restaurada`);
+      setSaveMessage(`Versión ${data.restoredFrom || version.version_number} restaurada`);
       window.setTimeout(() => setSaveMessage(null), 2200);
     } catch {
       setError("No se pudo conectar con el servidor.");
@@ -110,72 +117,79 @@ export function EditableDocumentResult({
     }
   }
 
+  function loadVersionInEditor(version: DocumentVersionRow) {
+    setContent(version.content);
+    setEditing(true);
+    setSaveMessage(`Versión ${version.version_number} cargada en el editor`);
+    window.setTimeout(() => setSaveMessage(null), 2200);
+  }
+
   return (
     <section className="grid gap-5">
       <div className="surface rounded-md p-5">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-4">
-        <div>
-          <p className="text-sm font-semibold text-[#2d6a4f]">Documento editable</p>
-          <h2 className="mt-1 text-xl font-bold">{title}</h2>
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            Puedes ajustar el texto, guardarlo en tu historial y exportar la versión final.
-          </p>
+          <div>
+            <p className="text-sm font-semibold text-[#2d6a4f]">Documento editable</p>
+            <h2 className="mt-1 text-xl font-bold">{title}</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Puedes ajustar el texto, guardarlo en tu historial y exportar la versión final.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setEditing((value) => !value)}
+              className="focus-ring btn-primary px-3 py-2 text-sm"
+            >
+              {editing ? "Vista previa" : "Editar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setContent(savedContent)}
+              disabled={!hasChanges}
+              className="focus-ring btn-secondary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Restaurar
+            </button>
+            <button
+              type="button"
+              onClick={() => void saveDocument()}
+              disabled={!hasChanges || saving}
+              className="focus-ring btn-primary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving ? "Guardando..." : "Guardar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadDocumentPdf({ title, content, includesSignatures, brandSettings })}
+              className="focus-ring btn-secondary px-3 py-2 text-sm"
+            >
+              PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadDocumentTxt(title, content)}
+              className="focus-ring btn-secondary px-3 py-2 text-sm"
+            >
+              TXT
+            </button>
+            <button type="button" onClick={copyText} className="focus-ring btn-ghost px-3 py-2 text-sm">
+              {copied ? "Copiado" : "Copiar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadDocumentDocx({ title, content, includesSignatures, canExportDocx })}
+              className={
+                canExportDocx
+                  ? "focus-ring btn-secondary px-3 py-2 text-sm"
+                  : "focus-ring rounded-md border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
+              }
+              title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
+            >
+              {canExportDocx ? "Word" : "Word Pro"}
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setEditing((value) => !value)}
-            className="focus-ring btn-primary px-3 py-2 text-sm"
-          >
-            {editing ? "Vista previa" : "Editar"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setContent(savedContent)}
-            disabled={!hasChanges}
-            className="focus-ring btn-secondary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Restaurar
-          </button>
-          <button
-            type="button"
-            onClick={() => void saveDocument()}
-            disabled={!hasChanges || saving}
-            className="focus-ring btn-primary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving ? "Guardando..." : "Guardar"}
-          </button>
-          <button
-            type="button"
-            onClick={() => void downloadDocumentPdf({ title, content, includesSignatures, brandSettings })}
-            className="focus-ring btn-secondary px-3 py-2 text-sm"
-          >
-            PDF
-          </button>
-          <button
-            type="button"
-            onClick={() => downloadDocumentTxt(title, content)}
-            className="focus-ring btn-secondary px-3 py-2 text-sm"
-          >
-            TXT
-          </button>
-          <button type="button" onClick={copyText} className="focus-ring btn-ghost px-3 py-2 text-sm">
-            {copied ? "Copiado" : "Copiar"}
-          </button>
-          <button
-            type="button"
-            onClick={() => downloadDocumentDocx({ title, content, includesSignatures, canExportDocx })}
-            className={
-              canExportDocx
-                ? "focus-ring btn-secondary px-3 py-2 text-sm"
-                : "focus-ring rounded-md border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
-            }
-            title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
-          >
-            {canExportDocx ? "Word" : "Word Pro"}
-          </button>
-        </div>
-      </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
           <span className="rounded-full bg-[#d8f3dc] px-3 py-1 font-semibold text-[#2d6a4f]">
@@ -209,7 +223,7 @@ export function EditableDocumentResult({
             <p className="text-sm font-semibold text-[#2d6a4f]">Versiones</p>
             <h3 className="mt-1 text-lg font-bold">Historial de cambios</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Cada guardado crea una version. Puedes restaurar una anterior sin borrar el historial.
+              Abre una versión para revisarla, copiarla o cargarla en el editor antes de restaurarla.
             </p>
           </div>
           <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
@@ -219,34 +233,63 @@ export function EditableDocumentResult({
 
         {versions.length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4 text-sm text-slate-600">
-            Aun no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
+            Aún no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
           </p>
         ) : (
-          <div className="mt-4 grid gap-2">
-            {versions.map((version) => (
-              <div
-                key={version.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/75 p-3"
-              >
-                <div>
-                  <p className="text-sm font-semibold">
-                    Version {version.version_number}
-                    {version.content === savedContent && <span className="ml-2 text-xs text-[#2d6a4f]">Actual</span>}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {version.change_summary || "Cambio manual"} · {formatVersionDate(version.created_at)}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void restoreVersion(version)}
-                  disabled={restoringId === version.id || version.content === savedContent}
-                  className="focus-ring btn-secondary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {restoringId === version.id ? "Restaurando..." : "Restaurar"}
-                </button>
-              </div>
-            ))}
+          <div className="mt-4 grid gap-3">
+            {versions.map((version) => {
+              const versionStats = getDocumentStats(version.content);
+              const isCurrent = version.content === savedContent;
+
+              return (
+                <details key={version.id} className="rounded-md border border-[#d8f3dc] bg-white/75">
+                  <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 p-3">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Versión {version.version_number}
+                        {isCurrent && <span className="ml-2 text-xs text-[#2d6a4f]">Actual</span>}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {version.change_summary || "Cambio manual"} · {formatVersionDate(version.created_at)} ·{" "}
+                        {versionStats.words} palabras
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Ver</span>
+                  </summary>
+
+                  <div className="border-t border-[#d8f3dc] p-3">
+                    <article className="max-h-72 overflow-auto whitespace-pre-wrap rounded-md bg-[#faf9f6] p-4 text-sm leading-7">
+                      {version.content}
+                    </article>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void copyVersion(version)}
+                        className="focus-ring btn-ghost px-3 py-2 text-sm"
+                      >
+                        {versionCopiedId === version.id ? "Copiada" : "Copiar versión"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => loadVersionInEditor(version)}
+                        disabled={version.content === content}
+                        className="focus-ring btn-secondary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Cargar en editor
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void restoreVersion(version)}
+                        disabled={restoringId === version.id || isCurrent}
+                        className="focus-ring btn-primary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {restoringId === version.id ? "Restaurando..." : "Restaurar como actual"}
+                      </button>
+                    </div>
+                  </div>
+                </details>
+              );
+            })}
           </div>
         )}
       </aside>
