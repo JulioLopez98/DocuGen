@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { DocResult } from "@/components/DocResult";
+import { EditableDocumentResult } from "@/components/EditableDocumentResult";
 import { getDocumentConfig } from "@/lib/document-types";
 import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
@@ -108,9 +108,9 @@ export default async function HistoryDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <DocResult
+      <EditableDocumentResult
         title={document.doc_label}
-        content={document.content}
+        initialContent={document.content}
         includesSignatures={config?.includesSignatures ?? false}
         canExportDocx={profile.plan !== "free"}
         brandSettings={brandSettings || null}

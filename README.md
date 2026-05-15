@@ -268,6 +268,17 @@ La fase 4.5 conecta candidatos aprobados con generación:
 - Los documentos se guardan con `doc_type = community:<slug>`.
 - Ajuste QA 4.5.1: el prompt comunitario evita listar campos vacíos o metadatos sueltos al final del documento.
 
+## Editor de documentos
+
+La fase 5.1 añade edición local en el detalle de historial:
+
+- `/historial/[id]` usa un visor editable.
+- Botón `Editar` / `Vista previa`.
+- Exportación PDF, TXT y Word usa el texto editado en pantalla.
+- Botón `Restaurar` vuelve al contenido guardado.
+- Muestra contador de palabras y caracteres.
+- En esta fase los cambios son locales; el guardado en base de datos se implementará en 5.2.
+
 ## Comandos
 
 ```bash
