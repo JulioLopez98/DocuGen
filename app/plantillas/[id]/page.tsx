@@ -2,13 +2,20 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { TemplateDetailActions } from "@/components/TemplateDetailActions";
-import { getCurrentProfile, type DocumentTemplateRow } from "@/lib/supabase-server";
+import { getDocumentConfig } from "@/lib/document-types";
+import { getCurrentProfile, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
+import { templateUsageLabels } from "@/lib/template-usage";
 
 type Props = {
   params: {
     id: string;
   };
 };
+
+type LinkedTemplateDocument = Pick<
+  DocumentRow,
+  "id" | "doc_type" | "doc_label" | "created_at" | "template_usage_mode"
+>;
 
 export const metadata: Metadata = {
   title: "Detalle de plantilla",
@@ -42,6 +49,18 @@ export default async function TemplateDetailPage({ params }: Props) {
 
   const createdAt = new Date(template.created_at);
   const updatedAt = new Date(template.updated_at);
+  const { data: generatedDocuments } = await supabase
+    .from("documents")
+    .select("id, doc_type, doc_label, created_at, template_usage_mode")
+    .eq("user_id", profile.id)
+    .eq("reference_template_id", template.id)
+    .order("created_at", { ascending: false })
+    .limit(8)
+    .returns<LinkedTemplateDocument[]>();
+
+  const documentsFromTemplate = generatedDocuments || [];
+  const textStats = getTextStats(template.extracted_text || "");
+  const canUseTemplate = template.status === "ready" && Boolean(template.extracted_text);
 
   return (
     <section className="container-page py-10">
@@ -54,9 +73,27 @@ export default async function TemplateDetailPage({ params }: Props) {
           <p className="eyebrow">{template.category || "Plantilla"}</p>
           <h1 className="font-serif-display mt-3 text-4xl font-bold">{template.name}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Archivo propio guardado en tu biblioteca privada. Esta ficha queda preparada para mostrar texto extraido,
-            resumen y uso como referencia en generaciones futuras.
+            Archivo propio guardado en tu biblioteca privada. Revisa su estado, resumen, texto extraido y los documentos
+            que ya se han generado usando esta referencia.
           </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            {canUseTemplate && (
+              <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-5 py-3 text-sm">
+                Crear documento con esta plantilla
+              </Link>
+            )}
+            <Link href="/plantillas" className="focus-ring btn-secondary px-5 py-3 text-sm">
+              Ver biblioteca
+            </Link>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-4">
+            <Metric label="Estado" value={statusLabel(template.status)} />
+            <Metric label="Texto extraido" value={textStats.words > 0 ? `${textStats.words} palabras` : "Pendiente"} />
+            <Metric label="Resumen" value={template.summary ? "Disponible" : "Pendiente"} />
+            <Metric label="Usos" value={`${documentsFromTemplate.length} documentos`} />
+          </div>
         </div>
 
         <aside className="surface rounded-md p-5">
@@ -72,13 +109,17 @@ export default async function TemplateDetailPage({ params }: Props) {
             <MetaLine label="Actualizada" value={updatedAt.toLocaleDateString("es-ES")} />
           </div>
           <div className="mt-5">
-            {template.status === "ready" && template.extracted_text && (
+            {canUseTemplate ? (
               <Link
                 href={`/generar?referenceTemplateId=${template.id}`}
-                className="focus-ring btn-primary mb-2 px-4 py-3 text-center text-sm"
+                className="focus-ring btn-primary mb-2 w-full px-4 py-3 text-center text-sm"
               >
                 Usar en generador
               </Link>
+            ) : (
+              <div className="mb-3 rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm leading-6 text-slate-600">
+                Procesa la plantilla para poder usarla como referencia dentro del generador.
+              </div>
             )}
             <TemplateDetailActions template={template} />
           </div>
@@ -87,18 +128,28 @@ export default async function TemplateDetailPage({ params }: Props) {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <section className="surface rounded-md p-6">
-          <p className="eyebrow">Contexto</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Notas de la plantilla</h2>
+          <p className="eyebrow">Resumen</p>
+          <h2 className="font-serif-display mt-3 text-3xl font-bold">Lectura rapida</h2>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Esta zona sirve para decidir si la plantilla esta lista para usarse y que tipo de referencia aporta al generador.
+          </p>
           <div className="mt-5 grid gap-3 text-sm">
-            <InfoBlock label="Descripcion" value={template.description || "Sin descripcion por ahora."} />
+            <InfoBlock label="Resumen extraido" value={template.summary || "Procesa la plantilla para obtener un resumen automatico."} />
+            <InfoBlock label="Descripcion propia" value={template.description || "Sin descripcion por ahora."} />
             <InfoBlock label="Categoria" value={template.category || "Sin categoria."} />
-            <InfoBlock label="Ruta segura" value={template.storage_path} />
           </div>
         </section>
 
         <section className="surface rounded-md p-6">
           <p className="eyebrow">Procesamiento</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Texto extraido</h2>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <h2 className="font-serif-display text-3xl font-bold">Texto extraido</h2>
+            {textStats.words > 0 && (
+              <p className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+                {textStats.words} palabras | {textStats.characters} caracteres
+              </p>
+            )}
+          </div>
           {template.extracted_text ? (
             <article className="mt-5 max-h-[520px] overflow-auto whitespace-pre-wrap rounded-md bg-[#faf9f6] p-5 text-sm leading-7">
               {template.extracted_text}
@@ -115,22 +166,91 @@ export default async function TemplateDetailPage({ params }: Props) {
               </p>
             </div>
           )}
-          {template.summary && (
-            <div className="mt-5 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
-              <p className="text-sm font-bold text-[#2d6a4f]">Resumen</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{template.summary}</p>
-            </div>
-          )}
           {template.error_message && (
             <p className="mt-5 rounded-md bg-red-50 p-3 text-sm text-red-700">{template.error_message}</p>
           )}
         </section>
       </div>
+
+      <section className="surface mt-6 rounded-md p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="eyebrow">Uso</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos creados con esta plantilla</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Aqui aparecen los ultimos documentos que usaron esta plantilla como referencia.
+            </p>
+          </div>
+          {canUseTemplate && (
+            <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-4 py-3 text-sm">
+              Crear otro
+            </Link>
+          )}
+        </div>
+
+        <div className="mt-5 grid gap-3">
+          {documentsFromTemplate.length === 0 ? (
+            <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6]/70 p-6">
+              <p className="font-semibold">Aun no se ha usado en generaciones</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Cuando generes documentos usando esta plantilla, apareceran aqui para que puedas abrirlos o reutilizarlos.
+              </p>
+            </div>
+          ) : (
+            documentsFromTemplate.map((document) => (
+              <article
+                key={document.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/75 p-4"
+              >
+                <div>
+                  <h3 className="font-semibold">{document.doc_label}</h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {getDocumentLabel(document.doc_type)} | {new Date(document.created_at).toLocaleDateString("es-ES")} |{" "}
+                    {getUsageModeLabel(document.template_usage_mode)}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link href={`/historial/${document.id}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
+                    Abrir
+                  </Link>
+                  <Link href={`/generar?templateId=${document.id}`} className="focus-ring btn-ghost px-3 py-2 text-xs">
+                    Reutilizar
+                  </Link>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="surface mt-6 rounded-md p-6">
+        <p className="eyebrow">Metadatos</p>
+        <h2 className="font-serif-display mt-3 text-3xl font-bold">Datos tecnicos</h2>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <InfoBlock label="Archivo original" value={template.original_filename} />
+          <InfoBlock label="Tipo de archivo" value={template.file_type.toUpperCase()} />
+          <InfoBlock label="Tamano" value={formatBytes(template.file_size)} />
+          <InfoBlock label="Ruta privada" value={template.storage_path} />
+        </div>
+      </section>
     </section>
   );
 }
 
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="surface-flat rounded-md p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
+      <p className="mt-2 text-sm font-semibold">{value}</p>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
+  return <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{statusLabel(status)}</span>;
+}
+
+function statusLabel(status: DocumentTemplateRow["status"]) {
   const labels: Record<DocumentTemplateRow["status"], string> = {
     uploaded: "Subida",
     processing: "Procesando",
@@ -138,7 +258,32 @@ function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
     failed: "Error",
   };
 
-  return <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{labels[status]}</span>;
+  return labels[status];
+}
+
+function getTextStats(text: string) {
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    return { words: 0, characters: 0 };
+  }
+
+  return {
+    words: trimmed.split(/\s+/).filter(Boolean).length,
+    characters: trimmed.length,
+  };
+}
+
+function getDocumentLabel(docType: string) {
+  return getDocumentConfig(docType)?.label || docType;
+}
+
+function getUsageModeLabel(mode: DocumentRow["template_usage_mode"]) {
+  if (!mode) {
+    return "Modo no registrado";
+  }
+
+  return templateUsageLabels[mode];
 }
 
 function MetaLine({ label, value }: { label: string; value: string }) {

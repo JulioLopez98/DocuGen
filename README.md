@@ -354,6 +354,13 @@ La fase 6.2 mejora el uso de plantillas en el generador:
 - Vista previa de la plantilla seleccionada.
 - Modos de uso explicados como decisiones: parecerse bastante, usar orden, usar tono o inspiración suave.
 
+La fase 6.3 mejora la ficha de cada plantilla:
+
+- CTA directo para crear un documento con esa plantilla cuando ya esta procesada.
+- Metricas rapidas de estado, texto extraido, resumen y usos.
+- Resumen, descripcion, texto extraido y metadatos separados en bloques claros.
+- Listado de documentos generados con esa plantilla, con enlaces para abrirlos o reutilizarlos.
+
 ## Comandos
 
 ```bash
