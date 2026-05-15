@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import type { CommunityDocumentTypeRow, DocumentRequestRow } from "@/lib/supabase-server";
@@ -18,10 +19,41 @@ const statusLabels: Record<CommunityDocumentTypeRow["status"], string> = {
   rejected: "Descartado",
 };
 
+const planLabels: Record<CommunityDocumentTypeRow["required_plan"], string> = {
+  free: "Free",
+  pro: "Pro",
+  empresa: "Empresa",
+};
+
+type EditableCandidate = Pick<
+  CommunityDocumentTypeRow,
+  "label" | "description" | "category" | "status" | "required_plan" | "prompt_brief" | "admin_notes"
+>;
+
 export function CommunityCatalogClient({ candidates, sourceRequests }: CommunityCatalogClientProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [editableCandidates, setEditableCandidates] = useState<Record<string, EditableCandidate>>(() =>
+    Object.fromEntries(
+      candidates.map((candidate) => [
+        candidate.id,
+        {
+          label: candidate.label,
+          description: candidate.description,
+          category: candidate.category || "",
+          status: candidate.status,
+          required_plan: candidate.required_plan,
+          prompt_brief: candidate.prompt_brief,
+          admin_notes: candidate.admin_notes || "",
+        },
+      ]),
+    ),
+  );
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const sourceById = useMemo(() => new Map(sourceRequests.map((request) => [request.id, request])), [sourceRequests]);
   const categories = useMemo(
     () => Array.from(new Set(candidates.map((candidate) => candidate.category || "A medida"))).sort((a, b) => a.localeCompare(b, "es")),
@@ -32,6 +64,49 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
     [candidates, query, statusFilter, categoryFilter],
   );
   const hasFilters = query.trim().length > 0 || statusFilter !== "all" || categoryFilter !== "all";
+
+  function updateCandidate(id: string, patch: Partial<EditableCandidate>) {
+    setEditableCandidates((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        ...patch,
+      },
+    }));
+  }
+
+  async function saveCandidate(id: string) {
+    const payload = editableCandidates[id];
+
+    if (!payload) {
+      return;
+    }
+
+    setBusyId(id);
+    setSavedId(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/admin/community-document-types/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        setError(data.message || "No se pudo actualizar el candidato.");
+        return;
+      }
+
+      setSavedId(id);
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   if (candidates.length === 0) {
     return (
@@ -108,6 +183,8 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
         </div>
       </section>
 
+      {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+
       {filteredCandidates.length === 0 ? (
         <EmptyState
           eyebrow="Sin resultados"
@@ -119,6 +196,17 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
         <section className="grid gap-4">
           {filteredCandidates.map((candidate) => {
             const source = candidate.source_request_id ? sourceById.get(candidate.source_request_id) : null;
+            const editable = editableCandidates[candidate.id] || {
+              label: candidate.label,
+              description: candidate.description,
+              category: candidate.category || "",
+              status: candidate.status,
+              required_plan: candidate.required_plan,
+              prompt_brief: candidate.prompt_brief,
+              admin_notes: candidate.admin_notes || "",
+            };
+            const isBusy = busyId === candidate.id;
+            const isSaved = savedId === candidate.id;
 
             return (
               <article key={candidate.id} className="surface-flat interactive rounded-md p-5">
@@ -127,10 +215,10 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-serif-display text-2xl font-bold">{candidate.label}</h2>
                       <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
-                        {statusLabels[candidate.status]}
+                        {statusLabels[editable.status]}
                       </span>
                       <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-bold uppercase text-white">
-                        {candidate.required_plan}
+                        {planLabels[editable.required_plan]}
                       </span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{candidate.description}</p>
@@ -143,10 +231,106 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                   </Link>
                 </div>
 
+                <div className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <label>
+                      <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Nombre</span>
+                      <input
+                        value={editable.label}
+                        onChange={(event) => updateCandidate(candidate.id, { label: event.target.value })}
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      />
+                    </label>
+                    <label>
+                      <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Categoría</span>
+                      <input
+                        value={editable.category || ""}
+                        onChange={(event) => updateCandidate(candidate.id, { category: event.target.value })}
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      />
+                    </label>
+                  </div>
+                  <label className="mt-4 block">
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Descripción</span>
+                    <textarea
+                      value={editable.description}
+                      onChange={(event) => updateCandidate(candidate.id, { description: event.target.value })}
+                      rows={3}
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    <label>
+                      <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Estado</span>
+                      <select
+                        value={editable.status}
+                        onChange={(event) =>
+                          updateCandidate(candidate.id, { status: event.target.value as CommunityDocumentTypeRow["status"] })
+                        }
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      >
+                        {Object.entries(statusLabels).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Plan requerido</span>
+                      <select
+                        value={editable.required_plan}
+                        onChange={(event) =>
+                          updateCandidate(candidate.id, {
+                            required_plan: event.target.value as CommunityDocumentTypeRow["required_plan"],
+                          })
+                        }
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      >
+                        {Object.entries(planLabels).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <label className="mt-4 block">
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Prompt base revisado</span>
+                    <textarea
+                      value={editable.prompt_brief}
+                      onChange={(event) => updateCandidate(candidate.id, { prompt_brief: event.target.value })}
+                      rows={6}
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="mt-4 block">
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Notas internas</span>
+                    <textarea
+                      value={editable.admin_notes || ""}
+                      onChange={(event) => updateCandidate(candidate.id, { admin_notes: event.target.value })}
+                      rows={3}
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      placeholder="Criterio de aprobación, campos pendientes o riesgos detectados."
+                    />
+                  </label>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void saveCandidate(candidate.id)}
+                      disabled={isBusy}
+                      className="focus-ring btn-primary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isBusy ? "Guardando..." : "Guardar revisión"}
+                    </button>
+                    {isSaved && <span className="text-xs font-semibold text-[#2d6a4f]">Guardado</span>}
+                  </div>
+                </div>
+
                 <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
                   <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Prompt base</p>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{candidate.prompt_brief}</p>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{editable.prompt_brief}</p>
                   </div>
                   <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Campos sugeridos</p>
@@ -161,12 +345,12 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                   </div>
                 </div>
 
-                {(candidate.admin_notes || source) && (
+                {(editable.admin_notes || source) && (
                   <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                    {candidate.admin_notes && (
+                    {editable.admin_notes && (
                       <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
                         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Notas internas</p>
-                        <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{candidate.admin_notes}</p>
+                        <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{editable.admin_notes}</p>
                       </div>
                     )}
                     {source && (

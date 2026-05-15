@@ -251,6 +251,13 @@ La fase 4.3 añade el catálogo comunitario privado:
 - Muestra prompt base, campos sugeridos, plan requerido, notas y solicitud origen.
 - Sigue siendo privado: no se mezcla con el catálogo público ni con `/generar`.
 
+La fase 4.4 añade aprobación editorial:
+
+- API admin `PATCH /api/admin/community-document-types/[id]`.
+- Edición de nombre, descripción, categoría, estado, plan requerido, prompt base y notas.
+- Estados disponibles: borrador, en revisión, aprobado, publicado y descartado.
+- No requiere SQL nuevo: reutiliza `community_document_types`.
+
 ## Comandos
 
 ```bash
