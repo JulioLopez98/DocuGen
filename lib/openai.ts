@@ -341,6 +341,10 @@ Reglas obligatorias:
 - Usa solo los datos aportados por el usuario.
 - No inventes nombres, importes, fechas, domicilios, NIF/CIF, normativa concreta, jurisdicción ni condiciones.
 - Si falta información necesaria, usa exactamente [PENDIENTE DE COMPLETAR].
+- No añadas al final una lista de campos vacíos, metadatos o campos internos.
+- No incluyas líneas sueltas como "Uso previsto", "Sector" u otros campos si no aportan valor al documento final.
+- Si un campo sugerido está vacío y no es imprescindible para redactar el documento, omítelo.
+- Si un campo sugerido está vacío pero sí es imprescindible, intégralo de forma natural en el cuerpo con [PENDIENTE DE COMPLETAR].
 - Mantén un tono profesional, claro y proporcionado.
 - Si el documento tiene impacto legal, laboral, fiscal, societario, inmobiliario o de protección de datos, redacta con prudencia y recomienda revisión profesional.
 - No prometas validez legal ni sustituyas asesoramiento profesional.

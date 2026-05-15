@@ -266,6 +266,7 @@ La fase 4.5 conecta candidatos aprobados con generación:
 - Usa tipos `approved` o `published` de `community_document_types`.
 - Respeta `required_plan`, límites Free, rate limit, guardado en historial y emails.
 - Los documentos se guardan con `doc_type = community:<slug>`.
+- Ajuste QA 4.5.1: el prompt comunitario evita listar campos vacíos o metadatos sueltos al final del documento.
 
 ## Comandos
 
