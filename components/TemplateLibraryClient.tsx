@@ -5,7 +5,9 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
+import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
 import type { DocumentTemplateRow } from "@/lib/supabase-server";
+import { templateUsageLabels } from "@/lib/template-usage";
 
 const TEMPLATE_BUCKET = "document-templates";
 const MAX_TEMPLATE_SIZE = 10 * 1024 * 1024;
@@ -16,13 +18,14 @@ type AllowedExtension = (typeof allowedExtensions)[number];
 type TemplateLibraryClientProps = {
   userId: string;
   initialTemplates: DocumentTemplateRow[];
+  initialTemplateMetrics: TemplateUsageMetricsMap;
 };
 
 type ApiError = {
   message?: string;
 };
 
-export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibraryClientProps) {
+export function TemplateLibraryClient({ userId, initialTemplates, initialTemplateMetrics }: TemplateLibraryClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [templates, setTemplates] = useState<DocumentTemplateRow[]>(initialTemplates);
   const [name, setName] = useState("");
@@ -42,6 +45,10 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
   const processingCount = useMemo(() => templates.filter((template) => template.status === "processing").length, [templates]);
   const failedCount = useMemo(() => templates.filter((template) => template.status === "failed").length, [templates]);
   const favoriteCount = useMemo(() => templates.filter((template) => template.is_favorite).length, [templates]);
+  const totalUses = useMemo(
+    () => templates.reduce((total, template) => total + getTemplateUsageMetrics(initialTemplateMetrics, template.id).totalUses, 0),
+    [templates, initialTemplateMetrics],
+  );
   const categories = useMemo(
     () => Array.from(new Set(templates.map((template) => template.category).filter((category): category is string => Boolean(category)))).sort(),
     [templates],
@@ -251,8 +258,8 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
         <LibraryMetric label="Total" value={templates.length.toString()} helper="Plantillas subidas" />
         <LibraryMetric label="Destacadas" value={favoriteCount.toString()} helper="Acceso rapido" />
         <LibraryMetric label="Listas" value={readyCount.toString()} helper="Pueden usarse como referencia" />
-        <LibraryMetric label="Procesando" value={processingCount.toString()} helper="Extraccion en curso" />
-        <LibraryMetric label="Con error" value={failedCount.toString()} helper="Requieren revisar" />
+        <LibraryMetric label="Usos" value={totalUses.toString()} helper="Generaciones con plantilla" />
+        <LibraryMetric label="Revisar" value={(processingCount + failedCount).toString()} helper="Procesando o con error" />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[390px_1fr]">
@@ -417,7 +424,44 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
             />
           ) : (
             filteredTemplates.map((template) => (
-              <article key={template.id} className="surface-flat interactive rounded-md p-5">
+              <TemplateCard
+                key={template.id}
+                template={template}
+                metrics={getTemplateUsageMetrics(initialTemplateMetrics, template.id)}
+                workingId={workingId}
+                onToggleFavorite={toggleFavorite}
+                onDownloadOriginal={downloadOriginal}
+                onProcessTemplate={processTemplate}
+                onDeleteTemplate={deleteTemplate}
+              />
+            ))
+          )}
+        </div>
+      </section>
+      </div>
+    </div>
+  );
+}
+
+function TemplateCard({
+  template,
+  metrics,
+  workingId,
+  onToggleFavorite,
+  onDownloadOriginal,
+  onProcessTemplate,
+  onDeleteTemplate,
+}: {
+  template: DocumentTemplateRow;
+  metrics: ReturnType<typeof getTemplateUsageMetrics>;
+  workingId: string | null;
+  onToggleFavorite: (template: DocumentTemplateRow) => void;
+  onDownloadOriginal: (template: DocumentTemplateRow) => void;
+  onProcessTemplate: (template: DocumentTemplateRow) => void;
+  onDeleteTemplate: (template: DocumentTemplateRow) => void;
+}) {
+  return (
+    <article className="surface-flat interactive rounded-md p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -436,16 +480,16 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                       </p>
                     )}
                     <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
-                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Texto: {template.extracted_text ? "extraido" : "pendiente"}</span>
-                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Resumen: {template.summary ? "disponible" : "pendiente"}</span>
-                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Uso: generador Pro</span>
+                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Usos: {metrics.totalUses}</span>
+                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Ultimo uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
+                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Modo: {formatUsageMode(metrics.mostUsedMode)}</span>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => toggleFavorite(template)}
+                      onClick={() => onToggleFavorite(template)}
                       disabled={workingId === template.id}
                       className={`focus-ring rounded-md border px-3 py-2 text-xs font-semibold transition disabled:opacity-60 ${
                         template.is_favorite
@@ -465,7 +509,7 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                     </Link>
                     <button
                       type="button"
-                      onClick={() => downloadOriginal(template)}
+                      onClick={() => onDownloadOriginal(template)}
                       disabled={workingId === template.id}
                       className="focus-ring btn-secondary px-3 py-2 text-xs disabled:opacity-60"
                     >
@@ -473,7 +517,7 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                     </button>
                     <button
                       type="button"
-                      onClick={() => processTemplate(template)}
+                      onClick={() => onProcessTemplate(template)}
                       disabled={workingId === template.id}
                       className="focus-ring btn-ghost px-3 py-2 text-xs disabled:opacity-60"
                     >
@@ -481,7 +525,7 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                     </button>
                     <button
                       type="button"
-                      onClick={() => deleteTemplate(template)}
+                      onClick={() => onDeleteTemplate(template)}
                       disabled={workingId === template.id}
                       className="focus-ring rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
                     >
@@ -490,13 +534,23 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                   </div>
                 </div>
               </article>
-            ))
-          )}
-        </div>
-      </section>
-      </div>
-    </div>
   );
+}
+
+function formatDateOrNever(value: string | null) {
+  if (!value) {
+    return "Sin uso";
+  }
+
+  return new Date(value).toLocaleDateString("es-ES");
+}
+
+function formatUsageMode(mode: ReturnType<typeof getTemplateUsageMetrics>["mostUsedMode"]) {
+  if (!mode) {
+    return "Sin datos";
+  }
+
+  return templateUsageLabels[mode];
 }
 
 function LibraryMetric({ label, value, helper }: { label: string; value: string; helper: string }) {

@@ -368,6 +368,13 @@ La fase 6.4 anade plantillas destacadas:
 - Boton para marcar o quitar una plantilla como destacada desde listado y detalle.
 - Las plantillas destacadas aparecen primero en biblioteca y selector del generador.
 
+La fase 6.5 anade metricas de uso de plantillas:
+
+- Calculo de usos reales desde `documents.reference_template_id`.
+- Metricas de total de usos, ultimo uso y modo mas utilizado.
+- Resumen agregado en la biblioteca de plantillas.
+- Analitica de uso en la ficha individual de cada plantilla.
+
 ## Comandos
 
 ```bash

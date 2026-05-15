@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
 import { TemplateLibraryClient } from "@/components/TemplateLibraryClient";
+import { buildTemplateUsageMetrics, type TemplateUsageMetricEvent } from "@/lib/template-metrics";
 import { getCurrentProfile, type DocumentTemplateRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
@@ -31,6 +32,15 @@ export default async function TemplatesPage() {
         .order("is_favorite", { ascending: false })
         .order("created_at", { ascending: false })
         .returns<DocumentTemplateRow[]>();
+  const { data: templateUsageEvents } = isFree
+    ? { data: [] }
+    : await supabase
+        .from("documents")
+        .select("reference_template_id, template_usage_mode, created_at")
+        .eq("user_id", profile.id)
+        .not("reference_template_id", "is", null)
+        .returns<TemplateUsageMetricEvent[]>();
+  const templateMetrics = buildTemplateUsageMetrics(templateUsageEvents || []);
 
   return (
     <section className="container-page py-10">
@@ -102,7 +112,7 @@ export default async function TemplatesPage() {
             secondaryAction={{ href: "/generar", label: "Seguir generando" }}
           />
         ) : (
-          <TemplateLibraryClient userId={profile.id} initialTemplates={templates || []} />
+          <TemplateLibraryClient userId={profile.id} initialTemplates={templates || []} initialTemplateMetrics={templateMetrics} />
         )}
       </div>
     </section>

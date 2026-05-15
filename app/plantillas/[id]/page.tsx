@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { TemplateDetailActions } from "@/components/TemplateDetailActions";
 import { getDocumentConfig } from "@/lib/document-types";
 import { getCurrentProfile, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
+import { buildTemplateUsageMetrics, getTemplateUsageMetrics } from "@/lib/template-metrics";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 type Props = {
@@ -55,10 +56,20 @@ export default async function TemplateDetailPage({ params }: Props) {
     .eq("user_id", profile.id)
     .eq("reference_template_id", template.id)
     .order("created_at", { ascending: false })
-    .limit(8)
     .returns<LinkedTemplateDocument[]>();
 
-  const documentsFromTemplate = generatedDocuments || [];
+  const allDocumentsFromTemplate = generatedDocuments || [];
+  const documentsFromTemplate = allDocumentsFromTemplate.slice(0, 8);
+  const templateMetrics = getTemplateUsageMetrics(
+    buildTemplateUsageMetrics(
+      allDocumentsFromTemplate.map((document) => ({
+        reference_template_id: template.id,
+        template_usage_mode: document.template_usage_mode,
+        created_at: document.created_at,
+      })),
+    ),
+    template.id,
+  );
   const textStats = getTextStats(template.extracted_text || "");
   const canUseTemplate = template.status === "ready" && Boolean(template.extracted_text);
 
@@ -96,8 +107,8 @@ export default async function TemplateDetailPage({ params }: Props) {
           <div className="mt-6 grid gap-3 sm:grid-cols-4">
             <Metric label="Estado" value={statusLabel(template.status)} />
             <Metric label="Texto extraido" value={textStats.words > 0 ? `${textStats.words} palabras` : "Pendiente"} />
-            <Metric label="Resumen" value={template.summary ? "Disponible" : "Pendiente"} />
-            <Metric label="Usos" value={`${documentsFromTemplate.length} documentos`} />
+            <Metric label="Usos" value={`${templateMetrics.totalUses} documentos`} />
+            <Metric label="Ultimo uso" value={formatDateOrNever(templateMetrics.lastUsedAt)} />
           </div>
         </div>
 
@@ -183,7 +194,7 @@ export default async function TemplateDetailPage({ params }: Props) {
             <p className="eyebrow">Uso</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos creados con esta plantilla</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Aqui aparecen los ultimos documentos que usaron esta plantilla como referencia.
+              Aqui aparecen los ultimos documentos que usaron esta plantilla como referencia, junto con su patron de uso.
             </p>
           </div>
           {canUseTemplate && (
@@ -191,6 +202,12 @@ export default async function TemplateDetailPage({ params }: Props) {
               Crear otro
             </Link>
           )}
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <Metric label="Total generado" value={`${templateMetrics.totalUses} documentos`} />
+          <Metric label="Ultimo uso" value={formatDateOrNever(templateMetrics.lastUsedAt)} />
+          <Metric label="Modo mas usado" value={getUsageModeLabel(templateMetrics.mostUsedMode)} />
         </div>
 
         <div className="mt-5 grid gap-3">
@@ -285,10 +302,18 @@ function getDocumentLabel(docType: string) {
 
 function getUsageModeLabel(mode: DocumentRow["template_usage_mode"]) {
   if (!mode) {
-    return "Modo no registrado";
+    return "Sin datos";
   }
 
   return templateUsageLabels[mode];
+}
+
+function formatDateOrNever(value: string | null) {
+  if (!value) {
+    return "Sin uso";
+  }
+
+  return new Date(value).toLocaleDateString("es-ES");
 }
 
 function MetaLine({ label, value }: { label: string; value: string }) {
