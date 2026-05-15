@@ -26,6 +26,10 @@ type ImproveMode = "formal" | "brief" | "commercial" | "natural" | "legal_review
 
 type ImproveResponse = {
   document?: { id: string; content: string };
+  modelUsed?: string | null;
+  aiMode?: string | null;
+  tokensInput?: number | null;
+  tokensOutput?: number | null;
   message?: string;
 };
 
@@ -33,6 +37,18 @@ type AiComparison = {
   before: string;
   after: string;
   modeLabel: string;
+  aiMode: string;
+  modelUsed: string | null;
+  tokensInput: number | null;
+  tokensOutput: number | null;
+};
+
+type PendingAiMetadata = {
+  label: string;
+  aiMode: string;
+  modelUsed: string | null;
+  tokensInput: number | null;
+  tokensOutput: number | null;
 };
 
 type AssistedInstruction = {
@@ -117,6 +133,7 @@ export function EditableDocumentResult({
   const [improveMode, setImproveMode] = useState<ImproveMode>("formal");
   const [customInstruction, setCustomInstruction] = useState("");
   const [aiComparison, setAiComparison] = useState<AiComparison | null>(null);
+  const [pendingAiMetadata, setPendingAiMetadata] = useState<PendingAiMetadata | null>(null);
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +161,15 @@ export function EditableDocumentResult({
       const response = await fetch(`/api/documents/${documentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({
+          content,
+          changeSource: pendingAiMetadata ? "ai_improvement" : "manual",
+          changeSummary: pendingAiMetadata ? `Mejora IA: ${pendingAiMetadata.label}` : undefined,
+          aiMode: pendingAiMetadata?.aiMode,
+          modelUsed: pendingAiMetadata?.modelUsed,
+          tokensInput: pendingAiMetadata?.tokensInput,
+          tokensOutput: pendingAiMetadata?.tokensOutput,
+        }),
       });
       const data = (await response.json()) as SaveResponse;
 
@@ -157,6 +182,7 @@ export function EditableDocumentResult({
       setContent(data.document.content);
       setVersions(data.versions || versions);
       setAiComparison(null);
+      setPendingAiMetadata(null);
       setSaveMessage("Cambios guardados");
       window.setTimeout(() => setSaveMessage(null), 1800);
     } catch {
@@ -188,6 +214,7 @@ export function EditableDocumentResult({
       setContent(data.document.content);
       setVersions(data.versions || versions);
       setAiComparison(null);
+      setPendingAiMetadata(null);
       setEditing(false);
       setSaveMessage(`Version ${data.restoredFrom || version.version_number} restaurada`);
       window.setTimeout(() => setSaveMessage(null), 2200);
@@ -229,6 +256,10 @@ export function EditableDocumentResult({
         before: content,
         after: data.document.content,
         modeLabel,
+        aiMode: data.aiMode || requestMode,
+        modelUsed: data.modelUsed || null,
+        tokensInput: data.tokensInput ?? null,
+        tokensOutput: data.tokensOutput ?? null,
       });
       setSaveMessage("Mejora lista para comparar.");
       window.setTimeout(() => setSaveMessage(null), 2600);
@@ -246,6 +277,13 @@ export function EditableDocumentResult({
     }
 
     setContent(aiComparison.after);
+    setPendingAiMetadata({
+      label: aiComparison.modeLabel,
+      aiMode: aiComparison.aiMode,
+      modelUsed: aiComparison.modelUsed,
+      tokensInput: aiComparison.tokensInput,
+      tokensOutput: aiComparison.tokensOutput,
+    });
     setEditing(true);
     setSaveMessage("Mejora aplicada al editor. Revisa y guarda si te encaja.");
     window.setTimeout(() => setSaveMessage(null), 3200);
@@ -261,6 +299,7 @@ export function EditableDocumentResult({
     setContent(version.content);
     setEditing(true);
     setAiComparison(null);
+    setPendingAiMetadata(null);
     setSaveMessage(`Version ${version.version_number} cargada en el editor`);
     window.setTimeout(() => setSaveMessage(null), 2200);
   }
@@ -501,6 +540,13 @@ export function EditableDocumentResult({
                         {version.change_summary || "Cambio manual"} · {formatVersionDate(version.created_at)} ·{" "}
                         {versionStats.words} palabras
                       </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Origen: {getVersionSourceLabel(version)}
+                        {version.model_used ? ` · Modelo: ${version.model_used}` : ""}
+                        {version.tokens_input || version.tokens_output
+                          ? ` · Tokens: ${(version.tokens_input || 0) + (version.tokens_output || 0)}`
+                          : ""}
+                      </p>
                     </div>
                     <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Ver</span>
                   </summary>
@@ -581,4 +627,20 @@ function formatVersionDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
+}
+
+function getVersionSourceLabel(version: DocumentVersionRow) {
+  if (version.change_source === "original") {
+    return "Original";
+  }
+
+  if (version.change_source === "ai_improvement") {
+    return version.ai_mode ? `Mejora IA (${version.ai_mode})` : "Mejora IA";
+  }
+
+  if (version.change_source === "restored") {
+    return "Restauracion";
+  }
+
+  return "Edicion manual";
 }

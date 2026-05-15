@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDocumentVersions, getNextVersionNumber, insertDocumentVersions } from "@/lib/document-versions";
+import { documentVersionSelect, getDocumentVersions, getNextVersionNumber, insertDocumentVersions } from "@/lib/document-versions";
 import { createSupabaseServiceClient, requireUser } from "@/lib/supabase-server";
 import type { DocumentVersionRow } from "@/lib/supabase-server";
 
@@ -24,7 +24,7 @@ export async function POST(_request: Request, { params }: Params) {
     const db = createSupabaseServiceClient() || supabase;
     const { data: version, error: versionError } = await db
       .from("document_versions")
-      .select("id,document_id,user_id,version_number,content,change_summary,created_at")
+      .select(documentVersionSelect)
       .eq("id", params.versionId)
       .eq("document_id", params.id)
       .eq("user_id", user.id)
@@ -61,6 +61,7 @@ export async function POST(_request: Request, { params }: Params) {
           user_id: user.id,
           version_number: getNextVersionNumber(existingVersions || []),
           content: version.content,
+          change_source: "restored",
           change_summary: `Restaurada desde v${version.version_number}`,
         },
       ]);

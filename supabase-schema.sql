@@ -52,7 +52,12 @@ create table if not exists public.document_versions (
   user_id uuid not null references auth.users(id) on delete cascade,
   version_number integer not null,
   content text not null,
+  change_source text not null default 'manual' check (change_source in ('original', 'manual', 'ai_improvement', 'restored')),
   change_summary text,
+  ai_mode text,
+  model_used text,
+  tokens_input integer,
+  tokens_output integer,
   created_at timestamptz not null default now(),
   unique (document_id, version_number)
 );

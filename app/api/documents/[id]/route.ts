@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getDocumentVersions, getNextVersionNumber, insertDocumentVersions } from "@/lib/document-versions";
+import {
+  getDocumentVersions,
+  getNextVersionNumber,
+  insertDocumentVersions,
+  type DocumentVersionInsert,
+} from "@/lib/document-versions";
 import { createSupabaseServiceClient, requireUser } from "@/lib/supabase-server";
 
 const documentUpdateSchema = z.object({
   content: z.string().trim().min(1).max(100000),
+  changeSource: z.enum(["manual", "ai_improvement"]).optional(),
+  changeSummary: z.string().trim().max(300).optional(),
+  aiMode: z.string().trim().max(80).optional(),
+  modelUsed: z.string().trim().max(120).optional(),
+  tokensInput: z.number().int().nonnegative().nullable().optional(),
+  tokensOutput: z.number().int().nonnegative().nullable().optional(),
 });
 
 const errorResponse = (status: number, error: string, message: string) =>
@@ -55,7 +66,7 @@ export async function PATCH(request: Request, { params }: Params) {
       return errorResponse(500, "version_failed", "No se pudo preparar el historial de versiones.");
     }
 
-    const versionsToInsert = [];
+    const versionsToInsert: DocumentVersionInsert[] = [];
     let nextVersionNumber = getNextVersionNumber(existingVersions || []);
 
     if (!existingVersions || existingVersions.length === 0) {
@@ -64,17 +75,24 @@ export async function PATCH(request: Request, { params }: Params) {
         user_id: user.id,
         version_number: 1,
         content: currentDocument.content,
+        change_source: "original",
         change_summary: "Contenido original",
       });
       nextVersionNumber = 2;
     }
 
+    const changeSource = payload.changeSource || "manual";
     versionsToInsert.push({
       document_id: params.id,
       user_id: user.id,
       version_number: nextVersionNumber,
       content: payload.content,
-      change_summary: "Edicion manual",
+      change_source: changeSource,
+      change_summary: payload.changeSummary || (changeSource === "ai_improvement" ? "Mejora con IA" : "Edicion manual"),
+      ai_mode: changeSource === "ai_improvement" ? payload.aiMode || null : null,
+      model_used: changeSource === "ai_improvement" ? payload.modelUsed || null : null,
+      tokens_input: changeSource === "ai_improvement" ? payload.tokensInput ?? null : null,
+      tokens_output: changeSource === "ai_improvement" ? payload.tokensOutput ?? null : null,
     });
 
     const { error: versionInsertError } = await insertDocumentVersions(db, versionsToInsert);

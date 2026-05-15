@@ -36,7 +36,12 @@ export type DocumentVersionRow = {
   user_id: string;
   version_number: number;
   content: string;
+  change_source: "original" | "manual" | "ai_improvement" | "restored";
   change_summary: string | null;
+  ai_mode: string | null;
+  model_used: string | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
   created_at: string;
 };
 

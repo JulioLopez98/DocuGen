@@ -99,6 +99,7 @@ export async function POST(request: Request, { params }: Params) {
         content: improvedContent,
       },
       modelUsed: model,
+      aiMode: payload.mode,
       tokensInput: response.usage?.input_tokens ?? null,
       tokensOutput: response.usage?.output_tokens ?? null,
     });

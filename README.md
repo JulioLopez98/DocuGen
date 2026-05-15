@@ -324,6 +324,13 @@ La fase 5.7 añade edición asistida por instrucciones:
 - El usuario puede seguir usando una instrucción propia cuando necesite un cambio específico.
 - Ninguna mejora se guarda automáticamente; siempre queda pendiente hasta pulsar `Guardar`.
 
+La fase 5.8 mejora la trazabilidad de versiones:
+
+- SQL incremental: `supabase-document-version-trace-5.8.sql`.
+- `document_versions` guarda origen del cambio: original, edición manual, mejora IA o restauración.
+- Las versiones creadas desde mejora IA guardan modo, modelo y tokens.
+- El historial de versiones muestra origen, modelo y tokens cuando existen.
+
 ## Comandos
 
 ```bash
