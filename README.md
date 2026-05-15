@@ -279,6 +279,13 @@ La fase 5.1 añade edición local en el detalle de historial:
 - Muestra contador de palabras y caracteres.
 - En esta fase los cambios son locales; el guardado en base de datos se implementará en 5.2.
 
+La fase 5.2 guarda cambios manuales:
+
+- `PATCH /api/documents/[id]` actualiza `documents.content` del usuario autenticado.
+- El editor muestra botón `Guardar`, estado de guardado y errores.
+- `Restaurar` vuelve al último contenido guardado.
+- Las exportaciones usan siempre el contenido actual del editor.
+
 ## Comandos
 
 ```bash

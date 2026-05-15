@@ -5,6 +5,7 @@ import { downloadDocumentDocx } from "@/lib/docx";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
 
 type EditableDocumentResultProps = {
+  documentId: string;
   title: string;
   initialContent: string;
   includesSignatures?: boolean;
@@ -13,6 +14,7 @@ type EditableDocumentResultProps = {
 };
 
 export function EditableDocumentResult({
+  documentId,
   title,
   initialContent,
   includesSignatures,
@@ -20,15 +22,48 @@ export function EditableDocumentResult({
   brandSettings,
 }: EditableDocumentResultProps) {
   const [content, setContent] = useState(initialContent);
+  const [savedContent, setSavedContent] = useState(initialContent);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
-  const hasChanges = content !== initialContent;
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const hasChanges = content !== savedContent;
   const stats = useMemo(() => getDocumentStats(content), [content]);
 
   async function copyText() {
     await navigator.clipboard.writeText(content);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function saveDocument() {
+    setSaving(true);
+    setError(null);
+    setSaveMessage(null);
+
+    try {
+      const response = await fetch(`/api/documents/${documentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const data = (await response.json()) as { document?: { content: string }; message?: string };
+
+      if (!response.ok || !data.document) {
+        setError(data.message || "No se pudo guardar el documento.");
+        return;
+      }
+
+      setSavedContent(data.document.content);
+      setContent(data.document.content);
+      setSaveMessage("Cambios guardados");
+      window.setTimeout(() => setSaveMessage(null), 1800);
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -38,7 +73,7 @@ export function EditableDocumentResult({
           <p className="text-sm font-semibold text-[#2d6a4f]">Documento editable</p>
           <h2 className="mt-1 text-xl font-bold">{title}</h2>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Puedes ajustar el texto antes de exportarlo. En esta fase los cambios son locales; el guardado permanente llegará en la siguiente.
+            Puedes ajustar el texto, guardarlo en tu historial y exportar la versión final.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -51,11 +86,19 @@ export function EditableDocumentResult({
           </button>
           <button
             type="button"
-            onClick={() => setContent(initialContent)}
+            onClick={() => setContent(savedContent)}
             disabled={!hasChanges}
             className="focus-ring btn-secondary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             Restaurar
+          </button>
+          <button
+            type="button"
+            onClick={() => void saveDocument()}
+            disabled={!hasChanges || saving}
+            className="focus-ring btn-primary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? "Guardando..." : "Guardar"}
           </button>
           <button
             type="button"
@@ -91,11 +134,13 @@ export function EditableDocumentResult({
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
         <span className="rounded-full bg-[#d8f3dc] px-3 py-1 font-semibold text-[#2d6a4f]">
-          {hasChanges ? "Cambios sin guardar" : "Original guardado"}
+          {hasChanges ? "Cambios sin guardar" : "Guardado"}
         </span>
         <span>{stats.words} palabras</span>
         <span>{stats.characters} caracteres</span>
+        {saveMessage && <span className="font-semibold text-[#2d6a4f]">{saveMessage}</span>}
       </div>
+      {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {editing ? (
         <label className="mt-5 block">

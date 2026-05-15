@@ -109,6 +109,7 @@ export default async function HistoryDetailPage({ params }: Props) {
       </div>
 
       <EditableDocumentResult
+        documentId={document.id}
         title={document.doc_label}
         initialContent={document.content}
         includesSignatures={config?.includesSignatures ?? false}
