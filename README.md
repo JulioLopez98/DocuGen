@@ -361,6 +361,13 @@ La fase 6.3 mejora la ficha de cada plantilla:
 - Resumen, descripcion, texto extraido y metadatos separados en bloques claros.
 - Listado de documentos generados con esa plantilla, con enlaces para abrirlos o reutilizarlos.
 
+La fase 6.4 anade plantillas destacadas:
+
+- Columna `is_favorite` en `document_templates`.
+- Filtro de destacadas en la biblioteca.
+- Boton para marcar o quitar una plantilla como destacada desde listado y detalle.
+- Las plantillas destacadas aparecen primero en biblioteca y selector del generador.
+
 ## Comandos
 
 ```bash

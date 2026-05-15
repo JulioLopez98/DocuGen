@@ -6,6 +6,10 @@ const paramsSchema = z.object({
   id: z.string().uuid(),
 });
 
+const templateUpdateSchema = z.object({
+  isFavorite: z.boolean(),
+});
+
 const errorResponse = (status: number, error: string, message: string) =>
   NextResponse.json({ error, message }, { status });
 
@@ -58,5 +62,39 @@ export async function DELETE(_request: Request, { params }: Params) {
 
     console.error("template_delete_unhandled", error);
     return errorResponse(500, "template_delete_failed", "No se pudo borrar la plantilla.");
+  }
+}
+
+export async function PATCH(request: Request, { params }: Params) {
+  try {
+    const { supabase, user } = await requireUser();
+
+    if (!supabase || !user) {
+      return errorResponse(401, "unauthorized", "Inicia sesion para actualizar plantillas.");
+    }
+
+    const { id } = paramsSchema.parse(params);
+    const payload = templateUpdateSchema.parse(await request.json());
+    const { data: template, error: updateError } = await supabase
+      .from("document_templates")
+      .update({ is_favorite: payload.isFavorite })
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select("*")
+      .single<DocumentTemplateRow>();
+
+    if (updateError || !template) {
+      console.error("template_update_error", updateError);
+      return errorResponse(404, "template_not_found", "No se encontro la plantilla.");
+    }
+
+    return NextResponse.json({ template });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return errorResponse(400, "invalid_payload", "Revisa los datos de la plantilla.");
+    }
+
+    console.error("template_update_unhandled", error);
+    return errorResponse(500, "template_update_failed", "No se pudo actualizar la plantilla.");
   }
 }

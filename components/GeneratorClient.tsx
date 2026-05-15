@@ -34,7 +34,7 @@ type GenerateRequestPayload = {
   templateUsageMode?: TemplateUsageMode;
 };
 
-type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at">;
+type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite">;
 type CommunityTypeOption = Pick<
   CommunityDocumentTypeRow,
   "id" | "label" | "description" | "category" | "required_plan" | "suggested_fields" | "status"
@@ -519,7 +519,12 @@ export function GeneratorClient({
                   >
                     <span className="flex items-start justify-between gap-3">
                       <span>
-                        <span className="font-bold">{template.name}</span>
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold">{template.name}</span>
+                          {template.is_favorite && (
+                            <span className="rounded-full bg-[#1f2933] px-2 py-0.5 text-[10px] font-bold text-white">Destacada</span>
+                          )}
+                        </span>
                         <span className="mt-1 block text-xs leading-5 text-slate-500">
                           {template.category || "Sin categoria"} · {new Date(template.created_at).toLocaleDateString("es-ES")}
                         </span>

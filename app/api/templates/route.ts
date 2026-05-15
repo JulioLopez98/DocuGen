@@ -30,6 +30,7 @@ export async function GET() {
       .from("document_templates")
       .select("*")
       .eq("user_id", user.id)
+      .order("is_favorite", { ascending: false })
       .order("created_at", { ascending: false })
       .returns<DocumentTemplateRow[]>();
 

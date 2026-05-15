@@ -58,12 +58,13 @@ export default async function GeneratePage({ searchParams }: Props) {
     supabase && profile && profile.plan !== "free"
       ? await supabase
           .from("document_templates")
-          .select("id,name,category,summary,created_at")
+          .select("id,name,category,summary,created_at,is_favorite")
           .eq("user_id", profile.id)
           .eq("status", "ready")
           .not("extracted_text", "is", null)
+          .order("is_favorite", { ascending: false })
           .order("created_at", { ascending: false })
-          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at">[]>()
+          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite">[]>()
       : { data: [] };
   const { data: communityTypes } =
     supabase && profile

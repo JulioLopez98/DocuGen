@@ -132,6 +132,7 @@ create table if not exists public.document_templates (
   summary text,
   notes text,
   error_message text,
+  is_favorite boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (storage_bucket, storage_path)
@@ -181,6 +182,7 @@ create index if not exists workspace_members_user_idx on public.workspace_member
 create index if not exists document_templates_user_created_idx on public.document_templates(user_id, created_at desc);
 create index if not exists document_templates_workspace_idx on public.document_templates(workspace_id);
 create index if not exists document_templates_status_idx on public.document_templates(status);
+create index if not exists document_templates_user_favorite_idx on public.document_templates(user_id, is_favorite desc, created_at desc);
 create index if not exists chat_sessions_user_idx on public.chat_sessions(user_id);
 create index if not exists chat_messages_session_idx on public.chat_messages(session_id, created_at);
 

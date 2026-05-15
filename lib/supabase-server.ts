@@ -77,6 +77,7 @@ export type DocumentTemplateRow = {
   summary: string | null;
   notes: string | null;
   error_message: string | null;
+  is_favorite: boolean;
   created_at: string;
   updated_at: string;
 };

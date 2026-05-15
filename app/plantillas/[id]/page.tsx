@@ -71,7 +71,12 @@ export default async function TemplateDetailPage({ params }: Props) {
       <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
         <div>
           <p className="eyebrow">{template.category || "Plantilla"}</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">{template.name}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <h1 className="font-serif-display text-4xl font-bold">{template.name}</h1>
+            {template.is_favorite && (
+              <span className="rounded-full bg-[#1f2933] px-3 py-1 text-xs font-bold text-white">Destacada</span>
+            )}
+          </div>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
             Archivo propio guardado en tu biblioteca privada. Revisa su estado, resumen, texto extraido y los documentos
             que ya se han generado usando esta referencia.

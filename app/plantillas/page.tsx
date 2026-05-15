@@ -28,6 +28,7 @@ export default async function TemplatesPage() {
         .from("document_templates")
         .select("*")
         .eq("user_id", profile.id)
+        .order("is_favorite", { ascending: false })
         .order("created_at", { ascending: false })
         .returns<DocumentTemplateRow[]>();
 

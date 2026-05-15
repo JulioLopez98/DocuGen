@@ -97,8 +97,45 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
     }
   }
 
+  async function toggleFavorite() {
+    setLoading("process");
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/templates/${template.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFavorite: !template.is_favorite }),
+      });
+      const payload = (await response.json()) as ApiError;
+
+      if (!response.ok) {
+        setError(payload.message || "No se pudo actualizar la plantilla.");
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <div className="grid gap-2">
+      <button
+        type="button"
+        onClick={toggleFavorite}
+        disabled={loading !== null}
+        className={`focus-ring rounded-md border px-4 py-3 text-sm font-semibold transition disabled:opacity-60 ${
+          template.is_favorite
+            ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
+            : "border-[#d8f3dc] bg-white text-[#2d6a4f] hover:border-[#2d6a4f]"
+        }`}
+      >
+        {template.is_favorite ? "Quitar de destacadas" : "Marcar como destacada"}
+      </button>
       <button
         type="button"
         onClick={processTemplate}

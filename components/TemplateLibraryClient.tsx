@@ -36,17 +36,19 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | DocumentTemplateRow["status"]>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [favoriteFilter, setFavoriteFilter] = useState<"all" | "favorites">("all");
 
   const readyCount = useMemo(() => templates.filter((template) => template.status === "ready").length, [templates]);
   const processingCount = useMemo(() => templates.filter((template) => template.status === "processing").length, [templates]);
   const failedCount = useMemo(() => templates.filter((template) => template.status === "failed").length, [templates]);
+  const favoriteCount = useMemo(() => templates.filter((template) => template.is_favorite).length, [templates]);
   const categories = useMemo(
     () => Array.from(new Set(templates.map((template) => template.category).filter((category): category is string => Boolean(category)))).sort(),
     [templates],
   );
   const filteredTemplates = useMemo(
-    () => filterTemplates(templates, query, statusFilter, categoryFilter),
-    [templates, query, statusFilter, categoryFilter],
+    () => filterTemplates(templates, query, statusFilter, categoryFilter, favoriteFilter),
+    [templates, query, statusFilter, categoryFilter, favoriteFilter],
   );
 
   async function uploadTemplate(event: FormEvent<HTMLFormElement>) {
@@ -214,10 +216,40 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
     }
   }
 
+  async function toggleFavorite(template: DocumentTemplateRow) {
+    setWorkingId(template.id);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/templates/${template.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFavorite: !template.is_favorite }),
+      });
+      const payload = (await response.json()) as { template?: DocumentTemplateRow } & ApiError;
+
+      if (!response.ok || !payload.template) {
+        setError(payload.message || "No se pudo actualizar la plantilla.");
+        return;
+      }
+
+      setTemplates((current) =>
+        sortTemplates(current.map((item) => (item.id === template.id ? payload.template! : item))),
+      );
+      setMessage(payload.template.is_favorite ? "Plantilla marcada como destacada." : "Plantilla quitada de destacadas.");
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setWorkingId(null);
+    }
+  }
+
   return (
     <div className="grid gap-6">
-      <section className="grid gap-3 md:grid-cols-4">
+      <section className="grid gap-3 md:grid-cols-5">
         <LibraryMetric label="Total" value={templates.length.toString()} helper="Plantillas subidas" />
+        <LibraryMetric label="Destacadas" value={favoriteCount.toString()} helper="Acceso rapido" />
         <LibraryMetric label="Listas" value={readyCount.toString()} helper="Pueden usarse como referencia" />
         <LibraryMetric label="Procesando" value={processingCount.toString()} helper="Extraccion en curso" />
         <LibraryMetric label="Con error" value={failedCount.toString()} helper="Requieren revisar" />
@@ -301,7 +333,7 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
         </div>
 
         {templates.length > 0 && (
-          <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_180px_180px_auto]">
+          <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_160px_160px_160px_auto]">
             <label>
               <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar</span>
               <input
@@ -310,6 +342,17 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                 className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
                 placeholder="Nombre, categoria o descripcion..."
               />
+            </label>
+            <label>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Vista</span>
+              <select
+                value={favoriteFilter}
+                onChange={(event) => setFavoriteFilter(event.target.value as "all" | "favorites")}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              >
+                <option value="all">Todas</option>
+                <option value="favorites">Destacadas</option>
+              </select>
             </label>
             <label>
               <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Estado</span>
@@ -347,6 +390,7 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                   setQuery("");
                   setStatusFilter("all");
                   setCategoryFilter("all");
+                  setFavoriteFilter("all");
                 }}
                 className="focus-ring btn-secondary w-full px-4 py-3 text-sm"
               >
@@ -378,6 +422,7 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold">{template.name}</h3>
+                      {template.is_favorite && <FavoriteBadge />}
                       <StatusBadge status={template.status} />
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
@@ -398,6 +443,18 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleFavorite(template)}
+                      disabled={workingId === template.id}
+                      className={`focus-ring rounded-md border px-3 py-2 text-xs font-semibold transition disabled:opacity-60 ${
+                        template.is_favorite
+                          ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
+                          : "border-[#d8f3dc] bg-white/70 text-[#2d6a4f] hover:border-[#2d6a4f]"
+                      }`}
+                    >
+                      {template.is_favorite ? "Destacada" : "Destacar"}
+                    </button>
                     {template.status === "ready" && (
                       <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-3 py-2 text-xs">
                         Usar
@@ -457,16 +514,18 @@ function filterTemplates(
   query: string,
   statusFilter: "all" | DocumentTemplateRow["status"],
   categoryFilter: string,
+  favoriteFilter: "all" | "favorites",
 ) {
   const normalizedQuery = query.trim().toLowerCase();
 
   return templates.filter((template) => {
     const matchesStatus = statusFilter === "all" || template.status === statusFilter;
     const matchesCategory = categoryFilter === "all" || template.category === categoryFilter;
+    const matchesFavorite = favoriteFilter === "all" || template.is_favorite;
     const searchable = `${template.name} ${template.category || ""} ${template.description || ""} ${template.original_filename}`.toLowerCase();
     const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
 
-    return matchesStatus && matchesCategory && matchesQuery;
+    return matchesStatus && matchesCategory && matchesFavorite && matchesQuery;
   });
 }
 
@@ -479,6 +538,20 @@ function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
   };
 
   return <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">{labels[status]}</span>;
+}
+
+function FavoriteBadge() {
+  return <span className="rounded-full bg-[#1f2933] px-2 py-0.5 text-[10px] font-bold text-white">Destacada</span>;
+}
+
+function sortTemplates(templates: DocumentTemplateRow[]) {
+  return [...templates].sort((first, second) => {
+    if (first.is_favorite !== second.is_favorite) {
+      return first.is_favorite ? -1 : 1;
+    }
+
+    return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
+  });
 }
 
 function getFileType(filename: string): AllowedExtension | null {
