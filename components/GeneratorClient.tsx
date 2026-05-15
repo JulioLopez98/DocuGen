@@ -10,7 +10,7 @@ import { DocResult } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
-import type { DocumentTemplateRow } from "@/lib/supabase-server";
+import type { CommunityDocumentTypeRow, DocumentTemplateRow } from "@/lib/supabase-server";
 import {
   defaultTemplateUsageMode,
   templateUsageDescriptions,
@@ -35,6 +35,14 @@ type GenerateRequestPayload = {
 };
 
 type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at">;
+type CommunityTypeOption = Pick<
+  CommunityDocumentTypeRow,
+  "id" | "label" | "description" | "category" | "required_plan" | "suggested_fields" | "status"
+>;
+type CommunityGeneratePayload = {
+  communityTypeId: string;
+  formData: Record<string, string>;
+};
 
 type GeneratorClientProps = {
   initialDocType?: DocumentType;
@@ -43,6 +51,7 @@ type GeneratorClientProps = {
   brandSettings?: PdfBrandSettings | null;
   plan?: "free" | "pro" | "empresa";
   referenceTemplates?: TemplateOption[];
+  communityTypes?: CommunityTypeOption[];
   initialReferenceTemplateId?: string;
 };
 
@@ -53,6 +62,7 @@ export function GeneratorClient({
   brandSettings,
   plan = "free",
   referenceTemplates = [],
+  communityTypes = [],
   initialReferenceTemplateId,
 }: GeneratorClientProps) {
   const router = useRouter();
@@ -63,11 +73,13 @@ export function GeneratorClient({
     initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
   );
   const [lastCustomPayload, setLastCustomPayload] = useState<CustomDocumentFormValues | null>(null);
+  const [lastCommunityPayload, setLastCommunityPayload] = useState<CommunityGeneratePayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
-  const [generatorMode, setGeneratorMode] = useState<"catalog" | "custom">("catalog");
+  const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">("catalog");
+  const [selectedCommunityId, setSelectedCommunityId] = useState(communityTypes[0]?.id || "");
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
@@ -80,12 +92,16 @@ export function GeneratorClient({
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
   const isTemplateMode = Boolean(initialFormData && initialDocType);
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
+  const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
+  const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
 
   function selectDocument(type: DocumentType) {
     setSelected(type);
     setGenerated(null);
     setError(null);
     setLastPayload(null);
+    setLastCustomPayload(null);
+    setLastCommunityPayload(null);
     router.replace(`/generar?type=${type}`, { scroll: false });
   }
 
@@ -93,6 +109,7 @@ export function GeneratorClient({
     setLoading(true);
     setError(null);
     setLastPayload(null);
+    setLastCommunityPayload(null);
     setLastCustomPayload(payload);
 
     try {
@@ -126,6 +143,11 @@ export function GeneratorClient({
       return;
     }
 
+    if (generated.docType.startsWith("community:") && lastCommunityPayload) {
+      void submitCommunity(lastCommunityPayload);
+      return;
+    }
+
     if (lastPayload) {
       void submit(lastPayload);
     }
@@ -140,6 +162,8 @@ export function GeneratorClient({
       templateUsageMode,
     };
     setLastPayload(requestPayload);
+    setLastCustomPayload(null);
+    setLastCommunityPayload(null);
 
     try {
       const response = await fetch("/api/generate", {
@@ -151,6 +175,34 @@ export function GeneratorClient({
 
       if (!response.ok) {
         setError(data.message || "No se pudo generar el documento.");
+        return;
+      }
+
+      setGenerated(data);
+    } catch {
+      setError("No se pudo conectar con el generador.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function submitCommunity(payload: CommunityGeneratePayload) {
+    setLoading(true);
+    setError(null);
+    setLastCommunityPayload(payload);
+    setLastPayload(null);
+    setLastCustomPayload(null);
+
+    try {
+      const response = await fetch("/api/community-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as GeneratedDocument & { message?: string };
+
+      if (!response.ok) {
+        setError(data.message || "No se pudo generar el documento comunitario.");
         return;
       }
 
@@ -201,7 +253,7 @@ export function GeneratorClient({
       <aside className="space-y-4">
         <section className="surface rounded-md p-5">
           <p className="eyebrow">Modo</p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => {
@@ -214,6 +266,20 @@ export function GeneratorClient({
               }`}
             >
               Catalogo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setGeneratorMode("community");
+                setGenerated(null);
+                setError(null);
+              }}
+              disabled={communityTypes.length === 0}
+              className={`focus-ring rounded-md border px-3 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                generatorMode === "community" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
+              }`}
+            >
+              Comunidad
             </button>
             <button
               type="button"
@@ -308,6 +374,51 @@ export function GeneratorClient({
             )}
           </div>
         </section>
+        )}
+
+        {generatorMode === "community" && (
+          <section className="surface rounded-md p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Comunidad</p>
+                <h2 className="font-serif-display mt-2 text-2xl font-bold">Tipos aprobados</h2>
+              </div>
+              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+                {communityTypes.length}
+              </span>
+            </div>
+            <div className="mt-5 grid gap-2">
+              {communityTypes.map((type) => {
+                const active = type.id === selectedCommunityId;
+                const locked = !canUseCommunityType(plan, type.required_plan);
+
+                return (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCommunityId(type.id);
+                      setGenerated(null);
+                      setError(null);
+                    }}
+                    className={`focus-ring rounded-md border px-3 py-3 text-left transition ${
+                      active
+                        ? "border-[#2d6a4f] bg-[#d8f3dc]/70 shadow-sm"
+                        : "border-transparent bg-white/70 hover:border-[#2d6a4f] hover:bg-white"
+                    }`}
+                  >
+                    <span className="flex items-center justify-between gap-3 text-sm font-semibold">
+                      {type.label}
+                      <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                        {locked ? type.required_plan : type.status}
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-500">{type.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
         )}
 
         {generatorMode === "catalog" && (
@@ -439,19 +550,48 @@ export function GeneratorClient({
       <section className="surface rounded-md p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-5">
           <div>
-            <p className="text-sm font-semibold text-[#2d6a4f]">{generatorMode === "catalog" ? config.category : "Documento a medida"}</p>
+            <p className="text-sm font-semibold text-[#2d6a4f]">
+              {generatorMode === "catalog" ? config.category : generatorMode === "community" ? selectedCommunityType?.category || "Comunidad" : "Documento a medida"}
+            </p>
             <h1 className="font-serif-display mt-1 text-3xl font-bold">
-              {generatorMode === "catalog" ? config.label : "No encuentro mi documento"}
+              {generatorMode === "catalog" ? config.label : generatorMode === "community" ? selectedCommunityType?.label || "Catálogo comunitario" : "No encuentro mi documento"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               {generatorMode === "catalog"
                 ? "Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo."
-                : "Explica que documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos utiles."}
+                : generatorMode === "community"
+                  ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
+                  : "Explica que documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos utiles."}
             </p>
           </div>
           {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
         </div>
-        {generatorMode === "custom" && customProLocked ? (
+        {generatorMode === "community" && selectedCommunityType && communityLocked ? (
+          <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
+            <p className="eyebrow">Plan requerido</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Desbloquea {selectedCommunityType.label.toLowerCase()}</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Este tipo comunitario requiere el plan {selectedCommunityType.required_plan}. Los documentos aprobados por la comunidad
+              pueden tener instrucciones más avanzadas que los tipos gratuitos.
+            </p>
+            <Link href="/precios" className="focus-ring btn-primary mt-6 inline-flex px-5 py-3 text-sm">
+              Ver planes
+            </Link>
+          </div>
+        ) : generatorMode === "community" && selectedCommunityType ? (
+          <CommunityForm
+            communityType={selectedCommunityType}
+            disabled={loading}
+            onSubmit={(formData) => submitCommunity({ communityTypeId: selectedCommunityType.id, formData })}
+          />
+        ) : generatorMode === "community" ? (
+          <EmptyState
+            eyebrow="Sin documentos comunitarios"
+            title="Aún no hay tipos comunitarios disponibles"
+            description="Cuando el equipo publique candidatos aprobados, aparecerán aquí para generar documentos."
+            variant="flat"
+          />
+        ) : generatorMode === "custom" && customProLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
             <p className="eyebrow">Funcion Pro</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no estan en el catalogo</h2>
@@ -510,7 +650,7 @@ export function GeneratorClient({
             canExportDocx={canExportDocx}
             brandSettings={brandSettings}
             onRegenerate={regenerateGenerated}
-            onRefine={refineGenerated}
+            onRefine={getDocumentConfig(generated.docType) ? refineGenerated : undefined}
             refiningMode={refiningMode}
           />
         </div>
@@ -546,4 +686,64 @@ function InfoPill({ label, value }: { label: string; value: string }) {
       <span className="font-semibold text-[#1f2933]">{value}</span>
     </div>
   );
+}
+
+function CommunityForm({
+  communityType,
+  disabled,
+  onSubmit,
+}: {
+  communityType: CommunityTypeOption;
+  disabled: boolean;
+  onSubmit: (formData: Record<string, string>) => void;
+}) {
+  const [formData, setFormData] = useState<Record<string, string>>({});
+
+  return (
+    <form
+      className="grid gap-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit(formData);
+      }}
+    >
+      <p className="rounded-md bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">{communityType.description}</p>
+      {communityType.suggested_fields.map((field) => (
+        <label key={field.name}>
+          <span className="text-sm font-semibold">{field.label}</span>
+          {field.type === "textarea" ? (
+            <textarea
+              value={formData[field.name] || ""}
+              onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+              rows={4}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+            />
+          ) : (
+            <input
+              type={field.type === "email" || field.type === "date" ? field.type : "text"}
+              value={formData[field.name] || ""}
+              onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+            />
+          )}
+        </label>
+      ))}
+      <p className="rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
+        Este tipo procede del catálogo comunitario revisado. El resultado sigue siendo un borrador generado con IA.
+      </p>
+      <button type="submit" disabled={disabled} className="focus-ring btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
+        {disabled ? "Generando..." : "Generar documento comunitario"}
+      </button>
+    </form>
+  );
+}
+
+function canUseCommunityType(userPlan: "free" | "pro" | "empresa", requiredPlan: "free" | "pro" | "empresa") {
+  const rank = {
+    free: 0,
+    pro: 1,
+    empresa: 2,
+  };
+
+  return rank[userPlan] >= rank[requiredPlan];
 }

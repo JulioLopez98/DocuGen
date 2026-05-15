@@ -94,10 +94,17 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
 
     try {
       const custom = isCustomDocument(doc);
-      const response = await fetch(custom ? "/api/custom-generate" : "/api/generate", {
+      const community = isCommunityDocument(doc);
+      const response = await fetch(custom ? "/api/custom-generate" : community ? "/api/community-generate" : "/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(custom ? buildCustomRegeneratePayload(doc.form_data) : buildCatalogRegeneratePayload(doc)),
+        body: JSON.stringify(
+          custom
+            ? buildCustomRegeneratePayload(doc.form_data)
+            : community
+              ? buildCommunityRegeneratePayload(doc.form_data)
+              : buildCatalogRegeneratePayload(doc),
+        ),
       });
       const payload = (await response.json()) as GenerateResponse;
 
@@ -240,6 +247,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
             {group.documents.map((doc) => {
               const config = getDocumentConfig(doc.doc_type);
               const custom = isCustomDocument(doc);
+              const community = isCommunityDocument(doc);
               const createdAt = new Date(doc.created_at);
               const preview = doc.content.length > 900 ? `${doc.content.slice(0, 900)}...` : doc.content;
               const isBusy = busyId === doc.id;
@@ -254,6 +262,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                           {custom ? "A medida" : config?.category || "Documento"}
                         </span>
                         {custom && <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">Personalizado</span>}
+                        {community && <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">Comunidad</span>}
                         {doc.reference_template_id && (
                           <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">
                             Con plantilla
@@ -283,7 +292,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                       <Link href={`/historial/${doc.id}`} className="focus-ring btn-primary px-3 py-2 text-sm">
                         Ver detalle
                       </Link>
-                      {!custom && (
+                      {!custom && !community && (
                         <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
                           Usar como plantilla
                         </Link>
@@ -420,6 +429,10 @@ function isCustomDocument(doc: DocumentRow) {
   return doc.doc_type === "custom";
 }
 
+function isCommunityDocument(doc: DocumentRow) {
+  return doc.doc_type.startsWith("community:");
+}
+
 function buildCatalogRegeneratePayload(doc: DocumentRow) {
   return {
     docType: doc.doc_type,
@@ -438,4 +451,25 @@ function buildCustomRegeneratePayload(formData: Record<string, string>) {
     sector: formData.sector || undefined,
     requiredData: formData.required_data || undefined,
   };
+}
+
+function buildCommunityRegeneratePayload(formData: Record<string, string>) {
+  const communityReference = parseCommunityReference(formData.__community_type);
+
+  return {
+    communityTypeId: communityReference?.id || "",
+    formData: stripInternalFormData(formData),
+  };
+}
+
+function parseCommunityReference(value?: string) {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(value) as { id?: string };
+  } catch {
+    return null;
+  }
 }

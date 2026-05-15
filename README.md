@@ -258,6 +258,15 @@ La fase 4.4 añade aprobación editorial:
 - Estados disponibles: borrador, en revisión, aprobado, publicado y descartado.
 - No requiere SQL nuevo: reutiliza `community_document_types`.
 
+La fase 4.5 conecta candidatos aprobados con generación:
+
+- SQL incremental: `supabase-community-generation-4.5.sql`.
+- Nuevo modo `Comunidad` en `/generar`.
+- API `POST /api/community-generate`.
+- Usa tipos `approved` o `published` de `community_document_types`.
+- Respeta `required_plan`, límites Free, rate limit, guardado en historial y emails.
+- Los documentos se guardan con `doc_type = community:<slug>`.
+
 ## Comandos
 
 ```bash

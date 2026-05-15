@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type { DocumentType, DocumentTypeConfig } from "@/lib/document-types";
 import type { RefinementMode } from "@/lib/refinement";
+import type { CommunityDocumentTypeRow } from "@/lib/supabase-server";
 import { defaultTemplateUsageMode, templateUsageLabels, type TemplateUsageMode } from "@/lib/template-usage";
 
 export type TemplateReference = {
@@ -19,6 +20,11 @@ export type CustomDocumentPromptInput = {
   tone: string;
   sector?: string | null;
   requiredData?: string | null;
+};
+
+export type CommunityDocumentPromptInput = {
+  type: Pick<CommunityDocumentTypeRow, "label" | "description" | "category" | "prompt_brief" | "suggested_fields">;
+  formData: Record<string, string>;
 };
 
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
@@ -309,6 +315,41 @@ Reglas para documento libre:
 - Incluye titulo, fecha si aporta valor y secciones claras.
 - Incluye al final un aviso breve indicando que es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
 - Devuelve solo el documento final, sin explicar el proceso.`;
+}
+
+export function buildCommunityDocumentPrompt(input: CommunityDocumentPromptInput) {
+  const values = input.type.suggested_fields
+    .map((field) => `- ${field.label} (${field.name}): ${input.formData[field.name] || "[PENDIENTE DE COMPLETAR]"}`)
+    .join("\n");
+
+  return `Genera un borrador profesional para España usando una definición comunitaria aprobada por DocuGen.
+
+Tipo comunitario:
+${input.type.label}
+
+Categoría:
+${input.type.category || "A medida"}
+
+Descripción editorial:
+${input.type.description}
+
+Prompt base revisado por admin:
+${input.type.prompt_brief}
+
+Reglas obligatorias:
+- Redacta para el contexto español.
+- Usa solo los datos aportados por el usuario.
+- No inventes nombres, importes, fechas, domicilios, NIF/CIF, normativa concreta, jurisdicción ni condiciones.
+- Si falta información necesaria, usa exactamente [PENDIENTE DE COMPLETAR].
+- Mantén un tono profesional, claro y proporcionado.
+- Si el documento tiene impacto legal, laboral, fiscal, societario, inmobiliario o de protección de datos, redacta con prudencia y recomienda revisión profesional.
+- No prometas validez legal ni sustituyas asesoramiento profesional.
+- Respeta la intención del tipo comunitario, pero no copies texto de solicitudes anteriores.
+- Incluye al final un aviso breve indicando que es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
+- Devuelve solo el documento final.
+
+Datos proporcionados:
+${values}`;
 }
 
 function getCustomToneRules(tone: string) {

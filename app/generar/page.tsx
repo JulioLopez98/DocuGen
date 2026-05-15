@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
-import { getCurrentProfile, type BrandSettings, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
+import {
+  getCurrentProfile,
+  type BrandSettings,
+  type CommunityDocumentTypeRow,
+  type DocumentRow,
+  type DocumentTemplateRow,
+} from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Generador",
@@ -54,6 +60,15 @@ export default async function GeneratePage({ searchParams }: Props) {
           .order("created_at", { ascending: false })
           .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at">[]>()
       : { data: [] };
+  const { data: communityTypes } =
+    supabase && profile
+      ? await supabase
+          .from("community_document_types")
+          .select("*")
+          .in("status", ["approved", "published"])
+          .order("created_at", { ascending: false })
+          .returns<CommunityDocumentTypeRow[]>()
+      : { data: [] };
 
   return (
     <section className="container-page py-10">
@@ -78,6 +93,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           brandSettings={brandSettings || null}
           plan={profile?.plan}
           referenceTemplates={referenceTemplates || []}
+          communityTypes={communityTypes || []}
           initialReferenceTemplateId={requestedReferenceTemplateId}
         />
       </Suspense>
