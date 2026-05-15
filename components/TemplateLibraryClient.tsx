@@ -33,8 +33,21 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | DocumentTemplateRow["status"]>("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const readyCount = useMemo(() => templates.filter((template) => template.status === "ready").length, [templates]);
+  const processingCount = useMemo(() => templates.filter((template) => template.status === "processing").length, [templates]);
+  const failedCount = useMemo(() => templates.filter((template) => template.status === "failed").length, [templates]);
+  const categories = useMemo(
+    () => Array.from(new Set(templates.map((template) => template.category).filter((category): category is string => Boolean(category)))).sort(),
+    [templates],
+  );
+  const filteredTemplates = useMemo(
+    () => filterTemplates(templates, query, statusFilter, categoryFilter),
+    [templates, query, statusFilter, categoryFilter],
+  );
 
   async function uploadTemplate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -178,8 +191,39 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
     }
   }
 
+  async function processTemplate(template: DocumentTemplateRow) {
+    setWorkingId(template.id);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/templates/${template.id}/process`, { method: "POST" });
+      const payload = (await response.json()) as { template?: DocumentTemplateRow } & ApiError;
+
+      if (!response.ok || !payload.template) {
+        setError(payload.message || "No se pudo procesar la plantilla.");
+        return;
+      }
+
+      setTemplates((current) => current.map((item) => (item.id === template.id ? payload.template! : item)));
+      setMessage("Plantilla procesada correctamente.");
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setWorkingId(null);
+    }
+  }
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[390px_1fr]">
+    <div className="grid gap-6">
+      <section className="grid gap-3 md:grid-cols-4">
+        <LibraryMetric label="Total" value={templates.length.toString()} helper="Plantillas subidas" />
+        <LibraryMetric label="Listas" value={readyCount.toString()} helper="Pueden usarse como referencia" />
+        <LibraryMetric label="Procesando" value={processingCount.toString()} helper="Extraccion en curso" />
+        <LibraryMetric label="Con error" value={failedCount.toString()} helper="Requieren revisar" />
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[390px_1fr]">
       <section className="surface rounded-md p-6">
         <p className="eyebrow">Subir plantilla</p>
         <h2 className="font-serif-display mt-3 text-3xl font-bold">Anade un documento propio</h2>
@@ -256,6 +300,62 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
           </span>
         </div>
 
+        {templates.length > 0 && (
+          <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_180px_180px_auto]">
+            <label>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar</span>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                placeholder="Nombre, categoria o descripcion..."
+              />
+            </label>
+            <label>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Estado</span>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value as "all" | DocumentTemplateRow["status"])}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              >
+                <option value="all">Todos</option>
+                <option value="uploaded">Subidas</option>
+                <option value="processing">Procesando</option>
+                <option value="ready">Listas</option>
+                <option value="failed">Error</option>
+              </select>
+            </label>
+            <label>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Categoria</span>
+              <select
+                value={categoryFilter}
+                onChange={(event) => setCategoryFilter(event.target.value)}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              >
+                <option value="all">Todas</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setStatusFilter("all");
+                  setCategoryFilter("all");
+                }}
+                className="focus-ring btn-secondary w-full px-4 py-3 text-sm"
+              >
+                Limpiar
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 grid gap-3">
           {templates.length === 0 ? (
             <EmptyState
@@ -264,9 +364,16 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
               description="Guarda documentos propios para que DocuGen pueda usarlos como referencia en las siguientes fases."
               variant="flat"
             />
+          ) : filteredTemplates.length === 0 ? (
+            <EmptyState
+              eyebrow="Sin resultados"
+              title="No hay plantillas con esos filtros"
+              description="Prueba con otra busqueda, cambia el estado o vuelve a mostrar toda la biblioteca."
+              variant="flat"
+            />
           ) : (
-            templates.map((template) => (
-              <article key={template.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+            filteredTemplates.map((template) => (
+              <article key={template.id} className="surface-flat interactive rounded-md p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -283,9 +390,19 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                         {template.description || "Sin descripcion."}
                       </p>
                     )}
+                    <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
+                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Texto: {template.extracted_text ? "extraido" : "pendiente"}</span>
+                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Resumen: {template.summary ? "disponible" : "pendiente"}</span>
+                      <span className="rounded-md bg-[#faf9f6] px-3 py-2">Uso: generador Pro</span>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    {template.status === "ready" && (
+                      <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-3 py-2 text-xs">
+                        Usar
+                      </Link>
+                    )}
                     <Link href={`/plantillas/${template.id}`} className="focus-ring btn-primary px-3 py-2 text-xs">
                       Abrir
                     </Link>
@@ -296,6 +413,14 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
                       className="focus-ring btn-secondary px-3 py-2 text-xs disabled:opacity-60"
                     >
                       Descargar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => processTemplate(template)}
+                      disabled={workingId === template.id}
+                      className="focus-ring btn-ghost px-3 py-2 text-xs disabled:opacity-60"
+                    >
+                      {workingId === template.id ? "Procesando..." : template.status === "ready" ? "Reprocesar" : "Procesar"}
                     </button>
                     <button
                       type="button"
@@ -312,8 +437,37 @@ export function TemplateLibraryClient({ userId, initialTemplates }: TemplateLibr
           )}
         </div>
       </section>
+      </div>
     </div>
   );
+}
+
+function LibraryMetric({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="surface-flat rounded-md p-5">
+      <p className="text-sm text-slate-500">{label}</p>
+      <p className="mt-3 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
+      <p className="mt-2 text-xs text-slate-500">{helper}</p>
+    </div>
+  );
+}
+
+function filterTemplates(
+  templates: DocumentTemplateRow[],
+  query: string,
+  statusFilter: "all" | DocumentTemplateRow["status"],
+  categoryFilter: string,
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  return templates.filter((template) => {
+    const matchesStatus = statusFilter === "all" || template.status === statusFilter;
+    const matchesCategory = categoryFilter === "all" || template.category === categoryFilter;
+    const searchable = `${template.name} ${template.category || ""} ${template.description || ""} ${template.original_filename}`.toLowerCase();
+    const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+
+    return matchesStatus && matchesCategory && matchesQuery;
+  });
 }
 
 function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
