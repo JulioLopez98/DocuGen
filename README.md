@@ -302,6 +302,14 @@ La fase 5.4 mejora la experiencia de versiones:
 - Una versión puede cargarse en el editor sin guardarla todavía.
 - La restauración definitiva sigue creando una versión nueva para conservar trazabilidad.
 
+La fase 5.5 añade mejora con IA desde el editor:
+
+- API `POST /api/documents/[id]/improve`.
+- Usa OpenAI Responses API y el modelo según plan.
+- Mejora el contenido actual sin guardarlo automáticamente.
+- Modos: más formal, más breve, más comercial, más natural, más prudente e instrucción propia.
+- La mejora se carga en el editor como cambios pendientes; el usuario debe revisarla y pulsar `Guardar`.
+
 ## Comandos
 
 ```bash

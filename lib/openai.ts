@@ -266,6 +266,62 @@ Documento actual a mejorar:
 ${content}`;
 }
 
+export function buildEditableImprovementPrompt({
+  title,
+  docType,
+  content,
+  mode,
+  customInstruction,
+}: {
+  title: string;
+  docType: string;
+  content: string;
+  mode: "formal" | "brief" | "commercial" | "natural" | "legal_review" | "custom";
+  customInstruction?: string | null;
+}) {
+  const modeRules: Record<typeof mode, string> = {
+    formal:
+      "Haz el documento mas formal, sobrio y preciso. Mejora redaccion, estructura y claridad sin hacerlo innecesariamente legalista.",
+    brief:
+      "Haz el documento mas breve y directo. Reduce repeticiones y relleno, pero conserva datos, condiciones, obligaciones, marcadores pendientes y aviso final.",
+    commercial:
+      "Haz el documento mas claro y persuasivo cuando encaje. Mejora propuesta de valor, lectura rapida y proximos pasos, sin alterar hechos ni convertir documentos legales en publicidad.",
+    natural:
+      "Haz el documento mas natural, humano y fluido. Reduce rigidez innecesaria y conserva profesionalidad, datos y estructura esencial.",
+    legal_review:
+      "Mejora prudencia, coherencia y claridad profesional. No des asesoramiento legal definitivo. Marca lagunas con [PENDIENTE DE COMPLETAR] y evita afirmaciones absolutas.",
+    custom:
+      customInstruction?.trim()
+        ? customInstruction.trim()
+        : "Mejora el documento manteniendo datos, estructura esencial y aviso final.",
+  };
+
+  return `Mejora el siguiente documento editado por el usuario.
+
+Titulo:
+${title}
+
+Tipo interno:
+${docType}
+
+Objetivo de mejora:
+${modeRules[mode]}
+
+Reglas obligatorias:
+- Devuelve el documento completo mejorado, no una lista de sugerencias.
+- Mantiene todos los datos reales, nombres, importes, fechas, emails, NIF/CIF, domicilios, condiciones y partes.
+- No inventes informacion nueva.
+- Si detectas informacion insuficiente, usa [PENDIENTE DE COMPLETAR].
+- No elimines el aviso final de borrador generado con IA.
+- Si el documento puede tener efectos legales, laborales, fiscales, societarios, inmobiliarios o de proteccion de datos, mantén tono prudente.
+- Respeta el formato natural del documento: carta como carta, email como email, contrato como contrato, politica web como politica web.
+- No añadas explicaciones sobre los cambios ni comentarios fuera del documento final.
+- Devuelve solo el documento final.
+
+Documento actual:
+${content}`;
+}
+
 export function buildCustomDocumentPrompt(input: CustomDocumentPromptInput) {
   const riskRules = getCustomRiskRules(input);
   const toneRules = getCustomToneRules(input.tone);

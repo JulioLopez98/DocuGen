@@ -22,6 +22,22 @@ type SaveResponse = {
   message?: string;
 };
 
+type ImproveMode = "formal" | "brief" | "commercial" | "natural" | "legal_review" | "custom";
+
+type ImproveResponse = {
+  document?: { id: string; content: string };
+  message?: string;
+};
+
+const improveModes: Array<{ value: ImproveMode; label: string; description: string }> = [
+  { value: "formal", label: "Más formal", description: "Pulido profesional, sobrio y preciso." },
+  { value: "brief", label: "Más breve", description: "Reduce repeticiones y deja lo esencial." },
+  { value: "commercial", label: "Más comercial", description: "Mejora claridad, valor y próximos pasos." },
+  { value: "natural", label: "Más natural", description: "Suena más humano sin perder profesionalidad." },
+  { value: "legal_review", label: "Más prudente", description: "Refuerza claridad y cautela en documentos sensibles." },
+  { value: "custom", label: "Instrucción propia", description: "Indica exactamente qué quieres cambiar." },
+];
+
 export function EditableDocumentResult({
   documentId,
   title,
@@ -38,6 +54,9 @@ export function EditableDocumentResult({
   const [copied, setCopied] = useState(false);
   const [versionCopiedId, setVersionCopiedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [improving, setImproving] = useState(false);
+  const [improveMode, setImproveMode] = useState<ImproveMode>("formal");
+  const [customInstruction, setCustomInstruction] = useState("");
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +133,39 @@ export function EditableDocumentResult({
       setError("No se pudo conectar con el servidor.");
     } finally {
       setRestoringId(null);
+    }
+  }
+
+  async function improveWithAi() {
+    setImproving(true);
+    setError(null);
+    setSaveMessage(null);
+
+    try {
+      const response = await fetch(`/api/documents/${documentId}/improve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          mode: improveMode,
+          customInstruction: improveMode === "custom" ? customInstruction : undefined,
+        }),
+      });
+      const data = (await response.json()) as ImproveResponse;
+
+      if (!response.ok || !data.document) {
+        setError(data.message || "No se pudo mejorar el documento.");
+        return;
+      }
+
+      setContent(data.document.content);
+      setEditing(true);
+      setSaveMessage("Mejora cargada en el editor. Revisa y guarda si te encaja.");
+      window.setTimeout(() => setSaveMessage(null), 3200);
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setImproving(false);
     }
   }
 
@@ -216,6 +268,60 @@ export function EditableDocumentResult({
           <article className="mt-5 whitespace-pre-wrap rounded-md bg-[#faf9f6] p-5 text-sm leading-7">{content}</article>
         )}
       </div>
+
+      <aside className="surface rounded-md p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-[#2d6a4f]">Mejorar con IA</p>
+            <h3 className="mt-1 text-lg font-bold">Pulir el documento actual</h3>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              La IA cargará una versión mejorada en el editor. No se guarda hasta que pulses Guardar.
+            </p>
+          </div>
+          <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Reversible</span>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-[260px_1fr_auto] lg:items-end">
+          <label>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Tipo de mejora</span>
+            <select
+              value={improveMode}
+              onChange={(event) => setImproveMode(event.target.value as ImproveMode)}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+            >
+              {improveModes.map((mode) => (
+                <option key={mode.value} value={mode.value}>
+                  {mode.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Instrucción opcional</span>
+            <input
+              value={customInstruction}
+              onChange={(event) => setCustomInstruction(event.target.value)}
+              disabled={improveMode !== "custom"}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f] disabled:bg-slate-100 disabled:text-slate-400"
+              placeholder="Ej: hazlo más directo, cambia a tono email, elimina tecnicismos..."
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={() => void improveWithAi()}
+            disabled={improving || (improveMode === "custom" && customInstruction.trim().length < 8)}
+            className="focus-ring btn-primary px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {improving ? "Mejorando..." : "Mejorar"}
+          </button>
+        </div>
+
+        <p className="mt-3 text-xs text-slate-500">
+          {improveModes.find((mode) => mode.value === improveMode)?.description}
+        </p>
+      </aside>
 
       <aside className="surface rounded-md p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
