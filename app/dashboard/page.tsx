@@ -104,6 +104,46 @@ export default async function DashboardPage() {
         />
       </div>
 
+      <section className="surface mt-4 rounded-md p-6">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold">Que quieres hacer ahora?</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              DocuGen se organiza en cuatro zonas. Esta guia te lleva a la pantalla correcta sin tener que adivinar.
+            </p>
+          </div>
+          <Link href="/generar" className="focus-ring btn-primary px-4 py-2 text-sm">
+            Crear documento
+          </Link>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <ActionCard
+            title="Crear desde catalogo"
+            text="Para contratos, cartas, presupuestos, politicas web y documentos ya definidos."
+            href="/generar"
+            action="Abrir generador"
+          />
+          <ActionCard
+            title="Pedir uno a medida"
+            text={isFree ? "Disponible en Pro. Sirve para documentos que no estan en el catalogo." : "Describe lo que necesitas y la IA preparara un borrador personalizado."}
+            href={isFree ? "/precios" : "/generar?mode=custom"}
+            action={isFree ? "Ver Pro" : "Crear a medida"}
+          />
+          <ActionCard
+            title="Usar mis plantillas"
+            text={profile.plan === "free" ? "En Pro puedes subir documentos de referencia para orientar estilo y estructura." : "Sube o reutiliza plantillas propias como referencia de tono y estructura."}
+            href={profile.plan === "free" ? "/precios" : "/plantillas"}
+            action={profile.plan === "free" ? "Ver Pro" : "Ir a plantillas"}
+          />
+          <ActionCard
+            title="Editar lo ya creado"
+            text="Abre historial para editar, guardar versiones, comparar mejoras IA y exportar."
+            href="/historial"
+            action="Abrir historial"
+          />
+        </div>
+      </section>
+
       <div className="mt-4 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
         <section className="surface rounded-md p-6">
           <div className="flex items-start justify-between gap-3">
@@ -271,6 +311,16 @@ function MetricCard({ label, value, helper }: { label: string; value: string; he
       <p className="mt-3 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
       <p className="mt-2 text-xs text-slate-500">{helper}</p>
     </div>
+  );
+}
+
+function ActionCard({ title, text, href, action }: { title: string; text: string; href: string; action: string }) {
+  return (
+    <Link href={href} className="surface-flat interactive rounded-md p-4">
+      <h3 className="font-bold">{title}</h3>
+      <p className="mt-2 min-h-16 text-sm leading-6 text-slate-600">{text}</p>
+      <span className="mt-3 inline-flex text-sm font-bold text-[#2d6a4f]">{action}</span>
+    </Link>
   );
 }
 

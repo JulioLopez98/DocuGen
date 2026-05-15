@@ -42,6 +42,37 @@ const workflow = [
   ["3", "Revisa y exporta", "Obtienes un texto editable que puedes copiar, descargar en PDF/TXT o exportar a Word con Pro."],
 ];
 
+const productPaths = [
+  {
+    title: "Catalogo guiado",
+    badge: "Free y Pro",
+    text: "Elige entre documentos organizados por categoria: laboral, comercial, legal, web, inmobiliario y mas.",
+    href: "/catalogo",
+    action: "Explorar catalogo",
+  },
+  {
+    title: "Documento a medida",
+    badge: "Pro",
+    text: "Describe un documento que no existe en el catalogo y DocuGen prepara un borrador personalizado.",
+    href: "/generar?mode=custom",
+    action: "Ir al generador",
+  },
+  {
+    title: "Plantillas propias",
+    badge: "Pro",
+    text: "Sube documentos de referencia para orientar estructura y tono sin copiar datos sensibles.",
+    href: "/plantillas",
+    action: "Ver plantillas",
+  },
+  {
+    title: "Historial editable",
+    badge: "Incluido",
+    text: "Guarda, edita, compara versiones, mejora con IA y exporta cada documento cuando lo tengas listo.",
+    href: "/historial",
+    action: "Abrir historial",
+  },
+];
+
 export default async function HomePage() {
   const supabase = createSupabaseServerClient();
   const {
@@ -66,6 +97,11 @@ export default async function HomePage() {
               <Link href={user ? "/generar" : "/auth"} className="focus-ring btn-primary px-6 py-3 text-sm">
                 {user ? "Crear documento" : "Empezar gratis"}
               </Link>
+              {user && (
+                <Link href="/dashboard" className="focus-ring btn-secondary px-6 py-3 text-sm">
+                  Ir al panel
+                </Link>
+              )}
               <Link href="/precios" className="focus-ring btn-secondary px-6 py-3 text-sm">
                 Ver precios
               </Link>
@@ -113,6 +149,33 @@ export default async function HomePage() {
               </div>
               <p className="text-xs text-slate-500">Documento generado con IA. Revisar antes de su uso legal.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#d8f3dc]/80 bg-white/58 py-16">
+        <div className="container-page">
+          <div className="mb-8 max-w-3xl">
+            <p className="eyebrow">Que puedes hacer</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Cuatro caminos claros, segun lo que necesites</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Si sabes el documento exacto, usa el catalogo. Si tienes tus propios modelos, usa plantillas. Si no existe
+              en DocuGen, el modo a medida permite pedirlo por escrito.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {productPaths.map((item) => (
+              <Link
+                key={item.title}
+                href={user ? item.href : item.href === "/historial" || item.href === "/plantillas" ? "/auth" : item.href}
+                className="surface-flat interactive rounded-md p-5"
+              >
+                <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{item.badge}</span>
+                <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{item.text}</p>
+                <span className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">{item.action}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

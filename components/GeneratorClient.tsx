@@ -53,6 +53,7 @@ type GeneratorClientProps = {
   referenceTemplates?: TemplateOption[];
   communityTypes?: CommunityTypeOption[];
   initialReferenceTemplateId?: string;
+  initialMode?: "catalog" | "community" | "custom";
 };
 
 export function GeneratorClient({
@@ -64,6 +65,7 @@ export function GeneratorClient({
   referenceTemplates = [],
   communityTypes = [],
   initialReferenceTemplateId,
+  initialMode = "catalog",
 }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,7 +80,7 @@ export function GeneratorClient({
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
-  const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">("catalog");
+  const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
   const [selectedCommunityId, setSelectedCommunityId] = useState(communityTypes[0]?.id || "");
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
@@ -252,20 +254,29 @@ export function GeneratorClient({
     <div className="grid gap-8 lg:grid-cols-[390px_1fr]">
       <aside className="space-y-4">
         <section className="surface rounded-md p-5">
-          <p className="eyebrow">Modo</p>
-          <div className="mt-3 grid grid-cols-3 gap-2">
+          <div>
+            <p className="eyebrow">Modo de creacion</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Elige el punto de partida</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Usa el catalogo si sabes lo que necesitas. Usa comunidad para tipos aprobados a partir de solicitudes.
+              Usa a medida si no encuentras el documento exacto.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-2">
             <button
               type="button"
               onClick={() => {
                 setGeneratorMode("catalog");
                 setGenerated(null);
                 setError(null);
+                router.replace("/generar?mode=catalog", { scroll: false });
               }}
-              className={`focus-ring rounded-md border px-3 py-3 text-sm font-bold transition ${
+              className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                 generatorMode === "catalog" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
               }`}
             >
-              Catalogo
+              <span className="font-bold">Catalogo guiado</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Tipos oficiales con formulario estructurado.</span>
             </button>
             <button
               type="button"
@@ -273,13 +284,15 @@ export function GeneratorClient({
                 setGeneratorMode("community");
                 setGenerated(null);
                 setError(null);
+                router.replace("/generar?mode=community", { scroll: false });
               }}
               disabled={communityTypes.length === 0}
-              className={`focus-ring rounded-md border px-3 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
                 generatorMode === "community" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
               }`}
             >
-              Comunidad
+              <span className="font-bold">Catalogo comunitario</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Nuevos tipos revisados antes de publicarse.</span>
             </button>
             <button
               type="button"
@@ -287,8 +300,9 @@ export function GeneratorClient({
                 setGeneratorMode("custom");
                 setGenerated(null);
                 setError(null);
+                router.replace("/generar?mode=custom", { scroll: false });
               }}
-              className={`focus-ring rounded-md border px-3 py-3 text-sm font-bold transition ${
+              className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                 generatorMode === "custom" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
               }`}
             >
@@ -296,6 +310,7 @@ export function GeneratorClient({
                 A medida
                 {customProLocked && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] text-white">Pro</span>}
               </span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Para documentos que no estan en el catalogo.</span>
             </button>
           </div>
         </section>

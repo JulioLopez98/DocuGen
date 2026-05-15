@@ -24,12 +24,17 @@ type Props = {
     templateId?: string;
     referenceTemplateId?: string;
     type?: string;
+    mode?: string;
   };
 };
 
 export default async function GeneratePage({ searchParams }: Props) {
   const templateId = searchParams?.templateId;
   const requestedReferenceTemplateId = searchParams?.referenceTemplateId;
+  const initialMode =
+    searchParams?.mode === "custom" || searchParams?.mode === "community" || searchParams?.mode === "catalog"
+      ? searchParams.mode
+      : undefined;
   const { supabase, profile } = await getCurrentProfile();
   let initialDocType: DocumentType | undefined;
   let initialFormData: Record<string, string> | undefined;
@@ -95,6 +100,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           referenceTemplates={referenceTemplates || []}
           communityTypes={communityTypes || []}
           initialReferenceTemplateId={requestedReferenceTemplateId}
+          initialMode={initialMode}
         />
       </Suspense>
       <div className="mt-8">
