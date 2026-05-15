@@ -122,6 +122,21 @@ export function DocResult({
           </div>
         </div>
       )}
+      {!canExportDocx && (
+        <div className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Word esta incluido en Pro</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                En Free puedes descargar PDF y TXT. Pro anade Word editable, documentos avanzados, plantillas y marca.
+              </p>
+            </div>
+            <Link href="/precios" className="focus-ring btn-primary px-3 py-2 text-xs">
+              Ver Pro
+            </Link>
+          </div>
+        </div>
+      )}
       {(documentId || docType) && (
         <div className="mt-4 flex flex-wrap gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
           {documentId && (

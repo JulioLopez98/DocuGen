@@ -105,6 +105,28 @@ export default async function DashboardPage() {
       </div>
 
       <section className="surface mt-4 rounded-md p-6">
+        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p className="eyebrow">Free vs Pro</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">
+              {isFree ? "Tu plan Free sirve para probar el flujo completo" : "Tu plan Pro desbloquea el flujo completo"}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              {isFree
+                ? "Puedes crear 3 documentos al mes, guardarlos en historial y exportar PDF/TXT. Cuando necesites volumen, Word, plantillas o documentos a medida, Pro es el siguiente paso."
+                : "Puedes generar sin limite mensual, exportar Word, usar marca personalizada, plantillas y documentos a medida."}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <PlanCapability label="PDF y TXT" available helper="Incluido en Free y Pro" />
+            <PlanCapability label="Word editable" available={!isFree} helper={isFree ? "Disponible en Pro" : "Incluido"} />
+            <PlanCapability label="Documentos a medida" available={!isFree} helper={isFree ? "Disponible en Pro" : "Incluido"} />
+            <PlanCapability label="Plantillas propias" available={!isFree} helper={isFree ? "Disponible en Pro" : "Incluido"} />
+          </div>
+        </div>
+      </section>
+
+      <section className="surface mt-4 rounded-md p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold">Que quieres hacer ahora?</h2>
@@ -310,6 +332,20 @@ function MetricCard({ label, value, helper }: { label: string; value: string; he
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-3 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
       <p className="mt-2 text-xs text-slate-500">{helper}</p>
+    </div>
+  );
+}
+
+function PlanCapability({ label, available, helper }: { label: string; available: boolean; helper: string }) {
+  return (
+    <div className="rounded-md border border-[#d8f3dc] bg-white/75 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold">{label}</p>
+        <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${available ? "bg-[#d8f3dc] text-[#2d6a4f]" : "bg-slate-200 text-slate-500"}`}>
+          {available ? "Activo" : "Pro"}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-slate-500">{helper}</p>
     </div>
   );
 }

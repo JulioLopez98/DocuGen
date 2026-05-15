@@ -96,6 +96,7 @@ export function GeneratorClient({
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
   const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
   const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
+  const isFreePlan = plan === "free";
 
   function selectDocument(type: DocumentType) {
     setSelected(type);
@@ -313,6 +314,24 @@ export function GeneratorClient({
               <span className="mt-1 block text-xs leading-5 text-slate-500">Para documentos que no estan en el catalogo.</span>
             </button>
           </div>
+        </section>
+
+        <section className="surface-flat rounded-md p-5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-[#2d6a4f]">Tu plan</p>
+            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase text-[#2d6a4f]">{plan}</span>
+          </div>
+          <div className="mt-4 grid gap-2 text-sm">
+            <InfoPill label="Generaciones" value={isFreePlan ? "3 al mes" : "Ilimitadas"} />
+            <InfoPill label="Word" value={canExportDocx ? "Incluido" : "Solo Pro"} />
+            <InfoPill label="A medida" value={isFreePlan ? "Solo Pro" : "Incluido"} />
+            <InfoPill label="Plantillas" value={isFreePlan ? "Solo Pro" : "Incluidas"} />
+          </div>
+          {isFreePlan && (
+            <Link href="/precios" className="focus-ring btn-primary mt-4 w-full px-4 py-3 text-center text-sm">
+              Ver que desbloquea Pro
+            </Link>
+          )}
         </section>
 
         {generatorMode === "catalog" && (

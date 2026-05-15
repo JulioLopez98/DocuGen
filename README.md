@@ -331,6 +331,13 @@ La fase 5.8 mejora la trazabilidad de versiones:
 - Las versiones creadas desde mejora IA guardan modo, modelo y tokens.
 - El historial de versiones muestra origen, modelo y tokens cuando existen.
 
+La fase 5.9 mejora la claridad de limites y planes:
+
+- El generador muestra un resumen lateral del plan activo: generaciones, Word, modo a medida y plantillas.
+- El dashboard incluye una comparativa contextual Free vs Pro con capacidades activas o bloqueadas.
+- Los resultados generados explican que Word es Pro y enlazan a precios cuando el usuario esta en Free.
+- Los bloqueos quedan planteados como rutas claras de upgrade, no como errores.
+
 ## Comandos
 
 ```bash
