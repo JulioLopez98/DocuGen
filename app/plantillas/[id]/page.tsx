@@ -2,11 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { TemplateDetailActions } from "@/components/TemplateDetailActions";
-import { TemplateVariablesEditor, type EditableTemplateVariable } from "@/components/TemplateVariablesEditor";
+import { TemplateVariablesEditor } from "@/components/TemplateVariablesEditor";
 import { getDocumentConfig } from "@/lib/document-types";
 import { getCurrentProfile, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
 import { buildTemplateUsageMetrics, getTemplateUsageMetrics } from "@/lib/template-metrics";
 import { templateUsageLabels } from "@/lib/template-usage";
+import { readTemplateVariables, type EditableTemplateVariable } from "@/lib/template-variables";
 
 type Props = {
   params: {
@@ -98,7 +99,12 @@ export default async function TemplateDetailPage({ params }: Props) {
           <div className="mt-5 flex flex-wrap gap-3">
             {canUseTemplate && (
               <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-5 py-3 text-sm">
-                Crear documento con esta plantilla
+                Usar como referencia
+              </Link>
+            )}
+            {canUseTemplate && (
+              <Link href={`/plantillas/${template.id}/generar`} className="focus-ring btn-secondary px-5 py-3 text-sm">
+                Generar desde variables
               </Link>
             )}
             <Link href="/plantillas" className="focus-ring btn-secondary px-5 py-3 text-sm">
@@ -128,12 +134,20 @@ export default async function TemplateDetailPage({ params }: Props) {
           </div>
           <div className="mt-5">
             {canUseTemplate ? (
-              <Link
-                href={`/generar?referenceTemplateId=${template.id}`}
-                className="focus-ring btn-primary mb-2 w-full px-4 py-3 text-center text-sm"
-              >
-                Usar en generador
-              </Link>
+              <div className="mb-2 grid gap-2">
+                <Link
+                  href={`/plantillas/${template.id}/generar`}
+                  className="focus-ring btn-primary w-full px-4 py-3 text-center text-sm"
+                >
+                  Generar desde variables
+                </Link>
+                <Link
+                  href={`/generar?referenceTemplateId=${template.id}`}
+                  className="focus-ring btn-secondary w-full px-4 py-3 text-center text-sm"
+                >
+                  Usar como referencia
+                </Link>
+              </div>
             ) : (
               <div className="mb-3 rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm leading-6 text-slate-600">
                 Procesa la plantilla para poder usarla como referencia dentro del generador.
@@ -245,7 +259,7 @@ export default async function TemplateDetailPage({ params }: Props) {
             </p>
           </div>
           {canUseTemplate && (
-            <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-4 py-3 text-sm">
+            <Link href={`/plantillas/${template.id}/generar`} className="focus-ring btn-primary px-4 py-3 text-sm">
               Crear otro
             </Link>
           )}
@@ -420,7 +434,7 @@ function getTemplateAnalysis(metadata: Record<string, unknown> | null): Template
     qualityScore: readNumber(quality?.score),
     sections: readNamedItems(metadata?.sections, "title"),
     clauses: readNamedItems(metadata?.clauses, "title"),
-    variables: readVariables(metadata?.variables),
+    variables: readTemplateVariables(metadata),
     sensitiveSignals: readStringArray(metadata?.sensitiveSignals),
     warnings: readStringArray(quality?.warnings),
   };
@@ -450,37 +464,6 @@ function readNamedItems(value: unknown, key: string) {
   return value
     .map((item) => readString(readRecord(item)?.[key]))
     .filter((item): item is string => Boolean(item));
-}
-
-function readVariables(value: unknown): EditableTemplateVariable[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item) => {
-      const record = readRecord(item);
-      const name = readString(record?.name);
-
-      if (!name) {
-        return null;
-      }
-
-      return {
-        name,
-        source: readVariableSource(record?.source),
-        confidence: readVariableConfidence(record?.confidence),
-      };
-    })
-    .filter((item): item is EditableTemplateVariable => item !== null);
-}
-
-function readVariableSource(value: unknown): EditableTemplateVariable["source"] {
-  return value === "placeholder" || value === "label" || value === "manual" ? value : "manual";
-}
-
-function readVariableConfidence(value: unknown): EditableTemplateVariable["confidence"] {
-  return value === "high" || value === "medium" || value === "manual" ? value : "manual";
 }
 
 function formatBytes(value: number | null) {

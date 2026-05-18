@@ -453,6 +453,15 @@ La fase 8.3 convierte variables detectadas en variables revisables:
 - El prompt de plantillas ya recibe las variables revisadas como parte del analisis estructurado.
 - Esta fase deja preparada la generacion desde plantilla concreta de la fase 8.4.
 
+La fase 8.4 anade generacion desde plantilla concreta:
+
+- Nueva ruta privada `/plantillas/[id]/generar`.
+- La ficha de plantilla diferencia entre `Usar como referencia` y `Generar desde variables`.
+- La generacion directa crea un formulario dinamico con las variables revisadas.
+- Nueva API `POST /api/templates/[id]/generate`, protegida y solo Pro/Empresa.
+- El documento generado se guarda en historial con `reference_template_id`, trazabilidad y exportacion PDF/TXT/Word.
+- El prompt usa la plantilla como modelo principal, sustituyendo datos por los valores introducidos y evitando copiar informacion sensible del original.
+
 ## Comandos
 
 ```bash

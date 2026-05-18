@@ -2,12 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
-export type EditableTemplateVariable = {
-  name: string;
-  source: "placeholder" | "label" | "manual";
-  confidence: "high" | "medium" | "manual";
-};
+import type { EditableTemplateVariable } from "@/lib/template-variables";
 
 type TemplateVariablesEditorProps = {
   templateId: string;

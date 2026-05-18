@@ -28,6 +28,12 @@ export type CommunityDocumentPromptInput = {
   formData: Record<string, string>;
 };
 
+export type TemplateDirectPromptInput = {
+  template: TemplateReference;
+  values: Record<string, string>;
+  extraInstructions?: string | null;
+};
+
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
 export const PREMIUM_MODEL = process.env.OPENAI_MODEL_PREMIUM || "gpt-4.1";
 
@@ -233,6 +239,45 @@ ${templateBlock}
 
 Datos proporcionados:
 ${values}`;
+}
+
+export function buildTemplateDirectPrompt(input: TemplateDirectPromptInput) {
+  const variableValues = Object.entries(input.values)
+    .map(([key, value]) => `- ${key}: ${value || "[PENDIENTE DE COMPLETAR]"}`)
+    .join("\n");
+  const analysisBlock = buildTemplateAnalysisBlock(input.template.metadata);
+
+  return `Genera un documento profesional para Espana usando una plantilla concreta del usuario.
+
+Objetivo:
+Crear un documento nuevo siguiendo fielmente la estructura, tono y finalidad de la plantilla, pero sustituyendo los datos por la informacion aportada por el usuario.
+
+Plantilla:
+- Nombre: ${input.template.name}
+- Categoria: ${input.template.category || "[PENDIENTE DE COMPLETAR]"}
+- Resumen: ${input.template.summary || "[PENDIENTE DE COMPLETAR]"}
+
+Analisis extraido:
+${analysisBlock}
+
+Datos que debe usar el documento:
+${variableValues || "- [PENDIENTE DE COMPLETAR]"}
+
+Instrucciones adicionales del usuario:
+${input.extraInstructions?.trim() || "[PENDIENTE DE COMPLETAR]"}
+
+Reglas obligatorias:
+- Usa la plantilla como modelo principal de estructura, orden, tono y tipo documental.
+- No copies datos concretos de la plantilla original: nombres, NIF/CIF, emails, telefonos, direcciones, importes, fechas, clientes, proveedores, cuentas bancarias ni condiciones particulares.
+- Sustituye placeholders y campos equivalentes por los datos aportados.
+- Si falta un dato necesario, usa exactamente [PENDIENTE DE COMPLETAR].
+- Reescribe con palabras nuevas cuando una clausula o frase de la plantilla parezca demasiado especifica.
+- No expliques el proceso ni menciones que has usado una plantilla.
+- Mantiene un aviso final breve: documento generado con IA y debe revisarse por un profesional antes de uso legal o profesional relevante.
+- Devuelve solo el documento final.
+
+Texto extraido de la plantilla:
+${input.template.extractedText.slice(0, 14000)}`;
 }
 
 export function buildRefinementPrompt({

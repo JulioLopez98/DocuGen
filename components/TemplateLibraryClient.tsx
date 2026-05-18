@@ -591,8 +591,8 @@ function TemplateCard({
                       {template.is_favorite ? "Destacada" : "Destacar"}
                     </button>
                     {template.status === "ready" && (
-                      <Link href={`/generar?referenceTemplateId=${template.id}`} className="focus-ring btn-primary px-3 py-2 text-xs">
-                        Usar
+                      <Link href={`/plantillas/${template.id}/generar`} className="focus-ring btn-primary px-3 py-2 text-xs">
+                        Generar
                       </Link>
                     )}
                     <Link href={`/plantillas/${template.id}`} className="focus-ring btn-primary px-3 py-2 text-xs">

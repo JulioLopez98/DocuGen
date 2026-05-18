@@ -1,0 +1,186 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import {
+  buildTemplateDirectPrompt,
+  documentInstructions,
+  getOpenAIClient,
+  PREMIUM_MODEL,
+  type TemplateReference,
+} from "@/lib/openai";
+import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
+import { sendDocumentReadyEmail } from "@/lib/resend";
+import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
+import { defaultTemplateUsageMode } from "@/lib/template-usage";
+
+const paramsSchema = z.object({
+  id: z.string().uuid(),
+});
+
+const generateFromTemplateSchema = z.object({
+  values: z.record(z.string(), z.string().trim().max(4000)).default({}),
+  extraInstructions: z.string().trim().max(2000).optional().nullable(),
+});
+
+const errorResponse = (status: number, error: string, message: string) =>
+  NextResponse.json({ error, message }, { status });
+
+type Params = {
+  params: {
+    id: string;
+  };
+};
+
+export async function POST(request: Request, { params }: Params) {
+  try {
+    const { supabase, user } = await requireUser();
+
+    if (!supabase || !user) {
+      return errorResponse(401, "unauthorized", "Inicia sesion para generar desde plantillas.");
+    }
+
+    const { id } = paramsSchema.parse(params);
+    const payload = generateFromTemplateSchema.parse(await request.json());
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single<Profile>();
+
+    if (profileError || !profile) {
+      console.error("template_direct_profile_error", profileError);
+      return errorResponse(404, "profile_not_found", "No se encontro tu perfil.");
+    }
+
+    if (profile.plan === "free") {
+      return errorResponse(403, "pro_required", "Generar desde una plantilla concreta esta disponible solo en DocuGen Pro.");
+    }
+
+    const { data: template, error: templateError } = await supabase
+      .from("document_templates")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single<DocumentTemplateRow>();
+
+    if (templateError || !template) {
+      console.error("template_direct_not_found", templateError);
+      return errorResponse(404, "template_not_found", "No se encontro la plantilla.");
+    }
+
+    if (template.status !== "ready" || !template.extracted_text) {
+      return errorResponse(400, "template_not_ready", "Procesa la plantilla antes de generar desde ella.");
+    }
+
+    const rateLimit = await checkGenerationRateLimit(supabase, user.id, profile.plan);
+
+    if (!rateLimit.allowed) {
+      return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de generaciones por hora.");
+    }
+
+    const openai = getOpenAIClient();
+
+    if (!openai) {
+      return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para generar documentos.");
+    }
+
+    const templateReference: TemplateReference = {
+      id: template.id,
+      name: template.name,
+      category: template.category,
+      summary: template.summary,
+      metadata: template.extracted_metadata,
+      extractedText: template.extracted_text,
+      usageMode: defaultTemplateUsageMode,
+    };
+    const response = await openai.responses.create({
+      model: PREMIUM_MODEL,
+      instructions: documentInstructions,
+      input: buildTemplateDirectPrompt({
+        template: templateReference,
+        values: payload.values,
+        extraInstructions: payload.extraInstructions,
+      }),
+      temperature: 0.25,
+      max_output_tokens: 4500,
+    });
+    const content = response.output_text?.trim();
+
+    if (!content) {
+      return errorResponse(502, "empty_generation", "La IA no devolvio contenido. Intentalo de nuevo.");
+    }
+
+    const docLabel = `Desde plantilla: ${template.name}`;
+    const { data: document, error: insertError } = await supabase
+      .from("documents")
+      .insert({
+        user_id: user.id,
+        doc_type: `template:${template.id}`,
+        doc_label: docLabel,
+        content,
+        form_data: {
+          ...payload.values,
+          __template_direct: JSON.stringify({
+            id: template.id,
+            name: template.name,
+            extraInstructions: payload.extraInstructions || null,
+          }),
+        },
+        reference_template_id: template.id,
+        reference_template_name: template.name,
+        template_usage_mode: defaultTemplateUsageMode,
+        model_used: PREMIUM_MODEL,
+        tokens_input: response.usage?.input_tokens ?? null,
+        tokens_output: response.usage?.output_tokens ?? null,
+      })
+      .select("id")
+      .single<{ id: string }>();
+
+    if (insertError || !document) {
+      console.error("template_direct_document_insert_error", insertError);
+      return errorResponse(500, "document_save_failed", "No se pudo guardar el documento.");
+    }
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ docs_this_month: profile.docs_this_month + 1 })
+      .eq("id", user.id);
+
+    if (updateError) {
+      console.error("template_direct_profile_update_error", updateError);
+    }
+
+    await recordGenerationEvent(supabase, user.id);
+
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      await sendDocumentReadyEmail({
+        to: user.email,
+        documentTitle: docLabel,
+        documentUrl: `${appUrl}/historial/${document.id}`,
+      });
+    } catch (emailError) {
+      console.error("template_direct_email_error", emailError);
+    }
+
+    return NextResponse.json({
+      id: document.id,
+      docType: `template:${template.id}`,
+      docLabel,
+      content,
+      formData: payload.values,
+      modelUsed: PREMIUM_MODEL,
+      templateTrace: {
+        id: template.id,
+        name: template.name,
+        usageMode: defaultTemplateUsageMode,
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return errorResponse(400, "invalid_payload", "Revisa los datos del formulario.");
+    }
+
+    console.error("template_direct_generate_error", error);
+    return errorResponse(500, "generation_failed", "No se pudo generar el documento desde la plantilla.");
+  }
+}
