@@ -375,6 +375,16 @@ La fase 6.5 anade metricas de uso de plantillas:
 - Resumen agregado en la biblioteca de plantillas.
 - Analitica de uso en la ficha individual de cada plantilla.
 
+## Generacion con plantillas premium
+
+La fase 7.1 mejora el selector de plantillas en `/generar`:
+
+- Busqueda por nombre, categoria o resumen.
+- Vistas rapidas: todas, destacadas, usadas y recientes.
+- Orden inteligente por destacadas, uso y fecha.
+- Tarjetas con usos, ultimo uso y modo habitual.
+- Estado vacio claro cuando los filtros no devuelven resultados.
+
 ## Comandos
 
 ```bash

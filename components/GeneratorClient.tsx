@@ -11,6 +11,7 @@ import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, 
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
 import type { CommunityDocumentTypeRow, DocumentTemplateRow } from "@/lib/supabase-server";
+import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
 import {
   defaultTemplateUsageMode,
   templateUsageDescriptions,
@@ -51,6 +52,7 @@ type GeneratorClientProps = {
   brandSettings?: PdfBrandSettings | null;
   plan?: "free" | "pro" | "empresa";
   referenceTemplates?: TemplateOption[];
+  referenceTemplateMetrics?: TemplateUsageMetricsMap;
   communityTypes?: CommunityTypeOption[];
   initialReferenceTemplateId?: string;
   initialMode?: "catalog" | "community" | "custom";
@@ -63,6 +65,7 @@ export function GeneratorClient({
   brandSettings,
   plan = "free",
   referenceTemplates = [],
+  referenceTemplateMetrics = {},
   communityTypes = [],
   initialReferenceTemplateId,
   initialMode = "catalog",
@@ -80,6 +83,8 @@ export function GeneratorClient({
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
+  const [templateQuery, setTemplateQuery] = useState("");
+  const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
   const [selectedCommunityId, setSelectedCommunityId] = useState(communityTypes[0]?.id || "");
   const [referenceTemplateId, setReferenceTemplateId] = useState(
@@ -92,6 +97,10 @@ export function GeneratorClient({
   const customProLocked = plan === "free";
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
+  const visibleReferenceTemplates = useMemo(
+    () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView),
+    [referenceTemplates, referenceTemplateMetrics, templateQuery, templateView],
+  );
   const isTemplateMode = Boolean(initialFormData && initialDocType);
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
   const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
@@ -493,7 +502,32 @@ export function GeneratorClient({
               </span>
             </div>
             {referenceTemplates.length > 0 ? (
-              <div className="mt-4 grid gap-2">
+              <div className="mt-4 grid gap-3">
+                <label>
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar plantilla</span>
+                  <input
+                    value={templateQuery}
+                    onChange={(event) => setTemplateQuery(event.target.value)}
+                    className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                    placeholder="Nombre, categoria o resumen..."
+                  />
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["all", "favorites", "used", "recent"] as const).map((view) => (
+                    <button
+                      key={view}
+                      type="button"
+                      onClick={() => setTemplateView(view)}
+                      className={`focus-ring rounded-md border px-3 py-2 text-left text-xs font-semibold transition ${
+                        templateView === view
+                          ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                          : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                      }`}
+                    >
+                      {getTemplateViewLabel(view)}
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="button"
                   onClick={() => setReferenceTemplateId("")}
@@ -506,7 +540,10 @@ export function GeneratorClient({
                     Genera solo con el formulario y las reglas de DocuGen.
                   </span>
                 </button>
-                {referenceTemplates.slice(0, 5).map((template) => (
+                {visibleReferenceTemplates.slice(0, 8).map((template) => {
+                  const metrics = getTemplateUsageMetrics(referenceTemplateMetrics, template.id);
+
+                  return (
                   <button
                     key={template.id}
                     type="button"
@@ -524,6 +561,11 @@ export function GeneratorClient({
                           {template.is_favorite && (
                             <span className="rounded-full bg-[#1f2933] px-2 py-0.5 text-[10px] font-bold text-white">Destacada</span>
                           )}
+                          {metrics.totalUses > 0 && (
+                            <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">
+                              {metrics.totalUses} usos
+                            </span>
+                          )}
                         </span>
                         <span className="mt-1 block text-xs leading-5 text-slate-500">
                           {template.category || "Sin categoria"} · {new Date(template.created_at).toLocaleDateString("es-ES")}
@@ -534,9 +576,20 @@ export function GeneratorClient({
                     {template.summary && (
                       <span className="mt-2 block max-h-10 overflow-hidden text-xs leading-5 text-slate-500">{template.summary}</span>
                     )}
+                    <span className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
+                      <span className="rounded-md bg-white/75 px-3 py-2">Ultimo uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
+                      <span className="rounded-md bg-white/75 px-3 py-2">Modo: {formatUsageMode(metrics.mostUsedMode)}</span>
+                    </span>
                   </button>
-                ))}
-                {referenceTemplates.length > 5 && (
+                  );
+                })}
+                {visibleReferenceTemplates.length === 0 && (
+                  <div className="rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4">
+                    <p className="text-sm font-semibold">No hay plantillas con esos filtros</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Prueba con otra busqueda o cambia la vista.</p>
+                  </div>
+                )}
+                {referenceTemplates.length > 8 && (
                   <Link href="/plantillas" className="focus-ring btn-ghost px-3 py-2 text-xs">
                     Ver todas las plantillas
                   </Link>
@@ -758,6 +811,81 @@ function groupDocumentTypes(query: string) {
     category,
     documents,
   }));
+}
+
+function filterAndRankReferenceTemplates(
+  templates: TemplateOption[],
+  metricsMap: TemplateUsageMetricsMap,
+  query: string,
+  view: "all" | "favorites" | "used" | "recent",
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  return templates
+    .filter((template) => {
+      const metrics = getTemplateUsageMetrics(metricsMap, template.id);
+      const searchable = `${template.name} ${template.category || ""} ${template.summary || ""}`.toLowerCase();
+      const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+      const matchesView =
+        view === "all" ||
+        (view === "favorites" && template.is_favorite) ||
+        (view === "used" && metrics.totalUses > 0) ||
+        view === "recent";
+
+      return matchesQuery && matchesView;
+    })
+    .sort((first, second) => {
+      const firstMetrics = getTemplateUsageMetrics(metricsMap, first.id);
+      const secondMetrics = getTemplateUsageMetrics(metricsMap, second.id);
+
+      if (view === "recent") {
+        return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
+      }
+
+      if (first.is_favorite !== second.is_favorite) {
+        return first.is_favorite ? -1 : 1;
+      }
+
+      if (firstMetrics.totalUses !== secondMetrics.totalUses) {
+        return secondMetrics.totalUses - firstMetrics.totalUses;
+      }
+
+      const firstLastUsed = firstMetrics.lastUsedAt ? new Date(firstMetrics.lastUsedAt).getTime() : 0;
+      const secondLastUsed = secondMetrics.lastUsedAt ? new Date(secondMetrics.lastUsedAt).getTime() : 0;
+
+      if (firstLastUsed !== secondLastUsed) {
+        return secondLastUsed - firstLastUsed;
+      }
+
+      return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
+    });
+}
+
+function getTemplateViewLabel(view: "all" | "favorites" | "used" | "recent") {
+  const labels = {
+    all: "Todas",
+    favorites: "Destacadas",
+    used: "Usadas",
+    recent: "Recientes",
+  };
+
+  return labels[view];
+}
+
+function formatDateOrNever(value: string | null) {
+  if (!value) {
+    return "Sin uso";
+  }
+
+  return new Date(value).toLocaleDateString("es-ES");
+}
+
+function formatUsageMode(mode: ReturnType<typeof getTemplateUsageMetrics>["mostUsedMode"]) {
+  if (!mode) {
+    return "Sin datos";
+  }
+
+  return templateUsageLabels[mode];
 }
 
 function InfoPill({ label, value }: { label: string; value: string }) {

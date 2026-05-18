@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
+import { buildTemplateUsageMetrics, type TemplateUsageMetricEvent } from "@/lib/template-metrics";
 import {
   getCurrentProfile,
   type BrandSettings,
@@ -66,6 +67,16 @@ export default async function GeneratePage({ searchParams }: Props) {
           .order("created_at", { ascending: false })
           .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite">[]>()
       : { data: [] };
+  const { data: templateUsageEvents } =
+    supabase && profile && profile.plan !== "free"
+      ? await supabase
+          .from("documents")
+          .select("reference_template_id, template_usage_mode, created_at")
+          .eq("user_id", profile.id)
+          .not("reference_template_id", "is", null)
+          .returns<TemplateUsageMetricEvent[]>()
+      : { data: [] };
+  const referenceTemplateMetrics = buildTemplateUsageMetrics(templateUsageEvents || []);
   const { data: communityTypes } =
     supabase && profile
       ? await supabase
@@ -99,6 +110,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           brandSettings={brandSettings || null}
           plan={profile?.plan}
           referenceTemplates={referenceTemplates || []}
+          referenceTemplateMetrics={referenceTemplateMetrics}
           communityTypes={communityTypes || []}
           initialReferenceTemplateId={requestedReferenceTemplateId}
           initialMode={initialMode}
