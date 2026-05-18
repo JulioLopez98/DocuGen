@@ -385,6 +385,13 @@ La fase 7.1 mejora el selector de plantillas en `/generar`:
 - Tarjetas con usos, ultimo uso y modo habitual.
 - Estado vacio claro cuando los filtros no devuelven resultados.
 
+La fase 7.2 anade vista previa de influencia:
+
+- Explica como afectara la plantilla antes de generar.
+- Cambia dinamicamente segun el modo: estructura + tono, estructura, tono o inspiracion ligera.
+- Muestra que se usara, que queda limitado y que datos no se copiaran.
+- Refuerza que los campos del formulario tienen prioridad sobre la plantilla.
+
 ## Comandos
 
 ```bash

@@ -653,6 +653,12 @@ export function GeneratorClient({
                     </button>
                   ))}
                 </div>
+                <TemplateInfluencePreview
+                  mode={templateUsageMode}
+                  templateName={selectedReferenceTemplate.name}
+                  templateCategory={selectedReferenceTemplate.category}
+                  templateSummary={selectedReferenceTemplate.summary}
+                />
                 <p className="mt-3 rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
                   Esta referencia orienta la estructura y el estilo. Los datos del formulario tienen prioridad y la IA
                   no debe reutilizar nombres, importes, fechas ni condiciones concretas de la plantilla.
@@ -911,6 +917,138 @@ function getTemplateUsageDecisionLabel(mode: TemplateUsageMode) {
   }
 
   return "Solo quiero una referencia suave";
+}
+
+function TemplateInfluencePreview({
+  mode,
+  templateName,
+  templateCategory,
+  templateSummary,
+}: {
+  mode: TemplateUsageMode;
+  templateName: string;
+  templateCategory: string | null;
+  templateSummary: string | null;
+}) {
+  const preview = getTemplateInfluencePreview(mode);
+
+  return (
+    <div className="mt-4 rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Vista previa de influencia</p>
+          <h3 className="mt-2 font-bold">{preview.title}</h3>
+          <p className="mt-2 text-xs leading-5 text-slate-600">
+            DocuGen usara <strong>{templateName}</strong>
+            {templateCategory ? ` (${templateCategory})` : ""} como referencia, sin convertirla en una copia literal.
+          </p>
+        </div>
+        <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{preview.weight}</span>
+      </div>
+
+      {templateSummary && (
+        <p className="mt-3 rounded-md bg-white/75 p-3 text-xs leading-5 text-slate-600">
+          Resumen detectado: {templateSummary}
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3">
+        <InfluenceRow label="Estructura" value={preview.structure} active={preview.structureActive} />
+        <InfluenceRow label="Tono" value={preview.tone} active={preview.toneActive} />
+        <InfluenceRow label="Contenido" value={preview.content} active={false} />
+      </div>
+
+      <div className="mt-4 grid gap-2 text-xs leading-5 text-slate-600">
+        {preview.rules.map((rule) => (
+          <p key={rule} className="rounded-md bg-white/75 px-3 py-2">
+            {rule}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InfluenceRow({ label, value, active }: { label: string; value: string; active: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-md bg-white/75 px-3 py-2 text-xs">
+      <div>
+        <p className="font-bold text-[#1f2933]">{label}</p>
+        <p className="mt-1 leading-5 text-slate-600">{value}</p>
+      </div>
+      <span
+        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+          active ? "bg-[#d8f3dc] text-[#2d6a4f]" : "bg-[#faf9f6] text-slate-500"
+        }`}
+      >
+        {active ? "Influye" : "Limitado"}
+      </span>
+    </div>
+  );
+}
+
+function getTemplateInfluencePreview(mode: TemplateUsageMode) {
+  if (mode === "structure_tone") {
+    return {
+      title: "Influencia alta, sin copiar datos",
+      weight: "Alta",
+      structure: "Se respetara el orden general de apartados, jerarquia y ritmo del documento original.",
+      tone: "Se imitara el estilo profesional, nivel de formalidad y forma de presentar condiciones.",
+      content: "No se reutilizaran nombres, importes, fechas, clientes, clausulas particulares ni datos sensibles.",
+      structureActive: true,
+      toneActive: true,
+      rules: [
+        "Ideal cuando quieres que el nuevo documento se parezca bastante al formato de tu empresa.",
+        "Los campos que rellenes en el formulario tienen prioridad sobre cualquier referencia de la plantilla.",
+      ],
+    };
+  }
+
+  if (mode === "structure") {
+    return {
+      title: "Influencia centrada en el esqueleto",
+      weight: "Media",
+      structure: "Se usara la plantilla como mapa de secciones y orden de lectura.",
+      tone: "El tono seguira el estilo base de DocuGen, no el de la plantilla.",
+      content: "La plantilla no aportara condiciones concretas salvo como orientacion estructural.",
+      structureActive: true,
+      toneActive: false,
+      rules: [
+        "Recomendado si te gusta la organizacion del documento, pero no quieres imitar su redaccion.",
+        "Si falta informacion, se marcaran campos como [PENDIENTE DE COMPLETAR].",
+      ],
+    };
+  }
+
+  if (mode === "tone") {
+    return {
+      title: "Influencia centrada en estilo y voz",
+      weight: "Media",
+      structure: "La estructura dependera del tipo documental elegido, no del orden de la plantilla.",
+      tone: "Se tendra en cuenta la formalidad, claridad, longitud de frases y estilo general.",
+      content: "No se copiara el contenido material de la plantilla ni sus datos concretos.",
+      structureActive: false,
+      toneActive: true,
+      rules: [
+        "Util para mantener una voz de marca o una forma de escribir reconocible.",
+        "El resultado puede tener apartados distintos si el documento elegido lo requiere.",
+      ],
+    };
+  }
+
+  return {
+    title: "Referencia suave",
+    weight: "Baja",
+    structure: "La estructura seguira principalmente el tipo de documento seleccionado.",
+    tone: "El tono de la plantilla solo servira como inspiracion ligera.",
+    content: "La IA priorizara el formulario y las reglas de DocuGen por encima de la plantilla.",
+    structureActive: false,
+    toneActive: false,
+    rules: [
+      "Buena opcion cuando quieres evitar que la plantilla condicione demasiado el resultado.",
+      "Mantiene el valor de referencia sin arrastrar formulas demasiado especificas.",
+    ],
+  };
 }
 
 function CommunityForm({
