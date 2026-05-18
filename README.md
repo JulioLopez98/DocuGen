@@ -445,6 +445,14 @@ La fase 8.2 profundiza el procesamiento de plantillas DOCX:
 - Calcula avisos de calidad para saber si una plantilla es demasiado breve, poco estructurada o contiene datos sensibles.
 - La ficha de plantilla muestra el analisis y el generador recibe estos metadatos como contexto adicional.
 
+La fase 8.3 convierte variables detectadas en variables revisables:
+
+- La ficha de plantilla incluye un editor de variables.
+- El usuario puede corregir, anadir o quitar variables detectadas.
+- Las variables se guardan dentro de `extracted_metadata.variables`, sin requerir migracion SQL adicional.
+- El prompt de plantillas ya recibe las variables revisadas como parte del analisis estructurado.
+- Esta fase deja preparada la generacion desde plantilla concreta de la fase 8.4.
+
 ## Comandos
 
 ```bash

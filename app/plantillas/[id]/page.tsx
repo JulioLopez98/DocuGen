@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { TemplateDetailActions } from "@/components/TemplateDetailActions";
+import { TemplateVariablesEditor, type EditableTemplateVariable } from "@/components/TemplateVariablesEditor";
 import { getDocumentConfig } from "@/lib/document-types";
 import { getCurrentProfile, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
 import { buildTemplateUsageMetrics, getTemplateUsageMetrics } from "@/lib/template-metrics";
@@ -219,7 +220,7 @@ export default async function TemplateDetailPage({ params }: Props) {
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
           <AnalysisList title="Secciones" items={templateAnalysis.sections} empty="No se han detectado secciones claras." />
           <AnalysisList title="Clausulas o bloques" items={templateAnalysis.clauses} empty="No se han detectado bloques reutilizables." />
-          <AnalysisList title="Variables posibles" items={templateAnalysis.variables} empty="No se han detectado variables claras." />
+          <TemplateVariablesEditor templateId={template.id} initialVariables={templateAnalysis.variables} />
         </div>
 
         {templateAnalysis.warnings.length > 0 && (
@@ -405,7 +406,7 @@ type TemplateAnalysis = {
   qualityScore: number | null;
   sections: string[];
   clauses: string[];
-  variables: string[];
+  variables: EditableTemplateVariable[];
   sensitiveSignals: string[];
   warnings: string[];
 };
@@ -419,7 +420,7 @@ function getTemplateAnalysis(metadata: Record<string, unknown> | null): Template
     qualityScore: readNumber(quality?.score),
     sections: readNamedItems(metadata?.sections, "title"),
     clauses: readNamedItems(metadata?.clauses, "title"),
-    variables: readNamedItems(metadata?.variables, "name"),
+    variables: readVariables(metadata?.variables),
     sensitiveSignals: readStringArray(metadata?.sensitiveSignals),
     warnings: readStringArray(quality?.warnings),
   };
@@ -449,6 +450,37 @@ function readNamedItems(value: unknown, key: string) {
   return value
     .map((item) => readString(readRecord(item)?.[key]))
     .filter((item): item is string => Boolean(item));
+}
+
+function readVariables(value: unknown): EditableTemplateVariable[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      const record = readRecord(item);
+      const name = readString(record?.name);
+
+      if (!name) {
+        return null;
+      }
+
+      return {
+        name,
+        source: readVariableSource(record?.source),
+        confidence: readVariableConfidence(record?.confidence),
+      };
+    })
+    .filter((item): item is EditableTemplateVariable => item !== null);
+}
+
+function readVariableSource(value: unknown): EditableTemplateVariable["source"] {
+  return value === "placeholder" || value === "label" || value === "manual" ? value : "manual";
+}
+
+function readVariableConfidence(value: unknown): EditableTemplateVariable["confidence"] {
+  return value === "high" || value === "medium" || value === "manual" ? value : "manual";
 }
 
 function formatBytes(value: number | null) {
