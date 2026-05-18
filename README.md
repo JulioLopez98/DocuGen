@@ -421,6 +421,13 @@ La fase 7.6 anade recomendaciones basicas de plantillas:
 - Cada recomendacion muestra una razon clara: destacada, mas usada, categoria similar o reciente.
 - El usuario puede aceptar una recomendacion o seguir buscando manualmente.
 
+La fase 7.7 cierra QA de calidad con plantillas:
+
+- Checklist extendido en `TEMPLATE_GENERATION_QA.md`.
+- Matriz de pruebas para detectar copia de datos, contaminacion de tipo documental y perdida de trazabilidad.
+- Validacion de selector, recomendaciones, vista previa de influencia, historial y permisos Pro/Free.
+- Criterios de aceptacion claros antes de avanzar a fases mas avanzadas de plantillas.
+
 ## Comandos
 
 ```bash
