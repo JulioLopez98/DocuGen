@@ -294,15 +294,15 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                       </Link>
                       {!custom && !community && (
                         <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
-                          Usar como plantilla
+                          Reutilizar datos
                         </Link>
                       )}
                       {doc.reference_template_id && (
                         <Link
-                          href={`/generar?type=${doc.doc_type}&referenceTemplateId=${doc.reference_template_id}`}
+                          href={buildSameTemplateUrl(doc)}
                           className="focus-ring btn-secondary px-3 py-2 text-sm"
                         >
-                          Mismo estilo
+                          Nuevo con misma plantilla
                         </Link>
                       )}
                       {doc.reference_template_id && (
@@ -440,6 +440,22 @@ function buildCatalogRegeneratePayload(doc: DocumentRow) {
     referenceTemplateId: doc.reference_template_id,
     templateUsageMode: doc.template_usage_mode || undefined,
   };
+}
+
+function buildSameTemplateUrl(doc: DocumentRow) {
+  const params = new URLSearchParams({
+    type: doc.doc_type,
+  });
+
+  if (doc.reference_template_id) {
+    params.set("referenceTemplateId", doc.reference_template_id);
+  }
+
+  if (doc.template_usage_mode) {
+    params.set("templateUsageMode", doc.template_usage_mode);
+  }
+
+  return `/generar?${params.toString()}`;
 }
 
 function buildCustomRegeneratePayload(formData: Record<string, string>) {

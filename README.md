@@ -407,6 +407,13 @@ La fase 7.4 anade trazabilidad del resultado:
 - El historial muestra una seccion dedicada para documentos generados con plantilla.
 - Se recuerda que la plantilla orienta estructura/tono, pero el formulario tiene prioridad.
 
+La fase 7.5 mejora la reutilizacion desde historial:
+
+- `templateId` recupera datos del documento, plantilla de referencia y modo aplicado.
+- Los enlaces de historial conservan `templateUsageMode` cuando se crea otro documento con la misma plantilla.
+- Los botones diferencian entre reutilizar datos y crear un documento nuevo con la misma plantilla.
+- El generador muestra un aviso cuando carga datos y plantilla desde historial.
+
 ## Comandos
 
 ```bash

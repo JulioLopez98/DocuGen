@@ -4,6 +4,7 @@ import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
 import { buildTemplateUsageMetrics, type TemplateUsageMetricEvent } from "@/lib/template-metrics";
+import { templateUsageModes, type TemplateUsageMode } from "@/lib/template-usage";
 import {
   getCurrentProfile,
   type BrandSettings,
@@ -24,6 +25,7 @@ type Props = {
   searchParams?: {
     templateId?: string;
     referenceTemplateId?: string;
+    templateUsageMode?: string;
     type?: string;
     mode?: string;
   };
@@ -31,7 +33,8 @@ type Props = {
 
 export default async function GeneratePage({ searchParams }: Props) {
   const templateId = searchParams?.templateId;
-  const requestedReferenceTemplateId = searchParams?.referenceTemplateId;
+  let requestedReferenceTemplateId = searchParams?.referenceTemplateId;
+  let requestedTemplateUsageMode = getTemplateUsageMode(searchParams?.templateUsageMode);
   const initialMode =
     searchParams?.mode === "custom" || searchParams?.mode === "community" || searchParams?.mode === "catalog"
       ? searchParams.mode
@@ -48,6 +51,8 @@ export default async function GeneratePage({ searchParams }: Props) {
       if (template && config) {
         initialDocType = config.type;
         initialFormData = template.form_data;
+        requestedReferenceTemplateId = requestedReferenceTemplateId || template.reference_template_id || undefined;
+        requestedTemplateUsageMode = requestedTemplateUsageMode || template.template_usage_mode || undefined;
       }
     }
   }
@@ -113,6 +118,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           referenceTemplateMetrics={referenceTemplateMetrics}
           communityTypes={communityTypes || []}
           initialReferenceTemplateId={requestedReferenceTemplateId}
+          initialTemplateUsageMode={requestedTemplateUsageMode}
           initialMode={initialMode}
         />
       </Suspense>
@@ -121,4 +127,12 @@ export default async function GeneratePage({ searchParams }: Props) {
       </div>
     </section>
   );
+}
+
+function getTemplateUsageMode(value?: string): TemplateUsageMode | undefined {
+  if (templateUsageModes.includes(value as TemplateUsageMode)) {
+    return value as TemplateUsageMode;
+  }
+
+  return undefined;
 }

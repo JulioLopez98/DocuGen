@@ -90,7 +90,7 @@ export default async function HistoryDetailPage({ params }: Props) {
               ) : (
                 <>
                   <Link href={`/generar?templateId=${document.id}`} className="focus-ring btn-primary px-4 py-3 text-sm">
-                    Usar como plantilla
+                    Reutilizar datos
                   </Link>
                   <Link href={`/generar?type=${document.doc_type}`} className="focus-ring btn-secondary px-4 py-3 text-sm">
                     Crear otro igual
@@ -99,10 +99,10 @@ export default async function HistoryDetailPage({ params }: Props) {
               )}
               {document.reference_template_id && (
                 <Link
-                  href={`/generar?type=${document.doc_type}&referenceTemplateId=${document.reference_template_id}`}
+                  href={buildSameTemplateUrl(document)}
                   className="focus-ring btn-secondary px-4 py-3 text-sm"
                 >
-                  Crear con misma plantilla
+                  Crear nuevo con misma plantilla
                 </Link>
               )}
               {document.reference_template_id && (
@@ -149,6 +149,22 @@ export default async function HistoryDetailPage({ params }: Props) {
       />
     </section>
   );
+}
+
+function buildSameTemplateUrl(document: DocumentRow) {
+  const params = new URLSearchParams({
+    type: document.doc_type,
+  });
+
+  if (document.reference_template_id) {
+    params.set("referenceTemplateId", document.reference_template_id);
+  }
+
+  if (document.template_usage_mode) {
+    params.set("templateUsageMode", document.template_usage_mode);
+  }
+
+  return `/generar?${params.toString()}`;
 }
 
 function MetaLine({ label, value }: { label: string; value: string }) {

@@ -56,6 +56,7 @@ type GeneratorClientProps = {
   referenceTemplateMetrics?: TemplateUsageMetricsMap;
   communityTypes?: CommunityTypeOption[];
   initialReferenceTemplateId?: string;
+  initialTemplateUsageMode?: TemplateUsageMode;
   initialMode?: "catalog" | "community" | "custom";
 };
 
@@ -69,6 +70,7 @@ export function GeneratorClient({
   referenceTemplateMetrics = {},
   communityTypes = [],
   initialReferenceTemplateId,
+  initialTemplateUsageMode,
   initialMode = "catalog",
 }: GeneratorClientProps) {
   const router = useRouter();
@@ -91,7 +93,7 @@ export function GeneratorClient({
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
-  const [templateUsageMode, setTemplateUsageMode] = useState<TemplateUsageMode>(defaultTemplateUsageMode);
+  const [templateUsageMode, setTemplateUsageMode] = useState<TemplateUsageMode>(initialTemplateUsageMode || defaultTemplateUsageMode);
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
@@ -483,7 +485,10 @@ export function GeneratorClient({
           )}
           {isTemplateMode && (
             <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">
-              Has cargado datos desde un documento del historial.
+              Has cargado datos desde el historial
+              {selectedReferenceTemplate
+                ? ` y se ha recuperado la plantilla "${selectedReferenceTemplate.name}" con el modo ${templateUsageLabels[templateUsageMode]}.`
+                : "."}
             </p>
           )}
         </section>

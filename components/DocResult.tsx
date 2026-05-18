@@ -176,7 +176,7 @@ export function DocResult({
           )}
           {documentId && (
             <Link href={`/generar?templateId=${documentId}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
-              Usar como plantilla
+              Reutilizar datos
             </Link>
           )}
           {docType && (
