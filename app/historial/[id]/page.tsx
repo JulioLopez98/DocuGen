@@ -115,6 +115,29 @@ export default async function HistoryDetailPage({ params }: Props) {
         </div>
       </div>
 
+      {document.reference_template_id && (
+        <section className="surface mb-6 rounded-md p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Trazabilidad</p>
+              <h2 className="font-serif-display mt-2 text-2xl font-bold">Generado con plantilla de referencia</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Este documento uso una plantilla privada para orientar estructura o tono. Los datos finales proceden del
+                formulario y la plantilla no debe entenderse como contenido copiado literalmente.
+              </p>
+            </div>
+            <Link href={`/plantillas/${document.reference_template_id}`} className="focus-ring btn-primary px-4 py-3 text-sm">
+              Abrir plantilla
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <TraceCard label="Plantilla" value={document.reference_template_name || "Plantilla usada"} />
+            <TraceCard label="Modo aplicado" value={document.template_usage_mode ? templateUsageLabels[document.template_usage_mode] : "No registrado"} />
+            <TraceCard label="Prioridad" value="Formulario primero" />
+          </div>
+        </section>
+      )}
+
       <EditableDocumentResult
         documentId={document.id}
         title={document.doc_label}
@@ -133,6 +156,15 @@ function MetaLine({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/72 px-3 py-2">
       <span className="text-slate-500">{label}</span>
       <span className="text-right font-semibold">{value}</span>
+    </div>
+  );
+}
+
+function TraceCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
+      <p className="mt-2 text-sm font-semibold leading-6">{value}</p>
     </div>
   );
 }

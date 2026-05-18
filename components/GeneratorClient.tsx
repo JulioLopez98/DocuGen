@@ -6,7 +6,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { CustomDocumentForm, type CustomDocumentFormValues } from "@/components/CustomDocumentForm";
 import { FormShell } from "@/components/forms/FormShell";
-import { DocResult } from "@/components/DocResult";
+import { DocResult, type DocumentTemplateTrace } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
@@ -26,6 +26,7 @@ type GeneratedDocument = {
   docLabel: string;
   content: string;
   formData: Record<string, string>;
+  templateTrace?: DocumentTemplateTrace | null;
 };
 
 type GenerateRequestPayload = {
@@ -252,7 +253,7 @@ export function GeneratorClient({
         return;
       }
 
-      setGenerated(data);
+      setGenerated({ ...data, templateTrace: generated.templateTrace || null });
     } catch {
       setError("No se pudo conectar con el generador.");
     } finally {
@@ -789,6 +790,7 @@ export function GeneratorClient({
             includesSignatures={getDocumentConfig(generated.docType)?.includesSignatures ?? false}
             canExportDocx={canExportDocx}
             brandSettings={brandSettings}
+            templateTrace={generated.templateTrace || null}
             onRegenerate={regenerateGenerated}
             onRefine={getDocumentConfig(generated.docType) ? refineGenerated : undefined}
             refiningMode={refiningMode}

@@ -5,6 +5,13 @@ import { useState } from "react";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
 import { refinementLabels, type RefinementMode } from "@/lib/refinement";
+import { templateUsageLabels, type TemplateUsageMode } from "@/lib/template-usage";
+
+export type DocumentTemplateTrace = {
+  id: string;
+  name: string;
+  usageMode: TemplateUsageMode;
+};
 
 type DocResultProps = {
   documentId?: string;
@@ -14,6 +21,7 @@ type DocResultProps = {
   includesSignatures?: boolean;
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
+  templateTrace?: DocumentTemplateTrace | null;
   onRegenerate?: () => void;
   onRefine?: (mode: RefinementMode) => void;
   refiningMode?: RefinementMode | null;
@@ -27,6 +35,7 @@ export function DocResult({
   includesSignatures,
   canExportDocx = false,
   brandSettings,
+  templateTrace = null,
   onRegenerate,
   onRefine,
   refiningMode = null,
@@ -97,6 +106,27 @@ export function DocResult({
           )}
         </div>
       </div>
+      {templateTrace && (
+        <div className="mt-5 rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Trazabilidad de generacion</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Este documento se genero usando una plantilla como referencia de estructura o tono. La plantilla orienta
+                el resultado, pero no debe copiar datos concretos ni sustituir la informacion del formulario.
+              </p>
+            </div>
+            <Link href={`/plantillas/${templateTrace.id}`} className="focus-ring btn-ghost px-3 py-2 text-xs">
+              Abrir plantilla
+            </Link>
+          </div>
+          <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+            <TracePill label="Plantilla" value={templateTrace.name} />
+            <TracePill label="Modo" value={templateUsageLabels[templateTrace.usageMode]} />
+            <TracePill label="Prioridad" value="Formulario primero" />
+          </div>
+        </div>
+      )}
       {onRefine && (
         <div className="mt-5 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -158,5 +188,14 @@ export function DocResult({
       )}
       <article className="mt-5 whitespace-pre-wrap rounded-md bg-[#faf9f6] p-5 text-sm leading-7">{content}</article>
     </section>
+  );
+}
+
+function TracePill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md bg-white/75 px-3 py-2">
+      <span className="block font-bold text-[#1f2933]">{label}</span>
+      <span className="mt-1 block leading-5">{value}</span>
+    </div>
   );
 }

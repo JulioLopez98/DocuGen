@@ -400,6 +400,13 @@ La fase 7.3 mejora el prompt de plantillas:
 - Anade reglas de resolucion de conflictos cuando la plantilla no encaja con el tipo seleccionado.
 - Incluye checklist interno para evitar que la plantilla contamine el documento final.
 
+La fase 7.4 anade trazabilidad del resultado:
+
+- La API devuelve la plantilla usada y el modo aplicado.
+- El resultado inmediato muestra un bloque de trazabilidad con enlace a la plantilla.
+- El historial muestra una seccion dedicada para documentos generados con plantilla.
+- Se recuerda que la plantilla orienta estructura/tono, pero el formulario tiene prioridad.
+
 ## Comandos
 
 ```bash

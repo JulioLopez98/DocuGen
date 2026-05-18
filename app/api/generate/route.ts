@@ -142,6 +142,13 @@ export async function POST(request: Request) {
       content,
       formData: payload.formData,
       modelUsed: model,
+      templateTrace: templateReference
+        ? {
+            id: templateReference.id,
+            name: templateReference.name,
+            usageMode: templateReference.usageMode,
+          }
+        : null,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
