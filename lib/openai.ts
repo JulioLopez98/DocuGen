@@ -561,35 +561,98 @@ function getMissingFields(config: DocumentTypeConfig, formData: Record<string, s
 
 function buildTemplateReferenceBlock(reference: TemplateReference) {
   const usageMode = reference.usageMode || defaultTemplateUsageMode;
+  const strategy = getTemplateUsageStrategy(usageMode);
 
   return `Nombre: ${reference.name}
 Categoria: ${reference.category || "[PENDIENTE DE COMPLETAR]"}
 Resumen: ${reference.summary || "[PENDIENTE DE COMPLETAR]"}
 Modo de uso: ${templateUsageLabels[usageMode]}
 
-Instrucciones para usar la plantilla:
-- ${getTemplateUsageInstruction(usageMode)}
-- No copies literalmente clausulas completas salvo que sean genericas, breves y encajen con los datos aportados.
-- No reutilices datos personales, importes, nombres, direcciones, emails, fechas ni condiciones concretas de la plantilla.
-- Si hay conflicto entre la plantilla y los datos del formulario, manda siempre la informacion del formulario.
-- Mantiene las reglas del tipo de documento seleccionado por encima de la plantilla.
+Contrato de uso de la plantilla:
+${strategy.contract}
+
+Peso de influencia:
+- Estructura: ${strategy.structureWeight}
+- Tono: ${strategy.toneWeight}
+- Contenido: ${strategy.contentWeight}
+
+Como adaptar la plantilla:
+${strategy.adaptationRules}
+
+Reglas anti-copia y privacidad:
+- No copies literalmente frases largas, clausulas completas, condiciones particulares ni bloques enteros de la plantilla.
+- No reutilices datos personales, importes, nombres, direcciones, emails, telefonos, NIF/CIF, fechas, referencias, clientes, proveedores ni condiciones concretas de la plantilla.
+- No arrastres datos que parezcan reales aunque encajen con el nuevo documento. Sustituyelos por datos del formulario o por [PENDIENTE DE COMPLETAR].
+- Si la plantilla incluye clausulas o expresiones utiles, reescribelas con palabras nuevas y adaptalas al tipo documental elegido.
+- No menciones que has usado una plantilla ni expliques el proceso en el documento final.
+
+Jerarquia de prioridad:
+1. Datos proporcionados por el usuario en el formulario.
+2. Reglas especiales del tipo de documento seleccionado.
+3. Reglas de familia y estilo de DocuGen.
+4. Plantilla de referencia segun el modo elegido.
+
+Resolucion de conflictos:
+- Si la plantilla contradice los datos del formulario, ignora la plantilla.
+- Si la plantilla tiene estructura contractual pero el tipo elegido es carta, email, acta, politica web o propuesta, conserva el formato natural del tipo elegido.
+- Si la plantilla contiene informacion insuficiente, confusa, demasiado especifica o riesgosa, usa [PENDIENTE DE COMPLETAR] o una redaccion prudente.
+- Si falta un dato critico para adaptar una seccion de la plantilla, no inventes; marca [PENDIENTE DE COMPLETAR].
+
+Checklist interno especifico para plantilla:
+- El resultado se parece al modo solicitado, pero no es una copia.
+- No aparecen datos concretos de la plantilla original.
+- El documento final sigue siendo valido como borrador del tipo solicitado.
+- La plantilla no ha introducido clausulas, apartados o tono impropios del documento.
+- El aviso final de revision profesional se mantiene breve y proporcionado.
 
 Texto extraido de la plantilla:
 ${reference.extractedText.slice(0, 12000)}`;
 }
 
-function getTemplateUsageInstruction(mode: TemplateUsageMode) {
+function getTemplateUsageStrategy(mode: TemplateUsageMode) {
   if (mode === "structure") {
-    return "Usa la plantilla principalmente como mapa de secciones, orden de apartados y nivel de detalle. No imites necesariamente el tono ni el wording.";
+    return {
+      contract:
+        "- Usa la plantilla como mapa de organizacion: orden, secciones, nivel de detalle y jerarquia.\n- No imites necesariamente su tono, formulas textuales ni longitud exacta.\n- Si el tipo documental seleccionado exige otra estructura, adapta el esqueleto sin forzarlo.",
+      structureWeight: "alto",
+      toneWeight: "bajo",
+      contentWeight: "nulo salvo orientacion abstracta",
+      adaptationRules:
+        "- Replica la logica de apartados, no las frases.\n- Mantiene el numero aproximado de bloques solo si mejora la claridad.\n- Convierte secciones de la plantilla en apartados adecuados al tipo elegido.\n- Omite secciones que no encajen con los datos del formulario.",
+    };
   }
 
   if (mode === "tone") {
-    return "Usa la plantilla principalmente como referencia de tono, formalidad, longitud y estilo de redaccion. No repliques su estructura exacta si el tipo documental pide otra.";
+    return {
+      contract:
+        "- Usa la plantilla como referencia de voz: formalidad, ritmo, claridad, densidad y forma de expresarse.\n- No repliques su estructura exacta ni el orden de apartados.\n- Prioriza la estructura natural del tipo documental seleccionado.",
+      structureWeight: "bajo",
+      toneWeight: "alto",
+      contentWeight: "nulo salvo orientacion abstracta",
+      adaptationRules:
+        "- Mantiene un nivel parecido de formalidad y precision.\n- Ajusta longitud de frases y estilo de cierre de forma aproximada.\n- No copies muletillas, formulas propias ni expresiones distintivas palabra por palabra.\n- No incluyas apartados de la plantilla si no son necesarios.",
+    };
   }
 
   if (mode === "light") {
-    return "Usa la plantilla solo como inspiracion suave. Prioriza claramente el tipo documental, los datos del formulario y las reglas de DocuGen.";
+    return {
+      contract:
+        "- Usa la plantilla solo como contexto suave.\n- Prioriza casi por completo los datos del formulario, las reglas de DocuGen y el tipo documental.\n- Si dudas entre parecerte a la plantilla o crear un documento limpio, elige el documento limpio.",
+      structureWeight: "bajo",
+      toneWeight: "bajo",
+      contentWeight: "nulo",
+      adaptationRules:
+        "- Toma solo ideas generales de organizacion o tono.\n- No intentes reproducir el formato completo.\n- No mantengas expresiones, clausulas ni orden si no aportan valor.\n- Usa la plantilla para evitar genericidad, no para copiar estilo.",
+    };
   }
 
-  return "Usa la plantilla como referencia de estructura, tono, orden de apartados y estilo, sin copiar datos concretos.";
+  return {
+    contract:
+      "- Usa la plantilla como referencia fuerte de estructura y tono.\n- Conserva el tipo de orden, nivel de formalidad, profundidad y estilo general.\n- El resultado debe recordar al formato de trabajo de la plantilla, pero estar redactado desde cero con los datos del formulario.",
+    structureWeight: "alto",
+    toneWeight: "alto",
+    contentWeight: "nulo salvo conceptos genericos",
+    adaptationRules:
+      "- Reproduce la arquitectura general si encaja con el tipo elegido.\n- Parafrasea completamente cualquier clausula o formula aprovechable.\n- Ajusta el nivel de detalle al documento solicitado, no a la longitud original.\n- Elimina o transforma cualquier seccion que dependa de datos no aportados.",
+  };
 }

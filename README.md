@@ -392,6 +392,14 @@ La fase 7.2 anade vista previa de influencia:
 - Muestra que se usara, que queda limitado y que datos no se copiaran.
 - Refuerza que los campos del formulario tienen prioridad sobre la plantilla.
 
+La fase 7.3 mejora el prompt de plantillas:
+
+- Cada modo tiene un contrato de uso con pesos de estructura, tono y contenido.
+- La IA recibe jerarquia explicita: formulario, tipo documental, reglas DocuGen y plantilla.
+- Refuerza reglas anti-copia para datos personales, importes, fechas, clausulas y condiciones concretas.
+- Anade reglas de resolucion de conflictos cuando la plantilla no encaja con el tipo seleccionado.
+- Incluye checklist interno para evitar que la plantilla contamine el documento final.
+
 ## Comandos
 
 ```bash
