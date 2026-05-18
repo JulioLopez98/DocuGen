@@ -104,6 +104,10 @@ export function GeneratorClient({
     () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView),
     [referenceTemplates, referenceTemplateMetrics, templateQuery, templateView],
   );
+  const recommendedReferenceTemplates = useMemo(
+    () => getRecommendedReferenceTemplates(referenceTemplates, referenceTemplateMetrics, config.category),
+    [referenceTemplates, referenceTemplateMetrics, config.category],
+  );
   const isTemplateMode = Boolean(initialFormData && initialDocType);
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
   const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
@@ -509,6 +513,53 @@ export function GeneratorClient({
             </div>
             {referenceTemplates.length > 0 ? (
               <div className="mt-4 grid gap-3">
+                {recommendedReferenceTemplates.length > 0 && (
+                  <div className="rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Recomendadas</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-600">
+                          Sugeridas por uso, favoritas, recencia y afinidad con {config.category.toLowerCase()}.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTemplateView("all");
+                          setTemplateQuery("");
+                        }}
+                        className="focus-ring btn-ghost px-3 py-2 text-xs"
+                      >
+                        Ver todas
+                      </button>
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {recommendedReferenceTemplates.map((recommendation) => (
+                        <button
+                          key={recommendation.template.id}
+                          type="button"
+                          onClick={() => setReferenceTemplateId(recommendation.template.id)}
+                          className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
+                            referenceTemplateId === recommendation.template.id
+                              ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                              : "border-[#d8f3dc] bg-white/75 hover:border-[#2d6a4f]"
+                          }`}
+                        >
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold">{recommendation.template.name}</span>
+                            <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">
+                              {recommendation.reason}
+                            </span>
+                          </span>
+                          <span className="mt-1 block text-xs leading-5 text-slate-500">
+                            {recommendation.template.category || "Sin categoria"} | {recommendation.metrics.totalUses} usos |{" "}
+                            {formatDateOrNever(recommendation.metrics.lastUsedAt)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <label>
                   <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar plantilla</span>
                   <input
@@ -872,6 +923,94 @@ function filterAndRankReferenceTemplates(
 
       return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
     });
+}
+
+function getRecommendedReferenceTemplates(
+  templates: TemplateOption[],
+  metricsMap: TemplateUsageMetricsMap,
+  documentCategory: string,
+) {
+  return templates
+    .map((template) => {
+      const metrics = getTemplateUsageMetrics(metricsMap, template.id);
+      const categoryMatch = isCategoryMatch(template.category, documentCategory);
+      const score =
+        (template.is_favorite ? 80 : 0) +
+        Math.min(metrics.totalUses * 12, 60) +
+        (categoryMatch ? 35 : 0) +
+        getRecencyScore(metrics.lastUsedAt || template.created_at);
+
+      return {
+        template,
+        metrics,
+        score,
+        reason: getRecommendationReason(template, metrics, categoryMatch),
+      };
+    })
+    .filter((item) => item.score > 0)
+    .sort((first, second) => second.score - first.score)
+    .slice(0, 3);
+}
+
+function isCategoryMatch(templateCategory: string | null, documentCategory: string) {
+  if (!templateCategory) {
+    return false;
+  }
+
+  const normalizedTemplate = normalizeForMatch(templateCategory);
+  const normalizedDocument = normalizeForMatch(documentCategory);
+
+  return normalizedTemplate.includes(normalizedDocument) || normalizedDocument.includes(normalizedTemplate);
+}
+
+function normalizeForMatch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getRecencyScore(value: string | null) {
+  if (!value) {
+    return 0;
+  }
+
+  const ageDays = Math.max((Date.now() - new Date(value).getTime()) / (1000 * 60 * 60 * 24), 0);
+
+  if (ageDays <= 7) {
+    return 20;
+  }
+
+  if (ageDays <= 30) {
+    return 12;
+  }
+
+  if (ageDays <= 90) {
+    return 6;
+  }
+
+  return 1;
+}
+
+function getRecommendationReason(
+  template: TemplateOption,
+  metrics: ReturnType<typeof getTemplateUsageMetrics>,
+  categoryMatch: boolean,
+) {
+  if (template.is_favorite) {
+    return "Destacada";
+  }
+
+  if (metrics.totalUses > 0) {
+    return "Mas usada";
+  }
+
+  if (categoryMatch) {
+    return "Categoria similar";
+  }
+
+  return "Reciente";
 }
 
 function getTemplateViewLabel(view: "all" | "favorites" | "used" | "recent") {

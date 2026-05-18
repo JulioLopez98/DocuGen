@@ -414,6 +414,13 @@ La fase 7.5 mejora la reutilizacion desde historial:
 - Los botones diferencian entre reutilizar datos y crear un documento nuevo con la misma plantilla.
 - El generador muestra un aviso cuando carga datos y plantilla desde historial.
 
+La fase 7.6 anade recomendaciones basicas de plantillas:
+
+- El generador sugiere hasta 3 plantillas antes del listado completo.
+- El ranking combina destacadas, usos reales, ultimo uso y afinidad de categoria.
+- Cada recomendacion muestra una razon clara: destacada, mas usada, categoria similar o reciente.
+- El usuario puede aceptar una recomendacion o seguir buscando manualmente.
+
 ## Comandos
 
 ```bash
