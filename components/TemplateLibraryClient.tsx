@@ -25,13 +25,23 @@ type ApiError = {
   message?: string;
 };
 
+type UploadQueueStatus = "pending" | "uploading" | "registered" | "failed";
+
+type UploadQueueItem = {
+  id: string;
+  filename: string;
+  status: UploadQueueStatus;
+  message: string;
+};
+
 export function TemplateLibraryClient({ userId, initialTemplates, initialTemplateMetrics }: TemplateLibraryClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [templates, setTemplates] = useState<DocumentTemplateRow[]>(initialTemplates);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -63,20 +73,22 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
     setMessage(null);
     setError(null);
 
-    if (!file) {
-      setError("Selecciona un archivo PDF o Word.");
+    if (files.length === 0) {
+      setError("Selecciona uno o varios archivos PDF o Word.");
       return;
     }
 
-    const fileType = getFileType(file.name);
+    const invalidFile = files.find((selectedFile) => !getFileType(selectedFile.name));
 
-    if (!fileType) {
+    if (invalidFile) {
       setError("Formato no admitido. Usa PDF, DOCX o DOC.");
       return;
     }
 
-    if (file.size > MAX_TEMPLATE_SIZE) {
-      setError("El archivo supera el limite de 10 MB.");
+    const oversizedFile = files.find((selectedFile) => selectedFile.size > MAX_TEMPLATE_SIZE);
+
+    if (oversizedFile) {
+      setError(`"${oversizedFile.name}" supera el limite de 10 MB.`);
       return;
     }
 
@@ -88,57 +100,92 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
     }
 
     setLoading(true);
-
-    const storagePath = `${userId}/${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
+    const queueItems = files.map((selectedFile) => ({
+      id: crypto.randomUUID(),
+      filename: selectedFile.name,
+      status: "pending" as const,
+      message: "Pendiente",
+    }));
+    const createdTemplates: DocumentTemplateRow[] = [];
+    setUploadQueue(queueItems);
 
     try {
-      const { error: uploadError } = await supabase.storage.from(TEMPLATE_BUCKET).upload(storagePath, file, {
-        contentType: file.type || undefined,
-        upsert: false,
-      });
+      for (const [fileIndex, selectedFile] of files.entries()) {
+        const queueId = queueItems[fileIndex]?.id;
+        const fileType = getFileType(selectedFile.name);
 
-      if (uploadError) {
-        setError(uploadError.message || "No se pudo subir el archivo.");
-        return;
+        if (!queueId || !fileType) {
+          continue;
+        }
+
+        updateUploadQueueItem(queueId, "uploading", "Subiendo archivo");
+
+        const storagePath = `${userId}/${crypto.randomUUID()}-${sanitizeFilename(selectedFile.name)}`;
+        const { error: uploadError } = await supabase.storage.from(TEMPLATE_BUCKET).upload(storagePath, selectedFile, {
+          contentType: selectedFile.type || undefined,
+          upsert: false,
+        });
+
+        if (uploadError) {
+          updateUploadQueueItem(queueId, "failed", uploadError.message || "No se pudo subir el archivo.");
+          continue;
+        }
+
+        const response = await fetch("/api/templates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: getTemplateNameForFile(selectedFile.name, name, files.length),
+            description: description.trim() || null,
+            category: category.trim() || null,
+            originalFilename: selectedFile.name,
+            fileType,
+            mimeType: selectedFile.type || null,
+            fileSize: selectedFile.size,
+            storagePath,
+          }),
+        });
+        const payload = (await response.json()) as { template?: DocumentTemplateRow } & ApiError;
+
+        if (!response.ok || !payload.template) {
+          await supabase.storage.from(TEMPLATE_BUCKET).remove([storagePath]);
+          updateUploadQueueItem(queueId, "failed", payload.message || "No se pudo registrar la plantilla.");
+          continue;
+        }
+
+        createdTemplates.push(payload.template);
+        updateUploadQueueItem(queueId, "registered", "Subida y registrada");
       }
 
-      const response = await fetch("/api/templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim() || removeExtension(file.name),
-          description: description.trim() || null,
-          category: category.trim() || null,
-          originalFilename: file.name,
-          fileType,
-          mimeType: file.type || null,
-          fileSize: file.size,
-          storagePath,
-        }),
-      });
-      const payload = (await response.json()) as { template?: DocumentTemplateRow } & ApiError;
+      if (createdTemplates.length > 0) {
+        setTemplates((current) => sortTemplates([...createdTemplates, ...current]));
+        setMessage(
+          createdTemplates.length === 1
+            ? "Plantilla subida correctamente. Ya puedes procesarla."
+            : `${createdTemplates.length} plantillas subidas correctamente. Ya puedes procesarlas.`,
+        );
+        setName("");
+        setCategory("");
+        setDescription("");
+        setFiles([]);
 
-      if (!response.ok || !payload.template) {
-        await supabase.storage.from(TEMPLATE_BUCKET).remove([storagePath]);
-        setError(payload.message || "No se pudo registrar la plantilla.");
-        return;
-      }
-
-      setTemplates((current) => [payload.template!, ...current]);
-      setMessage("Plantilla subida correctamente.");
-      setName("");
-      setCategory("");
-      setDescription("");
-      setFile(null);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      } else {
+        setError("No se pudo subir ninguna plantilla. Revisa el detalle de cada archivo.");
       }
     } catch {
       setError("No se pudo completar la subida.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function updateUploadQueueItem(id: string, status: UploadQueueStatus, itemMessage: string) {
+    setUploadQueue((current) =>
+      current.map((item) => (item.id === id ? { ...item, status, message: itemMessage } : item)),
+    );
   }
 
   async function deleteTemplate(template: DocumentTemplateRow) {
@@ -265,21 +312,24 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
       <div className="grid gap-6 lg:grid-cols-[390px_1fr]">
       <section className="surface rounded-md p-6">
         <p className="eyebrow">Subir plantilla</p>
-        <h2 className="font-serif-display mt-3 text-3xl font-bold">Anade un documento propio</h2>
+        <h2 className="font-serif-display mt-3 text-3xl font-bold">Anade documentos propios</h2>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Sube Word o PDF con ejemplos, clausulas o formatos que quieras reutilizar. En esta fase queda guardado como
-          referencia para el procesamiento posterior.
+          Sube uno o varios Word/PDF con ejemplos, clausulas o formatos que quieras reutilizar. Cada archivo queda
+          guardado como plantilla independiente y despues puedes procesarlo.
         </p>
 
         <form onSubmit={uploadTemplate} className="mt-6 grid gap-4">
           <label className="block">
-            <span className="text-sm font-bold">Nombre</span>
+            <span className="text-sm font-bold">Nombre base opcional</span>
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm"
               placeholder="Plantilla contrato servicios"
             />
+            <span className="mt-2 block text-xs text-slate-500">
+              Si subes varios archivos, usaremos el nombre del archivo salvo que quieras aplicar un prefijo comun.
+            </span>
           </label>
 
           <label className="block">
@@ -303,21 +353,46 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
           </label>
 
           <label className="block">
-            <span className="text-sm font-bold">Archivo</span>
+            <span className="text-sm font-bold">Archivos</span>
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(event) => setFile(event.target.files?.[0] || null)}
+              onChange={(event) => setFiles(Array.from(event.target.files || []))}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm"
             />
-            <span className="mt-2 block text-xs text-slate-500">PDF, DOC o DOCX. Maximo 10 MB.</span>
+            <span className="mt-2 block text-xs text-slate-500">
+              PDF, DOC o DOCX. Maximo 10 MB por archivo. Seleccionados: {files.length}.
+            </span>
           </label>
 
           <button type="submit" disabled={loading} className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60">
-            {loading ? "Subiendo..." : "Subir plantilla"}
+            {loading ? "Subiendo..." : files.length > 1 ? `Subir ${files.length} plantillas` : "Subir plantilla"}
           </button>
         </form>
+
+        {uploadQueue.length > 0 && (
+          <div className="mt-5 rounded-md border border-[#d8f3dc] bg-white/80 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-bold">Cola de subida</p>
+              <p className="text-xs text-slate-500">
+                {uploadQueue.filter((item) => item.status === "registered").length}/{uploadQueue.length} registradas
+              </p>
+            </div>
+            <div className="mt-3 grid gap-2">
+              {uploadQueue.map((item) => (
+                <div key={item.id} className="flex items-start justify-between gap-3 rounded-md bg-[#faf9f6] px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{item.filename}</p>
+                    <p className="text-xs text-slate-500">{item.message}</p>
+                  </div>
+                  <UploadStatusBadge status={item.status} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {message && <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">{message}</p>}
         {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -594,6 +669,23 @@ function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
   return <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">{labels[status]}</span>;
 }
 
+function UploadStatusBadge({ status }: { status: UploadQueueStatus }) {
+  const labels: Record<UploadQueueStatus, string> = {
+    pending: "Pendiente",
+    uploading: "Subiendo",
+    registered: "Lista",
+    failed: "Error",
+  };
+  const styles: Record<UploadQueueStatus, string> = {
+    pending: "bg-slate-100 text-slate-600",
+    uploading: "bg-[#d8f3dc] text-[#2d6a4f]",
+    registered: "bg-[#2d6a4f] text-white",
+    failed: "bg-red-50 text-red-700",
+  };
+
+  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${styles[status]}`}>{labels[status]}</span>;
+}
+
 function FavoriteBadge() {
   return <span className="rounded-full bg-[#1f2933] px-2 py-0.5 text-[10px] font-bold text-white">Destacada</span>;
 }
@@ -630,6 +722,21 @@ function sanitizeFilename(filename: string) {
 
 function removeExtension(filename: string) {
   return filename.replace(/\.[^/.]+$/, "");
+}
+
+function getTemplateNameForFile(filename: string, baseName: string, totalFiles: number) {
+  const cleanBaseName = baseName.trim();
+  const fallbackName = removeExtension(filename);
+
+  if (!cleanBaseName) {
+    return fallbackName;
+  }
+
+  if (totalFiles === 1) {
+    return cleanBaseName;
+  }
+
+  return `${cleanBaseName} - ${fallbackName}`;
 }
 
 function formatBytes(value: number | null) {

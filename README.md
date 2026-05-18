@@ -428,6 +428,14 @@ La fase 7.7 cierra QA de calidad con plantillas:
 - Validacion de selector, recomendaciones, vista previa de influencia, historial y permisos Pro/Free.
 - Criterios de aceptacion claros antes de avanzar a fases mas avanzadas de plantillas.
 
+La fase 8.1 mejora la subida de plantillas:
+
+- La biblioteca permite seleccionar varios PDF/DOC/DOCX en una sola accion.
+- Cada archivo se registra como plantilla independiente.
+- La UI muestra una cola de subida con estado por archivo: pendiente, subiendo, lista o error.
+- Los metadatos comunes, como categoria y descripcion, se aplican a todas las plantillas subidas en lote.
+- Si un archivo falla, el resto puede continuar sin perder la subida completa.
+
 ## Comandos
 
 ```bash
