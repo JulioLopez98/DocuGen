@@ -72,6 +72,7 @@ export default async function TemplateDetailPage({ params }: Props) {
   );
   const textStats = getTextStats(template.extracted_text || "");
   const canUseTemplate = template.status === "ready" && Boolean(template.extracted_text);
+  const templateAnalysis = getTemplateAnalysis(template.extracted_metadata);
 
   return (
     <section className="container-page py-10">
@@ -152,7 +153,7 @@ export default async function TemplateDetailPage({ params }: Props) {
           <div className="mt-5 grid gap-3 text-sm">
             <InfoBlock label="Resumen extraido" value={template.summary || "Procesa la plantilla para obtener un resumen automatico."} />
             <InfoBlock label="Descripcion propia" value={template.description || "Sin descripcion por ahora."} />
-            <InfoBlock label="Categoria" value={template.category || "Sin categoria."} />
+            <InfoBlock label="Categoria" value={template.category || templateAnalysis.suggestedCategory || "Sin categoria."} />
           </div>
         </section>
 
@@ -187,6 +188,51 @@ export default async function TemplateDetailPage({ params }: Props) {
           )}
         </section>
       </div>
+
+      <section className="surface mt-6 rounded-md p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="eyebrow">Analisis</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Estructura y estilo detectados</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Estos datos ayudan a DocuGen a usar la plantilla como referencia sin copiar informacion concreta.
+            </p>
+          </div>
+          <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+            Calidad {templateAnalysis.qualityScore || 0}/100
+          </span>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <InfoBlock label="Categoria sugerida" value={templateAnalysis.suggestedCategory || "Sin categoria sugerida."} />
+          <InfoBlock label="Tono detectado" value={templateAnalysis.toneLabel || "Sin tono detectado."} />
+          <InfoBlock
+            label="Senales sensibles"
+            value={
+              templateAnalysis.sensitiveSignals.length > 0
+                ? templateAnalysis.sensitiveSignals.join(", ")
+                : "No se han detectado datos concretos destacados."
+            }
+          />
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <AnalysisList title="Secciones" items={templateAnalysis.sections} empty="No se han detectado secciones claras." />
+          <AnalysisList title="Clausulas o bloques" items={templateAnalysis.clauses} empty="No se han detectado bloques reutilizables." />
+          <AnalysisList title="Variables posibles" items={templateAnalysis.variables} empty="No se han detectado variables claras." />
+        </div>
+
+        {templateAnalysis.warnings.length > 0 && (
+          <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-bold text-amber-900">Avisos de calidad</p>
+            <ul className="mt-2 grid gap-1 text-sm text-amber-900">
+              {templateAnalysis.warnings.map((warning) => (
+                <li key={warning}>- {warning}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
 
       <section className="surface mt-6 rounded-md p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -332,6 +378,77 @@ function InfoBlock({ label, value }: { label: string; value: string }) {
       <p className="mt-2 break-words text-sm leading-6 text-slate-600">{value}</p>
     </div>
   );
+}
+
+function AnalysisList({ title, items, empty }: { title: string; items: string[]; empty: string }) {
+  return (
+    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{title}</p>
+      {items.length > 0 ? (
+        <ul className="mt-3 grid gap-2 text-sm leading-6 text-slate-600">
+          {items.slice(0, 8).map((item) => (
+            <li key={item} className="rounded-md bg-[#faf9f6] px-3 py-2">
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-slate-600">{empty}</p>
+      )}
+    </div>
+  );
+}
+
+type TemplateAnalysis = {
+  suggestedCategory: string | null;
+  toneLabel: string | null;
+  qualityScore: number | null;
+  sections: string[];
+  clauses: string[];
+  variables: string[];
+  sensitiveSignals: string[];
+  warnings: string[];
+};
+
+function getTemplateAnalysis(metadata: Record<string, unknown> | null): TemplateAnalysis {
+  const quality = readRecord(metadata?.quality);
+
+  return {
+    suggestedCategory: readString(metadata?.suggestedCategory),
+    toneLabel: readString(readRecord(metadata?.tone)?.label),
+    qualityScore: readNumber(quality?.score),
+    sections: readNamedItems(metadata?.sections, "title"),
+    clauses: readNamedItems(metadata?.clauses, "title"),
+    variables: readNamedItems(metadata?.variables, "name"),
+    sensitiveSignals: readStringArray(metadata?.sensitiveSignals),
+    warnings: readStringArray(quality?.warnings),
+  };
+}
+
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function readNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function readStringArray(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function readNamedItems(value: unknown, key: string) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => readString(readRecord(item)?.[key]))
+    .filter((item): item is string => Boolean(item));
 }
 
 function formatBytes(value: number | null) {

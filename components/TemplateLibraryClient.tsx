@@ -535,6 +535,8 @@ function TemplateCard({
   onProcessTemplate: (template: DocumentTemplateRow) => void;
   onDeleteTemplate: (template: DocumentTemplateRow) => void;
 }) {
+  const analysis = getTemplateCardAnalysis(template.extracted_metadata);
+
   return (
     <article className="surface-flat interactive rounded-md p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -553,6 +555,20 @@ function TemplateCard({
                         {template.category && <strong>{template.category}: </strong>}
                         {template.description || "Sin descripcion."}
                       </p>
+                    )}
+                    {template.summary && <p className="mt-2 text-sm leading-6 text-slate-600">{template.summary}</p>}
+                    {analysis && (
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                        <span className="rounded-full bg-white px-3 py-1 font-semibold text-[#2d6a4f]">
+                          {analysis.sections} secciones
+                        </span>
+                        <span className="rounded-full bg-white px-3 py-1 font-semibold text-[#2d6a4f]">
+                          {analysis.variables} variables
+                        </span>
+                        <span className="rounded-full bg-white px-3 py-1 font-semibold text-[#2d6a4f]">
+                          Calidad {analysis.qualityScore}/100
+                        </span>
+                      </div>
                     )}
                     <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
                       <span className="rounded-md bg-[#faf9f6] px-3 py-2">Usos: {metrics.totalUses}</span>
@@ -656,6 +672,27 @@ function filterTemplates(
 
     return matchesStatus && matchesCategory && matchesFavorite && matchesQuery;
   });
+}
+
+function getTemplateCardAnalysis(metadata: Record<string, unknown> | null) {
+  const sections = Array.isArray(metadata?.sections) ? metadata.sections.length : 0;
+  const variables = Array.isArray(metadata?.variables) ? metadata.variables.length : 0;
+  const quality = readRecord(metadata?.quality);
+  const qualityScore = typeof quality?.score === "number" ? quality.score : null;
+
+  if (!sections && !variables && qualityScore === null) {
+    return null;
+  }
+
+  return {
+    sections,
+    variables,
+    qualityScore: qualityScore ?? 0,
+  };
+}
+
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 
 function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {

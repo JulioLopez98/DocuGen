@@ -72,6 +72,7 @@ export async function POST(_request: Request, { params }: Params) {
     }
 
     const result = await processTemplateFile(template.file_type, await file.arrayBuffer());
+    const suggestedCategory = readString(result.metadata.suggestedCategory);
     const { data: updatedTemplate, error: updateError } = await db
       .from("document_templates")
       .update({
@@ -79,6 +80,7 @@ export async function POST(_request: Request, { params }: Params) {
         extracted_text: result.text,
         extracted_metadata: result.metadata,
         summary: result.summary,
+        category: template.category || suggestedCategory,
         error_message: result.errorMessage,
       })
       .eq("id", template.id)
@@ -100,4 +102,8 @@ export async function POST(_request: Request, { params }: Params) {
     console.error("template_process_unhandled", error);
     return errorResponse(500, "template_process_failed", "No se pudo procesar la plantilla.");
   }
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : null;
 }

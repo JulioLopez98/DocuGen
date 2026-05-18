@@ -436,6 +436,15 @@ La fase 8.1 mejora la subida de plantillas:
 - Los metadatos comunes, como categoria y descripcion, se aplican a todas las plantillas subidas en lote.
 - Si un archivo falla, el resto puede continuar sin perder la subida completa.
 
+La fase 8.2 profundiza el procesamiento de plantillas DOCX:
+
+- El procesador extrae parrafos, secciones, clausulas o bloques reutilizables.
+- Detecta posibles variables a partir de placeholders y etiquetas.
+- Sugiere categoria y tono de la plantilla.
+- Marca senales de datos concretos, como emails, NIF/CIF, telefonos, importes, fechas o cuentas bancarias.
+- Calcula avisos de calidad para saber si una plantilla es demasiado breve, poco estructurada o contiene datos sensibles.
+- La ficha de plantilla muestra el analisis y el generador recibe estos metadatos como contexto adicional.
+
 ## Comandos
 
 ```bash

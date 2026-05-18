@@ -192,6 +192,7 @@ async function getTemplateReference(
     name: template.name,
     category: template.category,
     summary: template.summary,
+    metadata: template.extracted_metadata,
     extractedText: template.extracted_text,
     usageMode,
   };

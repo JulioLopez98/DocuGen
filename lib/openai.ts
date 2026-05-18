@@ -9,6 +9,7 @@ export type TemplateReference = {
   name: string;
   category: string | null;
   summary: string | null;
+  metadata?: Record<string, unknown> | null;
   extractedText: string;
   usageMode?: TemplateUsageMode;
 };
@@ -562,11 +563,14 @@ function getMissingFields(config: DocumentTypeConfig, formData: Record<string, s
 function buildTemplateReferenceBlock(reference: TemplateReference) {
   const usageMode = reference.usageMode || defaultTemplateUsageMode;
   const strategy = getTemplateUsageStrategy(usageMode);
+  const analysisBlock = buildTemplateAnalysisBlock(reference.metadata);
 
   return `Nombre: ${reference.name}
 Categoria: ${reference.category || "[PENDIENTE DE COMPLETAR]"}
 Resumen: ${reference.summary || "[PENDIENTE DE COMPLETAR]"}
 Modo de uso: ${templateUsageLabels[usageMode]}
+Analisis extraido:
+${analysisBlock}
 
 Contrato de uso de la plantilla:
 ${strategy.contract}
@@ -607,6 +611,62 @@ Checklist interno especifico para plantilla:
 
 Texto extraido de la plantilla:
 ${reference.extractedText.slice(0, 12000)}`;
+}
+
+function buildTemplateAnalysisBlock(metadata?: Record<string, unknown> | null) {
+  if (!metadata) {
+    return "- Sin analisis estructurado disponible.";
+  }
+
+  const suggestedCategory = readString(metadata.suggestedCategory);
+  const tone = readNestedString(metadata.tone, "label");
+  const sections = readNamedItems(metadata.sections);
+  const clauses = readNamedItems(metadata.clauses);
+  const variables = readNamedItems(metadata.variables);
+  const sensitiveSignals = readStringArray(metadata.sensitiveSignals);
+  const qualityWarnings = readStringArray(readRecord(metadata.quality)?.warnings);
+
+  return [
+    `- Categoria sugerida: ${suggestedCategory || "[PENDIENTE DE COMPLETAR]"}`,
+    `- Tono detectado: ${tone || "[PENDIENTE DE COMPLETAR]"}`,
+    sections.length ? `- Secciones detectadas: ${sections.slice(0, 8).join("; ")}` : "- Secciones detectadas: sin datos claros.",
+    clauses.length ? `- Clausulas/bloques utiles: ${clauses.slice(0, 6).join("; ")}` : "- Clausulas/bloques utiles: sin datos claros.",
+    variables.length ? `- Variables posibles: ${variables.slice(0, 10).join("; ")}` : "- Variables posibles: no detectadas.",
+    sensitiveSignals.length
+      ? `- Senales de datos concretos que NO debes copiar: ${sensitiveSignals.join(", ")}`
+      : "- Senales de datos concretos: no detectadas.",
+    qualityWarnings.length ? `- Advertencias de calidad: ${qualityWarnings.join("; ")}` : "- Advertencias de calidad: ninguna destacada.",
+  ].join("\n");
+}
+
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function readNestedString(value: unknown, key: string) {
+  const record = readRecord(value);
+  return record ? readString(record[key]) : null;
+}
+
+function readStringArray(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function readNamedItems(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      const record = readRecord(item);
+      return readString(record?.title) || readString(record?.name);
+    })
+    .filter((item): item is string => Boolean(item));
 }
 
 function getTemplateUsageStrategy(mode: TemplateUsageMode) {
