@@ -498,6 +498,14 @@ La fase 9.3 mejora la propuesta de nuevos tipos documentales:
 - El chat muestra confirmacion de que la propuesta fue enviada a revision.
 - El admin muestra badge `Asistente` en solicitudes nacidas del chat y puede convertirlas a candidato comunitario.
 
+La fase 9.4 mejora el catalogo comunitario asistido:
+
+- El catalogo privado muestra metricas de candidatos, asistidos, publicables y publicados.
+- Nuevo filtro por origen: asistente u otros.
+- Cada candidato incluye checklist asistido de nombre, descripcion, prompt, campos y origen.
+- Acciones rapidas para aprobar o publicar candidatos.
+- Los candidatos nacidos del asistente aparecen marcados y son mas faciles de revisar antes de publicarlos.
+
 ## Comandos
 
 ```bash

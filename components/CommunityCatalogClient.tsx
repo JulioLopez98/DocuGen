@@ -35,6 +35,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [originFilter, setOriginFilter] = useState("all");
   const [editableCandidates, setEditableCandidates] = useState<Record<string, EditableCandidate>>(() =>
     Object.fromEntries(
       candidates.map((candidate) => [
@@ -60,10 +61,18 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
     [candidates],
   );
   const filteredCandidates = useMemo(
-    () => filterCandidates(candidates, query, statusFilter, categoryFilter),
-    [candidates, query, statusFilter, categoryFilter],
+    () => filterCandidates(candidates, sourceById, query, statusFilter, categoryFilter, originFilter),
+    [candidates, sourceById, query, statusFilter, categoryFilter, originFilter],
   );
-  const hasFilters = query.trim().length > 0 || statusFilter !== "all" || categoryFilter !== "all";
+  const hasFilters = query.trim().length > 0 || statusFilter !== "all" || categoryFilter !== "all" || originFilter !== "all";
+  const assistedCount = useMemo(
+    () => candidates.filter((candidate) => isAssistantCandidate(candidate, sourceById.get(candidate.source_request_id || ""))).length,
+    [candidates, sourceById],
+  );
+  const publishableCount = useMemo(
+    () => candidates.filter((candidate) => getCandidateReadiness(candidate, sourceById.get(candidate.source_request_id || "")).level === "ready").length,
+    [candidates, sourceById],
+  );
 
   function updateCandidate(id: string, patch: Partial<EditableCandidate>) {
     setEditableCandidates((current) => ({
@@ -77,6 +86,43 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
 
   async function saveCandidate(id: string) {
     const payload = editableCandidates[id];
+
+    if (!payload) {
+      return;
+    }
+
+    setBusyId(id);
+    setSavedId(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/admin/community-document-types/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        setError(data.message || "No se pudo actualizar el candidato.");
+        return;
+      }
+
+      setSavedId(id);
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function quickStatus(id: string, status: CommunityDocumentTypeRow["status"]) {
+    updateCandidate(id, { status });
+    const payload = {
+      ...editableCandidates[id],
+      status,
+    };
 
     if (!payload) {
       return;
@@ -122,8 +168,14 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
 
   return (
     <div className="grid gap-5">
+      <section className="grid gap-3 md:grid-cols-4">
+        <CatalogMetric label="Candidatos" value={candidates.length.toString()} helper="Total privado" />
+        <CatalogMetric label="Asistidos" value={assistedCount.toString()} helper="Nacidos del chat" />
+        <CatalogMetric label="Publicables" value={publishableCount.toString()} helper="Checklist completo" />
+        <CatalogMetric label="Publicados" value={candidates.filter((candidate) => candidate.status === "published").length.toString()} helper="Disponibles" />
+      </section>
       <section className="surface rounded-md p-5">
-        <div className="grid gap-3 lg:grid-cols-[1fr_220px_220px_auto]">
+        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_180px_auto]">
           <label>
             <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar</span>
             <input
@@ -166,6 +218,19 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
             </select>
           </label>
 
+          <label>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Origen</span>
+            <select
+              value={originFilter}
+              onChange={(event) => setOriginFilter(event.target.value)}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+            >
+              <option value="all">Todos</option>
+              <option value="assistant">Asistente</option>
+              <option value="manual">Otros</option>
+            </select>
+          </label>
+
           <div className="flex items-end">
             <button
               type="button"
@@ -173,6 +238,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                 setQuery("");
                 setStatusFilter("all");
                 setCategoryFilter("all");
+                setOriginFilter("all");
               }}
               disabled={!hasFilters}
               className="focus-ring btn-secondary w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
@@ -207,6 +273,8 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
             };
             const isBusy = busyId === candidate.id;
             const isSaved = savedId === candidate.id;
+            const readiness = getCandidateReadiness(candidate, source);
+            const assistantOrigin = isAssistantCandidate(candidate, source);
 
             return (
               <article key={candidate.id} className="surface-flat interactive rounded-md p-5">
@@ -220,6 +288,14 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                       <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-bold uppercase text-white">
                         {planLabels[editable.required_plan]}
                       </span>
+                      {assistantOrigin && (
+                        <span className="rounded-full bg-[#1f2933] px-2 py-1 text-xs font-bold text-white">
+                          Asistente
+                        </span>
+                      )}
+                      <span className={`rounded-full px-2 py-1 text-xs font-bold ${readiness.className}`}>
+                        {readiness.label}
+                      </span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{candidate.description}</p>
                     <p className="mt-2 text-xs text-slate-500">
@@ -229,6 +305,43 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                   <Link href="/admin" className="focus-ring btn-ghost px-3 py-2 text-xs">
                     Ver solicitudes
                   </Link>
+                </div>
+
+                <div className="mt-4 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Checklist asistido</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{readiness.summary}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void quickStatus(candidate.id, "approved")}
+                        disabled={isBusy || editable.status === "approved"}
+                        className="focus-ring btn-secondary px-3 py-2 text-xs disabled:opacity-60"
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void quickStatus(candidate.id, "published")}
+                        disabled={isBusy || readiness.level !== "ready" || editable.status === "published"}
+                        className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Publicar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-2 md:grid-cols-4">
+                    {readiness.checks.map((check) => (
+                      <div key={check.label} className="rounded-md bg-[#faf9f6] px-3 py-2 text-xs">
+                        <span className={check.ok ? "font-bold text-[#2d6a4f]" : "font-bold text-amber-800"}>
+                          {check.ok ? "OK" : "Revisar"}
+                        </span>
+                        <span className="ml-2 text-slate-600">{check.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
@@ -380,19 +493,79 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
 
 function filterCandidates(
   candidates: CommunityDocumentTypeRow[],
+  sourceById: Map<string, DocumentRequestRow>,
   query: string,
   statusFilter: string,
   categoryFilter: string,
+  originFilter: string,
 ) {
   const normalizedQuery = query.trim().toLowerCase();
 
   return candidates.filter((candidate) => {
+    const source = candidate.source_request_id ? sourceById.get(candidate.source_request_id) : null;
+    const assistantOrigin = isAssistantCandidate(candidate, source);
     const category = candidate.category || "A medida";
     const matchesStatus = statusFilter === "all" || candidate.status === statusFilter;
     const matchesCategory = categoryFilter === "all" || category === categoryFilter;
+    const matchesOrigin =
+      originFilter === "all" || (originFilter === "assistant" ? assistantOrigin : !assistantOrigin);
     const searchable = `${candidate.label} ${candidate.description} ${candidate.category || ""} ${candidate.prompt_brief} ${candidate.slug}`.toLowerCase();
     const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
 
-    return matchesStatus && matchesCategory && matchesQuery;
+    return matchesStatus && matchesCategory && matchesOrigin && matchesQuery;
   });
+}
+
+function CatalogMetric({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="surface-flat rounded-md p-4">
+      <p className="text-sm text-slate-500">{label}</p>
+      <p className="mt-2 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
+      <p className="mt-1 text-xs text-slate-500">{helper}</p>
+    </div>
+  );
+}
+
+function isAssistantCandidate(candidate: CommunityDocumentTypeRow, source?: DocumentRequestRow | null) {
+  const text = `${candidate.admin_notes || ""}\n${candidate.prompt_brief || ""}\n${source?.intended_use || ""}\n${source?.admin_notes || ""}`.toLowerCase();
+  return text.includes("asistente conversacional");
+}
+
+function getCandidateReadiness(candidate: CommunityDocumentTypeRow, source?: DocumentRequestRow | null) {
+  const checks = [
+    { label: "Nombre", ok: candidate.label.trim().length >= 4 },
+    { label: "Descripcion", ok: candidate.description.trim().length >= 30 },
+    { label: "Prompt", ok: candidate.prompt_brief.trim().length >= 120 },
+    { label: "Campos", ok: candidate.suggested_fields.length >= 3 },
+    { label: "Origen", ok: Boolean(source || candidate.admin_notes) },
+  ];
+  const missing = checks.filter((check) => !check.ok);
+
+  if (missing.length === 0) {
+    return {
+      level: "ready",
+      label: "Publicable",
+      className: "bg-[#d8f3dc] text-[#2d6a4f]",
+      summary: "El candidato tiene contenido suficiente para publicarse o pasar a una revision final.",
+      checks,
+    };
+  }
+
+  if (missing.length <= 2) {
+    return {
+      level: "review",
+      label: "Casi listo",
+      className: "bg-amber-50 text-amber-800",
+      summary: `Falta revisar: ${missing.map((check) => check.label.toLowerCase()).join(", ")}.`,
+      checks,
+    };
+  }
+
+  return {
+    level: "draft",
+    label: "Incompleto",
+    className: "bg-orange-50 text-orange-900",
+    summary: `Necesita trabajo antes de publicar: ${missing.map((check) => check.label.toLowerCase()).join(", ")}.`,
+    checks,
+  };
 }
