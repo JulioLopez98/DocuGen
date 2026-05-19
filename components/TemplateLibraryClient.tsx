@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
+import { getTemplateQaReport, getTemplateQaStyles } from "@/lib/template-qa";
 import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
 import type { DocumentTemplateRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
@@ -536,6 +537,7 @@ function TemplateCard({
   onDeleteTemplate: (template: DocumentTemplateRow) => void;
 }) {
   const analysis = getTemplateCardAnalysis(template.extracted_metadata);
+  const qaReport = getTemplateQaReport(template);
 
   return (
     <article className="surface-flat interactive rounded-md p-5">
@@ -545,6 +547,9 @@ function TemplateCard({
                       <h3 className="font-bold">{template.name}</h3>
                       {template.is_favorite && <FavoriteBadge />}
                       <StatusBadge status={template.status} />
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getTemplateQaStyles(qaReport.level)}`}>
+                        QA {qaReport.label}
+                      </span>
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {template.original_filename} - {template.file_type.toUpperCase()} - {formatBytes(template.file_size)} -{" "}
@@ -570,6 +575,9 @@ function TemplateCard({
                         </span>
                       </div>
                     )}
+                    <p className="mt-3 rounded-md border border-[#d8f3dc] bg-white/70 px-3 py-2 text-xs leading-5 text-slate-600">
+                      {qaReport.summary}
+                    </p>
                     <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
                       <span className="rounded-md bg-[#faf9f6] px-3 py-2">Usos: {metrics.totalUses}</span>
                       <span className="rounded-md bg-[#faf9f6] px-3 py-2">Ultimo uso: {formatDateOrNever(metrics.lastUsedAt)}</span>

@@ -5,6 +5,7 @@ import { TemplateDetailActions } from "@/components/TemplateDetailActions";
 import { TemplateVariablesEditor } from "@/components/TemplateVariablesEditor";
 import { getDocumentConfig } from "@/lib/document-types";
 import { getCurrentProfile, type DocumentRow, type DocumentTemplateRow } from "@/lib/supabase-server";
+import { getTemplateQaReport, getTemplateQaStyles, type TemplateQaCheck } from "@/lib/template-qa";
 import { buildTemplateUsageMetrics, getTemplateUsageMetrics } from "@/lib/template-metrics";
 import { templateUsageLabels } from "@/lib/template-usage";
 import { readTemplateVariables, type EditableTemplateVariable } from "@/lib/template-variables";
@@ -75,6 +76,7 @@ export default async function TemplateDetailPage({ params }: Props) {
   const textStats = getTextStats(template.extracted_text || "");
   const canUseTemplate = template.status === "ready" && Boolean(template.extracted_text);
   const templateAnalysis = getTemplateAnalysis(template.extracted_metadata);
+  const qaReport = getTemplateQaReport(template);
 
   return (
     <section className="container-page py-10">
@@ -118,6 +120,22 @@ export default async function TemplateDetailPage({ params }: Props) {
             <Metric label="Usos" value={`${templateMetrics.totalUses} documentos`} />
             <Metric label="Ultimo uso" value={formatDateOrNever(templateMetrics.lastUsedAt)} />
           </div>
+
+          <section className={`mt-6 rounded-md border p-5 ${getTemplateQaStyles(qaReport.level)}`}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em]">QA de plantilla</p>
+                <h2 className="mt-2 font-serif-display text-2xl font-bold">{qaReport.label}</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6">{qaReport.summary}</p>
+              </div>
+              <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold">Calidad {qaReport.score || 0}/100</span>
+            </div>
+            <div className="mt-4 grid gap-2 md:grid-cols-5">
+              {qaReport.checks.map((check) => (
+                <QaCheckCard key={check.label} check={check} />
+              ))}
+            </div>
+          </section>
         </div>
 
         <aside className="surface rounded-md p-5">
@@ -247,6 +265,16 @@ export default async function TemplateDetailPage({ params }: Props) {
             </ul>
           </div>
         )}
+        {qaReport.sensitiveSignals.length > 0 && (
+          <div className="mt-5 rounded-md border border-red-200 bg-red-50 p-4">
+            <p className="text-sm font-bold text-red-800">Datos concretos detectados</p>
+            <p className="mt-2 text-sm leading-6 text-red-800">
+              La plantilla contiene {qaReport.sensitiveSignals.join(", ")}. DocuGen los trata como señales que no deben
+              copiarse al documento final, pero conviene revisar el texto extraido y sustituir ejemplos reales por
+              marcadores.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="surface mt-6 rounded-md p-6">
@@ -331,6 +359,31 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
   return <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{statusLabel(status)}</span>;
+}
+
+function QaCheckCard({ check }: { check: TemplateQaCheck }) {
+  const styles: Record<TemplateQaCheck["status"], string> = {
+    ok: "border-[#2d6a4f] bg-white/70",
+    review: "border-amber-300 bg-white/70",
+    missing: "border-orange-300 bg-white/70",
+    blocked: "border-red-300 bg-white/70",
+  };
+  const labels: Record<TemplateQaCheck["status"], string> = {
+    ok: "OK",
+    review: "Revisar",
+    missing: "Falta",
+    blocked: "Bloqueado",
+  };
+
+  return (
+    <div className={`rounded-md border p-3 ${styles[check.status]}`}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-bold">{check.label}</p>
+        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold">{labels[check.status]}</span>
+      </div>
+      <p className="mt-2 text-xs leading-5">{check.detail}</p>
+    </div>
+  );
 }
 
 function statusLabel(status: DocumentTemplateRow["status"]) {

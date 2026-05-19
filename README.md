@@ -462,6 +462,14 @@ La fase 8.4 anade generacion desde plantilla concreta:
 - El documento generado se guarda en historial con `reference_template_id`, trazabilidad y exportacion PDF/TXT/Word.
 - El prompt usa la plantilla como modelo principal, sustituyendo datos por los valores introducidos y evitando copiar informacion sensible del original.
 
+La fase 8.5 anade QA de plantillas subidas:
+
+- Informe reutilizable de calidad en `lib/template-qa.ts`.
+- Badges de QA en tarjetas de biblioteca.
+- Bloque `QA de plantilla` en la ficha con checks de texto, estructura, variables, datos concretos y calidad.
+- Avisos visibles cuando se detectan emails, NIF/CIF, telefonos, importes, fechas o cuentas bancarias.
+- Checklist manual en `TEMPLATE_UPLOAD_QA.md`.
+
 ## Comandos
 
 ```bash
