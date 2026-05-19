@@ -14,6 +14,7 @@ export async function Header() {
         { href: "/historial", label: "Historial" },
         { href: "/asistente", label: "Asistente" },
         { href: "/plantillas", label: "Plantillas" },
+        { href: "/workspace", label: "Workspace" },
         { href: "/catalogo", label: "Catalogo" },
         { href: "/precios", label: "Precios" },
         { href: "/ajustes", label: "Ajustes" },

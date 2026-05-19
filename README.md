@@ -506,6 +506,17 @@ La fase 9.4 mejora el catalogo comunitario asistido:
 - Acciones rapidas para aprobar o publicar candidatos.
 - Los candidatos nacidos del asistente aparecen marcados y son mas faciles de revisar antes de publicarlos.
 
+## Workspaces / Empresa
+
+La fase 10.1 expone el workspace real:
+
+- Nueva ruta protegida `/workspace`.
+- Vista de workspace principal, miembros y documentos asociados.
+- Tipos compartidos `WorkspaceRow` y `WorkspaceMemberRow`.
+- Navegacion superior con acceso a `Workspace`.
+- La base usa las tablas ya existentes `workspaces` y `workspace_members`, creadas automaticamente al registrar usuarios.
+- Las invitaciones y documentos compartidos reales quedan preparados para los siguientes pasos.
+
 ## Comandos
 
 ```bash

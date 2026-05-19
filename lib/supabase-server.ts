@@ -56,6 +56,22 @@ export type BrandSettings = {
   updated_at: string;
 };
 
+export type WorkspaceRow = {
+  id: string;
+  name: string;
+  owner_id: string;
+  plan: "free" | "pro" | "empresa";
+  created_at: string;
+};
+
+export type WorkspaceMemberRow = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  role: "admin" | "member";
+  joined_at: string;
+};
+
 export type DocumentTemplateStatus = "uploaded" | "processing" | "ready" | "failed";
 
 export type DocumentTemplateRow = {
