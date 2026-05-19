@@ -481,6 +481,15 @@ La fase 9.1 anade chat libre Pro:
 - El asistente ayuda a definir el documento, pedir datos faltantes y recomendar el siguiente paso.
 - En esta fase no genera todavia el documento final desde el chat; eso queda preparado para 9.2.
 
+La fase 9.2 anade generacion guiada desde chat:
+
+- Nueva API `POST /api/assistant/generate`.
+- Convierte una conversacion guardada en un documento final.
+- Guarda el resultado en `documents` con `doc_type = assistant`.
+- Registra la solicitud en `document_requests` para futura revision/admin.
+- Marca la conversacion como `completed`.
+- Muestra el documento generado dentro de `/asistente` con exportacion PDF/TXT/Word.
+
 ## Comandos
 
 ```bash

@@ -315,6 +315,34 @@ Conversacion:
 ${conversation}`;
 }
 
+export function buildAssistantDocumentPrompt(messages: AssistantChatMessage[]) {
+  const conversation = messages
+    .slice(-18)
+    .map((message) => `${message.role === "user" ? "Usuario" : "DocuGen"}: ${message.content}`)
+    .join("\n\n");
+
+  return `Genera el documento final a partir de esta conversacion guiada de DocuGen.
+
+Objetivo:
+Crear un borrador profesional completo para Espana usando exclusivamente la informacion aportada en la conversacion.
+
+Reglas obligatorias:
+- Devuelve solo el documento final, sin explicar el proceso.
+- Elige el formato natural que corresponda: carta, autorizacion, email, contrato, acuerdo, politica, acta, propuesta u otro.
+- No inventes datos no proporcionados.
+- Si falta informacion necesaria, usa exactamente [PENDIENTE DE COMPLETAR].
+- No incluyas metadatos internos como "tipo recomendado", "datos disponibles" o "siguiente accion".
+- Si el documento es carta o email, no uses clausulas contractuales.
+- Si el documento es contrato o acuerdo, usa apartados claros y clausulas numeradas cuando proceda.
+- Si aplica, incluye bloque de firmas proporcionado y prudente.
+- Mantiene lenguaje profesional, claro y adaptado a Espana.
+- No prometas validez legal ni sustituyas revision profesional.
+- Incluye al final un aviso breve indicando que el documento es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
+
+Conversacion:
+${conversation}`;
+}
+
 export function buildRefinementPrompt({
   config,
   formData,

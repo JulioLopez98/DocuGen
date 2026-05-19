@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DocResult } from "@/components/DocResult";
 import type { ChatMessageRow, ChatSessionRow } from "@/lib/supabase-server";
 
 type AssistantChatClientProps = {
@@ -15,12 +16,21 @@ type ApiError = {
   message?: string;
 };
 
+type GeneratedAssistantDocument = {
+  id: string;
+  docType: string;
+  docLabel: string;
+  content: string;
+};
+
 export function AssistantChatClient({ initialSessionId, initialMessages, sessions }: AssistantChatClientProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId);
   const [messages, setMessages] = useState<ChatMessageRow[]>(initialMessages);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generatedDocument, setGeneratedDocument] = useState<GeneratedAssistantDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function sendMessage() {
@@ -74,6 +84,42 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
     }
   }
 
+  async function generateFromChat() {
+    if (!sessionId) {
+      setError("Primero envia al menos un mensaje al asistente.");
+      return;
+    }
+
+    setGenerating(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/assistant/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      const payload = (await response.json()) as Partial<GeneratedAssistantDocument> & ApiError;
+
+      if (!response.ok || !payload.id || !payload.docType || !payload.docLabel || !payload.content) {
+        setError(payload.message || "No se pudo generar el documento.");
+        return;
+      }
+
+      setGeneratedDocument({
+        id: payload.id,
+        docType: payload.docType,
+        docLabel: payload.docLabel,
+        content: payload.content,
+      });
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
       <aside className="surface rounded-md p-5">
@@ -113,12 +159,24 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
 
       <section className="surface rounded-md p-5">
         <div className="border-b border-[#d8f3dc] pb-4">
-          <p className="eyebrow">Chat libre Pro</p>
-          <h1 className="font-serif-display mt-2 text-3xl font-bold">Describe el documento que necesitas</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-            El asistente te ayuda a aclarar tipo de documento, datos necesarios y siguiente paso. Todavia no sustituye
-            una revision profesional cuando el documento pueda tener efectos legales.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="eyebrow">Chat libre Pro</p>
+              <h1 className="font-serif-display mt-2 text-3xl font-bold">Describe el documento que necesitas</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                El asistente te ayuda a aclarar tipo de documento, datos necesarios y siguiente paso. Cuando tengas la
+                informacion suficiente, puedes generar el borrador y guardarlo en historial.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={generateFromChat}
+              disabled={generating || loading || messages.length === 0}
+              className="focus-ring btn-primary px-4 py-3 text-sm disabled:opacity-60"
+            >
+              {generating ? "Generando..." : "Generar documento"}
+            </button>
+          </div>
         </div>
 
         <div className="mt-5 grid min-h-[420px] content-start gap-3">
@@ -175,6 +233,19 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
           </div>
           {error && <p className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         </div>
+
+        {generatedDocument && (
+          <div className="mt-6">
+            <DocResult
+              documentId={generatedDocument.id}
+              docType={generatedDocument.docType}
+              title={generatedDocument.docLabel}
+              content={generatedDocument.content}
+              canExportDocx
+              onRegenerate={generateFromChat}
+            />
+          </div>
+        )}
       </section>
     </div>
   );
