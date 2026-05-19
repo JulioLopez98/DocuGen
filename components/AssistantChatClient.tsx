@@ -21,6 +21,11 @@ type GeneratedAssistantDocument = {
   docType: string;
   docLabel: string;
   content: string;
+  proposal?: {
+    title: string;
+    status: string;
+    category: string | null;
+  };
 };
 
 export function AssistantChatClient({ initialSessionId, initialMessages, sessions }: AssistantChatClientProps) {
@@ -111,6 +116,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         docType: payload.docType,
         docLabel: payload.docLabel,
         content: payload.content,
+        proposal: payload.proposal,
       });
       router.refresh();
     } catch {
@@ -236,6 +242,17 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
 
         {generatedDocument && (
           <div className="mt-6">
+            {generatedDocument.proposal && (
+              <div className="mb-4 rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4">
+                <p className="text-sm font-bold text-[#2d6a4f]">Propuesta enviada al admin</p>
+                <p className="mt-1 text-xs leading-5 text-slate-600">
+                  Hemos creado una propuesta revisable para valorar si este tipo documental debe entrar en el catalogo:
+                  {" "}
+                  <strong>{generatedDocument.proposal.title}</strong>
+                  {generatedDocument.proposal.category ? ` · ${generatedDocument.proposal.category}` : ""}.
+                </p>
+              </div>
+            )}
             <DocResult
               documentId={generatedDocument.id}
               docType={generatedDocument.docType}

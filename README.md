@@ -490,6 +490,14 @@ La fase 9.2 anade generacion guiada desde chat:
 - Marca la conversacion como `completed`.
 - Muestra el documento generado dentro de `/asistente` con exportacion PDF/TXT/Word.
 
+La fase 9.3 mejora la propuesta de nuevos tipos documentales:
+
+- Helper `lib/assistant-proposals.ts` para convertir conversaciones en propuestas revisables.
+- La generacion desde asistente crea `document_requests` enriquecidas con titulo, categoria, tono, campos sugeridos y notas internas.
+- Las propuestas nacidas del asistente entran directamente en estado `reviewing`.
+- El chat muestra confirmacion de que la propuesta fue enviada a revision.
+- El admin muestra badge `Asistente` en solicitudes nacidas del chat y puede convertirlas a candidato comunitario.
+
 ## Comandos
 
 ```bash

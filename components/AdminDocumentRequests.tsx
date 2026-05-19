@@ -181,6 +181,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           const isConverting = convertingId === request.id;
           const isSaved = savedId === request.id;
           const isConverted = convertedId === request.id || request.status === "converted";
+          const sourceLabel = getRequestSourceLabel(request);
 
           return (
             <article key={request.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
@@ -191,6 +192,11 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                     <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
                       {statusLabels[editable.status]}
                     </span>
+                    {sourceLabel && (
+                      <span className="rounded-full bg-[#1f2933] px-2 py-1 text-xs font-bold text-white">
+                        {sourceLabel}
+                      </span>
+                    )}
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{request.description}</p>
                   <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2">
@@ -279,6 +285,20 @@ function StatusPill({ label, value }: { label: string; value: number }) {
       {label}: {value}
     </span>
   );
+}
+
+function getRequestSourceLabel(request: DocumentRequestRow) {
+  const text = `${request.intended_use || ""}\n${request.admin_notes || ""}`.toLowerCase();
+
+  if (text.includes("asistente conversacional")) {
+    return "Asistente";
+  }
+
+  if (request.generated_document_id && request.title.toLowerCase().includes("documento guiado")) {
+    return "Asistente";
+  }
+
+  return null;
 }
 
 function countRequestStatuses(requests: DocumentRequestRow[]): Record<DocumentRequestStatus, number> {

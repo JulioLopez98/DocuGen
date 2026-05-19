@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { buildAssistantDocumentProposal } from "@/lib/assistant-proposals";
 import { buildAssistantDocumentPrompt, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
@@ -95,7 +96,8 @@ export async function POST(request: Request) {
       return errorResponse(502, "empty_generation", "La IA no devolvio contenido. Intentalo de nuevo.");
     }
 
-    const docLabel = buildDocumentLabel(userMessages[0]?.content);
+    const proposal = buildAssistantDocumentProposal(messages);
+    const docLabel = proposal.title;
     const formData = {
       source: "assistant_chat",
       session_id: session.id,
@@ -123,12 +125,14 @@ export async function POST(request: Request) {
 
     const { error: requestInsertError } = await supabase.from("document_requests").insert({
       user_id: user.id,
-      title: docLabel,
-      description: messages.map((message) => `${message.role}: ${message.content}`).join("\n\n").slice(0, 5000),
-      intended_use: "Generado desde asistente conversacional",
-      tone: "formal",
+      title: proposal.title,
+      description: proposal.description,
+      intended_use: proposal.intendedUse,
+      tone: proposal.tone,
+      sector: proposal.sector,
       generated_document_id: document.id,
-      status: "submitted",
+      status: "reviewing",
+      admin_notes: proposal.adminNotes,
     });
 
     if (requestInsertError) {
@@ -174,6 +178,11 @@ export async function POST(request: Request) {
       content,
       formData,
       modelUsed: PREMIUM_MODEL,
+      proposal: {
+        title: proposal.title,
+        status: "reviewing",
+        category: proposal.sector,
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -183,15 +192,4 @@ export async function POST(request: Request) {
     console.error("assistant_generate_error", error);
     return errorResponse(500, "generation_failed", "No se pudo generar el documento desde el chat.");
   }
-}
-
-function buildDocumentLabel(firstMessage?: string) {
-  const clean = firstMessage?.replace(/\s+/g, " ").trim();
-
-  if (!clean) {
-    return "Documento guiado";
-  }
-
-  const short = clean.length > 72 ? `${clean.slice(0, 69).trim()}...` : clean;
-  return `Documento guiado: ${short}`;
 }
