@@ -34,6 +34,11 @@ export type TemplateDirectPromptInput = {
   extraInstructions?: string | null;
 };
 
+export type AssistantChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export const DEFAULT_MODEL = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
 export const PREMIUM_MODEL = process.env.OPENAI_MODEL_PREMIUM || "gpt-4.1";
 
@@ -278,6 +283,36 @@ Reglas obligatorias:
 
 Texto extraido de la plantilla:
 ${input.template.extractedText.slice(0, 14000)}`;
+}
+
+export function buildAssistantChatPrompt(messages: AssistantChatMessage[]) {
+  const conversation = messages
+    .slice(-12)
+    .map((message) => `${message.role === "user" ? "Usuario" : "DocuGen"}: ${message.content}`)
+    .join("\n\n");
+
+  return `Actua como asistente conversacional de DocuGen para usuarios Pro.
+
+Objetivo:
+Ayudar al usuario a definir un documento profesional para Espana cuando no sabe que tipo elegir o cuando no existe aun en el catalogo.
+
+Comportamiento:
+- Haz preguntas concretas para completar informacion faltante.
+- Sugiere el tipo documental mas parecido si existe.
+- Si parece un documento a medida, orienta al usuario para reunir datos antes de generarlo.
+- No des asesoramiento legal definitivo.
+- No prometas validez legal.
+- No generes aun un documento completo salvo que el usuario lo pida explicitamente; en esta fase prioriza aclarar requisitos.
+- Si el documento puede tener efectos legales, laborales, fiscales, inmobiliarios, societarios o de proteccion de datos, recuerda revision profesional.
+- Mantente breve, profesional y util.
+- Cuando tengas suficiente informacion, resume en una lista:
+  1. Tipo de documento recomendado.
+  2. Datos disponibles.
+  3. Datos que faltan.
+  4. Siguiente accion recomendada.
+
+Conversacion:
+${conversation}`;
 }
 
 export function buildRefinementPrompt({

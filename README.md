@@ -470,6 +470,17 @@ La fase 8.5 anade QA de plantillas subidas:
 - Avisos visibles cuando se detectan emails, NIF/CIF, telefonos, importes, fechas o cuentas bancarias.
 - Checklist manual en `TEMPLATE_UPLOAD_QA.md`.
 
+## Asistente conversacional
+
+La fase 9.1 anade chat libre Pro:
+
+- Nueva ruta protegida `/asistente`.
+- Nueva API `POST /api/assistant/chat`.
+- Persistencia en `chat_sessions` y `chat_messages`.
+- Historial lateral de conversaciones recientes.
+- El asistente ayuda a definir el documento, pedir datos faltantes y recomendar el siguiente paso.
+- En esta fase no genera todavia el documento final desde el chat; eso queda preparado para 9.2.
+
 ## Comandos
 
 ```bash

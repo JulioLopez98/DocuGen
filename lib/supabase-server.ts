@@ -127,6 +127,23 @@ export type CommunityDocumentTypeRow = {
   updated_at: string;
 };
 
+export type ChatSessionRow = {
+  id: string;
+  user_id: string;
+  doc_type: string | null;
+  status: "active" | "completed";
+  created_at: string;
+  updated_at: string;
+};
+
+export type ChatMessageRow = {
+  id: string;
+  session_id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  created_at: string;
+};
+
 export function hasSupabaseServerEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
