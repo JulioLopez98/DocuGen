@@ -1,15 +1,23 @@
 import Link from "next/link";
 import { PlanBadge } from "@/components/PlanBadge";
-import type { DocumentRow, Profile, WorkspaceMemberRow, WorkspaceRow } from "@/lib/supabase-server";
+import { WorkspaceMembersManager } from "@/components/WorkspaceMembersManager";
+import type {
+  DocumentRow,
+  Profile,
+  WorkspaceMemberProfile,
+  WorkspaceMemberRow,
+  WorkspaceRow,
+} from "@/lib/supabase-server";
 
 type WorkspacePanelProps = {
   profile: Profile;
   workspaces: WorkspaceRow[];
   members: WorkspaceMemberRow[];
+  memberProfiles: WorkspaceMemberProfile[];
   documents: Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[];
 };
 
-export function WorkspacePanel({ profile, workspaces, members, documents }: WorkspacePanelProps) {
+export function WorkspacePanel({ profile, workspaces, members, memberProfiles, documents }: WorkspacePanelProps) {
   const primaryWorkspace = workspaces[0] || null;
   const workspaceMembers = primaryWorkspace
     ? members.filter((member) => member.workspace_id === primaryWorkspace.id)
@@ -30,8 +38,8 @@ export function WorkspacePanel({ profile, workspaces, members, documents }: Work
               {primaryWorkspace?.name || "Workspace personal"}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-              Organiza documentos, miembros y configuracion compartida. En esta primera version dejamos visible la base
-              de trabajo; las invitaciones avanzadas llegan en el siguiente paso.
+              Organiza documentos, miembros y configuración compartida. Esta base permite trabajar con equipos y preparar
+              la capa Empresa sin mezclarla con tus documentos personales.
             </p>
           </div>
           <PlanBadge plan={profile.plan} />
@@ -59,31 +67,12 @@ export function WorkspacePanel({ profile, workspaces, members, documents }: Work
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <section className="surface rounded-md p-6">
-          <p className="eyebrow">Miembros</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Equipo</h2>
-          <div className="mt-5 grid gap-3">
-            {workspaceMembers.length === 0 ? (
-              <EmptyWorkspaceBlock text="Todavia no hay miembros asociados a este workspace." />
-            ) : (
-              workspaceMembers.map((member) => (
-                <article key={member.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-semibold">{member.user_id === profile.id ? profile.email || "Tu cuenta" : member.user_id}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Unido el {new Date(member.joined_at).toLocaleDateString("es-ES")}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-                      {member.role === "admin" ? "Admin" : "Miembro"}
-                    </span>
-                  </div>
-                </article>
-              ))
-            )}
-          </div>
-        </section>
+        <WorkspaceMembersManager
+          profile={profile}
+          workspace={primaryWorkspace}
+          members={workspaceMembers}
+          memberProfiles={memberProfiles}
+        />
 
         <section className="surface rounded-md p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">

@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { WorkspacePanel } from "@/components/WorkspacePanel";
 import {
+  createSupabaseServiceClient,
   getCurrentProfile,
   type DocumentRow,
+  type WorkspaceMemberProfile,
   type WorkspaceMemberRow,
   type WorkspaceRow,
 } from "@/lib/supabase-server";
@@ -36,6 +38,16 @@ export default async function WorkspacePage() {
   const { data: allMembers } = workspaceIds.length
     ? await supabase.from("workspace_members").select("*").in("workspace_id", workspaceIds).returns<WorkspaceMemberRow[]>()
     : { data: [] as WorkspaceMemberRow[] };
+  const memberUserIds = Array.from(new Set((allMembers || []).map((member) => member.user_id)));
+  const serviceClient = createSupabaseServiceClient();
+  const { data: memberProfiles } =
+    serviceClient && memberUserIds.length
+      ? await serviceClient
+          .from("profiles")
+          .select("id,email")
+          .in("id", memberUserIds)
+          .returns<WorkspaceMemberProfile[]>()
+      : { data: [] as WorkspaceMemberProfile[] };
   const { data: documents } = await supabase
     .from("documents")
     .select("id,doc_type,doc_label,workspace_id,created_at")
@@ -50,6 +62,7 @@ export default async function WorkspacePage() {
         profile={profile}
         workspaces={workspaces || []}
         members={allMembers || []}
+        memberProfiles={memberProfiles || []}
         documents={documents || []}
       />
     </section>

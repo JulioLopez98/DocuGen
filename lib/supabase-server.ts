@@ -72,6 +72,11 @@ export type WorkspaceMemberRow = {
   joined_at: string;
 };
 
+export type WorkspaceMemberProfile = {
+  id: string;
+  email: string | null;
+};
+
 export type DocumentTemplateStatus = "uploaded" | "processing" | "ready" | "failed";
 
 export type DocumentTemplateRow = {
