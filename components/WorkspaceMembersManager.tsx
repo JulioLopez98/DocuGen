@@ -117,6 +117,38 @@ export function WorkspaceMembersManager({
     router.refresh();
   }
 
+  async function updateMemberPermission(
+    member: WorkspaceMemberRow,
+    permission: keyof MemberPermissionPayload,
+    value: boolean,
+  ) {
+    if (!workspace) {
+      return;
+    }
+
+    setPendingAction(`permission-${member.id}-${permission}`);
+    setError(null);
+    setFeedback(null);
+
+    const response = await fetch(`/api/workspaces/${workspace.id}/members`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ memberId: member.id, permissions: { [permission]: value } }),
+    });
+    const data = (await response.json()) as MemberApiResponse;
+
+    if (!response.ok || !data.member) {
+      setError(data.message || "No se pudo actualizar el permiso.");
+      setPendingAction(null);
+      return;
+    }
+
+    setMembers((current) => current.map((currentMember) => (currentMember.id === member.id ? data.member! : currentMember)));
+    setFeedback("Permiso actualizado.");
+    setPendingAction(null);
+    router.refresh();
+  }
+
   async function removeMember(member: WorkspaceMemberRow) {
     if (!workspace || !confirm("Quieres quitar este miembro del workspace?")) {
       return;
@@ -292,10 +324,11 @@ export function WorkspaceMembersManager({
             const isCurrentUser = member.user_id === profile.id;
             const displayEmail = memberProfile?.email || (isCurrentUser ? profile.email : null) || member.user_id;
             const canEditThisMember = canManageMembers && !isOwner;
+            const permissionItems = getPermissionItems(member);
 
             return (
               <article key={member.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
-                <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold">{displayEmail}</p>
@@ -313,6 +346,18 @@ export function WorkspaceMembersManager({
                     <p className="mt-1 text-xs text-slate-500">
                       Unido el {new Date(member.joined_at).toLocaleDateString("es-ES")}
                     </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {permissionItems.map((item) => (
+                        <span
+                          key={item.key}
+                          className={`rounded-full px-2 py-1 text-[11px] font-bold ${
+                            item.enabled ? "bg-[#d8f3dc] text-[#2d6a4f]" : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
@@ -344,6 +389,25 @@ export function WorkspaceMembersManager({
                     )}
                   </div>
                 </div>
+                {canEditThisMember && member.role !== "admin" && (
+                  <div className="mt-4 grid gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 sm:grid-cols-2">
+                    {permissionItems.map((item) => (
+                      <label key={item.key} className="flex items-center justify-between gap-3 rounded-md bg-white/75 px-3 py-2 text-xs">
+                        <span>
+                          <span className="block font-bold text-[#1f2933]">{item.label}</span>
+                          <span className="mt-0.5 block text-slate-500">{item.description}</span>
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={item.enabled}
+                          onChange={(event) => updateMemberPermission(member, item.key, event.target.checked)}
+                          disabled={pendingAction === `permission-${member.id}-${item.key}`}
+                          className="h-4 w-4 accent-[#2d6a4f]"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                )}
               </article>
             );
           })
@@ -351,4 +415,42 @@ export function WorkspaceMembersManager({
       </div>
     </section>
   );
+}
+
+type MemberPermissionPayload = {
+  canCreateDocuments: boolean;
+  canUploadTemplates: boolean;
+  canManageTemplates: boolean;
+  canInviteMembers: boolean;
+};
+
+function getPermissionItems(member: WorkspaceMemberRow) {
+  const admin = member.role === "admin";
+
+  return [
+    {
+      key: "canCreateDocuments" as const,
+      label: "Generar",
+      description: "Crear documentos en el workspace",
+      enabled: admin || Boolean(member.can_create_documents),
+    },
+    {
+      key: "canUploadTemplates" as const,
+      label: "Subir plantillas",
+      description: "Anadir referencias compartidas",
+      enabled: admin || Boolean(member.can_upload_templates),
+    },
+    {
+      key: "canManageTemplates" as const,
+      label: "Gestionar plantillas",
+      description: "Editar, procesar o borrar plantillas",
+      enabled: admin || Boolean(member.can_manage_templates),
+    },
+    {
+      key: "canInviteMembers" as const,
+      label: "Invitar",
+      description: "Enviar o revocar invitaciones",
+      enabled: admin || Boolean(member.can_invite_members),
+    },
+  ];
 }

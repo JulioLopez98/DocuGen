@@ -25,6 +25,10 @@ create table if not exists public.workspace_members (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   role text not null default 'member' check (role in ('admin', 'member')),
+  can_create_documents boolean not null default true,
+  can_upload_templates boolean not null default false,
+  can_manage_templates boolean not null default false,
+  can_invite_members boolean not null default false,
   joined_at timestamptz not null default now(),
   unique (workspace_id, user_id)
 );
@@ -283,8 +287,16 @@ begin
   values ('Workspace personal', new.id)
   returning id into workspace_id;
 
-  insert into public.workspace_members (workspace_id, user_id, role)
-  values (workspace_id, new.id, 'admin')
+  insert into public.workspace_members (
+    workspace_id,
+    user_id,
+    role,
+    can_create_documents,
+    can_upload_templates,
+    can_manage_templates,
+    can_invite_members
+  )
+  values (workspace_id, new.id, 'admin', true, true, true, true)
   on conflict (workspace_id, user_id) do nothing;
 
   return new;

@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     }
 
     const payload = templateCreateSchema.parse(await request.json());
-    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, payload.workspaceId);
+    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, payload.workspaceId, "upload_templates");
 
     if (!workspaceAccess.allowed) {
       const reason = workspaceAccess.reason || "not_member";
@@ -80,7 +80,9 @@ export async function POST(request: Request) {
         reason,
         reason === "empresa_required"
           ? "Guardar plantillas en workspace esta disponible en el plan Empresa."
-          : "No tienes acceso a ese workspace.",
+          : reason === "permission_denied"
+            ? "No tienes permiso para subir plantillas a este workspace."
+            : "No tienes acceso a ese workspace.",
       );
     }
 

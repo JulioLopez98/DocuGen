@@ -1,24 +1,32 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createSupabaseServiceClient, requireUser, type DocumentTemplateRow } from "@/lib/supabase-server";
+import {
+  createSupabaseServiceClient,
+  requireUser,
+  type DocumentTemplateRow,
+  type Profile,
+} from "@/lib/supabase-server";
+import { canUseWorkspace } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
 });
 
-const templateUpdateSchema = z.object({
-  isFavorite: z.boolean().optional(),
-  variables: z
-    .array(
-      z.object({
-        name: z.string().trim().min(1).max(80),
-        source: z.enum(["placeholder", "label", "manual"]).default("manual"),
-        confidence: z.enum(["high", "medium", "manual"]).default("manual"),
-      }),
-    )
-    .max(60)
-    .optional(),
-}).refine((payload) => payload.isFavorite !== undefined || payload.variables !== undefined);
+const templateUpdateSchema = z
+  .object({
+    isFavorite: z.boolean().optional(),
+    variables: z
+      .array(
+        z.object({
+          name: z.string().trim().min(1).max(80),
+          source: z.enum(["placeholder", "label", "manual"]).default("manual"),
+          confidence: z.enum(["high", "medium", "manual"]).default("manual"),
+        }),
+      )
+      .max(60)
+      .optional(),
+  })
+  .refine((payload) => payload.isFavorite !== undefined || payload.variables !== undefined);
 
 const errorResponse = (status: number, error: string, message: string) =>
   NextResponse.json({ error, message }, { status });
@@ -34,30 +42,27 @@ export async function DELETE(_request: Request, { params }: Params) {
     const { supabase, user } = await requireUser();
 
     if (!supabase || !user) {
-      return errorResponse(401, "unauthorized", "Inicia sesión para borrar plantillas.");
+      return errorResponse(401, "unauthorized", "Inicia sesion para borrar plantillas.");
     }
 
     const { id } = paramsSchema.parse(params);
-    const { data: template, error: findError } = await supabase
-      .from("document_templates")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single<DocumentTemplateRow>();
+    const access = await requireTemplateManager(supabase, user.id, id);
 
-    if (findError || !template) {
-      return errorResponse(404, "template_not_found", "No se encontró la plantilla.");
+    if (access instanceof NextResponse) {
+      return access;
     }
 
     const db = createSupabaseServiceClient() || supabase;
-    const { error: storageError } = await db.storage.from(template.storage_bucket).remove([template.storage_path]);
+    const { error: storageError } = await db.storage
+      .from(access.template.storage_bucket)
+      .remove([access.template.storage_path]);
 
     if (storageError) {
       console.error("template_storage_delete_error", storageError);
       return errorResponse(500, "template_delete_failed", "No se pudo borrar el archivo de la plantilla.");
     }
 
-    const { error: deleteError } = await db.from("document_templates").delete().eq("id", id).eq("user_id", user.id);
+    const { error: deleteError } = await db.from("document_templates").delete().eq("id", id);
 
     if (deleteError) {
       console.error("template_delete_error", deleteError);
@@ -67,7 +72,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     return NextResponse.json({ deleted: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return errorResponse(400, "invalid_template_id", "Identificador de plantilla no válido.");
+      return errorResponse(400, "invalid_template_id", "Identificador de plantilla no valido.");
     }
 
     console.error("template_delete_unhandled", error);
@@ -85,16 +90,10 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const { id } = paramsSchema.parse(params);
     const payload = templateUpdateSchema.parse(await request.json());
-    const { data: existingTemplate, error: findError } = await supabase
-      .from("document_templates")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single<DocumentTemplateRow>();
+    const access = await requireTemplateManager(supabase, user.id, id);
 
-    if (findError || !existingTemplate) {
-      console.error("template_update_find_error", findError);
-      return errorResponse(404, "template_not_found", "No se encontro la plantilla.");
+    if (access instanceof NextResponse) {
+      return access;
     }
 
     const updatePayload: {
@@ -108,7 +107,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
     if (payload.variables !== undefined) {
       updatePayload.extracted_metadata = {
-        ...(existingTemplate.extracted_metadata || {}),
+        ...(access.template.extracted_metadata || {}),
         variables: dedupeVariables(payload.variables),
         variablesUpdatedAt: new Date().toISOString(),
         variablesReviewed: true,
@@ -119,7 +118,6 @@ export async function PATCH(request: Request, { params }: Params) {
       .from("document_templates")
       .update(updatePayload)
       .eq("id", id)
-      .eq("user_id", user.id)
       .select("*")
       .single<DocumentTemplateRow>();
 
@@ -137,6 +135,52 @@ export async function PATCH(request: Request, { params }: Params) {
     console.error("template_update_unhandled", error);
     return errorResponse(500, "template_update_failed", "No se pudo actualizar la plantilla.");
   }
+}
+
+async function requireTemplateManager(
+  supabase: NonNullable<Awaited<ReturnType<typeof requireUser>>["supabase"]>,
+  userId: string,
+  templateId: string,
+) {
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single<Profile>();
+
+  if (profileError || !profile) {
+    console.error("template_manager_profile_error", profileError);
+    return errorResponse(404, "profile_not_found", "No se encontro tu perfil.");
+  }
+
+  const { data: template, error: findError } = await supabase
+    .from("document_templates")
+    .select("*")
+    .eq("id", templateId)
+    .single<DocumentTemplateRow>();
+
+  if (findError || !template) {
+    console.error("template_manager_find_error", findError);
+    return errorResponse(404, "template_not_found", "No se encontro la plantilla.");
+  }
+
+  if (template.user_id === userId) {
+    return { template, profile };
+  }
+
+  const workspaceAccess = await canUseWorkspace(supabase, userId, profile, template.workspace_id, "manage_templates");
+
+  if (!workspaceAccess.allowed) {
+    return errorResponse(
+      workspaceAccess.reason === "permission_denied" ? 403 : 404,
+      workspaceAccess.reason || "workspace_denied",
+      workspaceAccess.reason === "permission_denied"
+        ? "No tienes permiso para gestionar plantillas en este workspace."
+        : "No tienes acceso a esta plantilla.",
+    );
+  }
+
+  return { template, profile };
 }
 
 function dedupeVariables(

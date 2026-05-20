@@ -69,6 +69,10 @@ export type WorkspaceMemberRow = {
   workspace_id: string;
   user_id: string;
   role: "admin" | "member";
+  can_create_documents: boolean;
+  can_upload_templates: boolean;
+  can_manage_templates: boolean;
+  can_invite_members: boolean;
   joined_at: string;
 };
 

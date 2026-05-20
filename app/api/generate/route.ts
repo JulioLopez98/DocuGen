@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       return errorResponse(403, "pro_required", "Este tipo de documento esta disponible solo en DocuGen Pro.");
     }
 
-    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, payload.workspaceId);
+    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, payload.workspaceId, "create_documents");
 
     if (!workspaceAccess.allowed) {
       const reason = workspaceAccess.reason || "not_member";
@@ -55,7 +55,9 @@ export async function POST(request: Request) {
         reason,
         reason === "empresa_required"
           ? "Guardar documentos en workspace esta disponible en el plan Empresa."
-          : "No tienes acceso a ese workspace.",
+          : reason === "permission_denied"
+            ? "No tienes permiso para generar documentos en este workspace."
+            : "No tienes acceso a ese workspace.",
       );
     }
 

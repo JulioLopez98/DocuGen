@@ -11,6 +11,7 @@ import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limi
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import { defaultTemplateUsageMode } from "@/lib/template-usage";
+import { canUseWorkspace } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -68,6 +69,18 @@ export async function POST(request: Request, { params }: Params) {
 
     if (template.status !== "ready" || !template.extracted_text) {
       return errorResponse(400, "template_not_ready", "Procesa la plantilla antes de generar desde ella.");
+    }
+
+    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, template.workspace_id, "create_documents");
+
+    if (!workspaceAccess.allowed) {
+      return errorResponse(
+        workspaceAccess.reason === "permission_denied" ? 403 : 404,
+        workspaceAccess.reason || "workspace_denied",
+        workspaceAccess.reason === "permission_denied"
+          ? "No tienes permiso para generar documentos en este workspace."
+          : "No tienes acceso a esta plantilla.",
+      );
     }
 
     const rateLimit = await checkGenerationRateLimit(supabase, user.id, profile.plan);

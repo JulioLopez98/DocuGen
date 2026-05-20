@@ -17,10 +17,20 @@ const addMemberSchema = z.object({
   role: z.enum(["admin", "member"]).default("member"),
 });
 
-const updateMemberSchema = z.object({
-  memberId: z.string().uuid(),
-  role: z.enum(["admin", "member"]),
-});
+const updateMemberSchema = z
+  .object({
+    memberId: z.string().uuid(),
+    role: z.enum(["admin", "member"]).optional(),
+    permissions: z
+      .object({
+        canCreateDocuments: z.boolean().optional(),
+        canUploadTemplates: z.boolean().optional(),
+        canManageTemplates: z.boolean().optional(),
+        canInviteMembers: z.boolean().optional(),
+      })
+      .optional(),
+  })
+  .refine((payload) => payload.role !== undefined || payload.permissions !== undefined);
 
 const deleteMemberSchema = z.object({
   memberId: z.string().uuid(),
@@ -66,6 +76,7 @@ export async function POST(request: Request, { params }: Params) {
         workspace_id: auth.workspace.id,
         user_id: targetProfile.id,
         role: payload.role,
+        ...getDefaultPermissions(payload.role),
       })
       .select("*")
       .single<WorkspaceMemberRow>();
@@ -111,13 +122,27 @@ export async function PATCH(request: Request, { params }: Params) {
       return errorResponse(404, "member_not_found", "No se encontro ese miembro.");
     }
 
-    if (memberToUpdate.user_id === auth.workspace.owner_id && payload.role !== "admin") {
+    if (memberToUpdate.user_id === auth.workspace.owner_id && payload.role && payload.role !== "admin") {
       return errorResponse(400, "owner_must_be_admin", "El propietario del workspace debe seguir siendo admin.");
+    }
+
+    const updatePayload: Partial<WorkspaceMemberRow> = {};
+
+    if (payload.role) {
+      updatePayload.role = payload.role;
+      Object.assign(updatePayload, getDefaultPermissions(payload.role));
+    }
+
+    if (payload.permissions && memberToUpdate.user_id !== auth.workspace.owner_id) {
+      updatePayload.can_create_documents = payload.permissions.canCreateDocuments ?? memberToUpdate.can_create_documents;
+      updatePayload.can_upload_templates = payload.permissions.canUploadTemplates ?? memberToUpdate.can_upload_templates;
+      updatePayload.can_manage_templates = payload.permissions.canManageTemplates ?? memberToUpdate.can_manage_templates;
+      updatePayload.can_invite_members = payload.permissions.canInviteMembers ?? memberToUpdate.can_invite_members;
     }
 
     const { data: member, error: updateError } = await db
       .from("workspace_members")
-      .update({ role: payload.role })
+      .update(updatePayload)
       .eq("id", payload.memberId)
       .eq("workspace_id", auth.workspace.id)
       .select("*")
@@ -232,4 +257,22 @@ async function requireWorkspaceAdmin(workspaceIdParam: string) {
   }
 
   return { supabase, user, profile, workspace, membership };
+}
+
+function getDefaultPermissions(role: "admin" | "member") {
+  if (role === "admin") {
+    return {
+      can_create_documents: true,
+      can_upload_templates: true,
+      can_manage_templates: true,
+      can_invite_members: true,
+    };
+  }
+
+  return {
+    can_create_documents: true,
+    can_upload_templates: false,
+    can_manage_templates: false,
+    can_invite_members: false,
+  };
 }

@@ -63,6 +63,7 @@ export async function POST(request: Request) {
           workspace_id: invitation.workspace_id,
           user_id: user.id,
           role: invitation.role,
+          ...getDefaultPermissions(invitation.role),
         },
         { onConflict: "workspace_id,user_id" },
       )
@@ -96,4 +97,22 @@ export async function POST(request: Request) {
     console.error("workspace_invitation_accept_unhandled", error);
     return errorResponse(500, "invitation_accept_failed", "No se pudo aceptar la invitacion.");
   }
+}
+
+function getDefaultPermissions(role: "admin" | "member") {
+  if (role === "admin") {
+    return {
+      can_create_documents: true,
+      can_upload_templates: true,
+      can_manage_templates: true,
+      can_invite_members: true,
+    };
+  }
+
+  return {
+    can_create_documents: true,
+    can_upload_templates: false,
+    can_manage_templates: false,
+    can_invite_members: false,
+  };
 }

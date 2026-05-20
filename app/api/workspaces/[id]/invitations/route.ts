@@ -14,6 +14,7 @@ import {
   getWorkspaceInvitationUrl,
   hashInvitationToken,
 } from "@/lib/workspace-invitations";
+import { canInviteMembers } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -215,8 +216,8 @@ async function requireWorkspaceAdmin(workspaceIdParam: string) {
     .eq("user_id", user.id)
     .single<WorkspaceMemberRow>();
 
-  if (membershipError || !membership || (membership.role !== "admin" && profile.role !== "admin")) {
-    return errorResponse(403, "workspace_admin_required", "Solo un admin del workspace puede gestionar invitaciones.");
+  if (membershipError || !membership || !canInviteMembers(membership, profile)) {
+    return errorResponse(403, "workspace_invite_required", "No tienes permiso para gestionar invitaciones.");
   }
 
   return { supabase, user, profile, workspace, membership };
