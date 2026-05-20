@@ -77,6 +77,21 @@ export type WorkspaceMemberProfile = {
   email: string | null;
 };
 
+export type WorkspaceInvitationRow = {
+  id: string;
+  workspace_id: string;
+  email: string;
+  role: "admin" | "member";
+  token_hash: string;
+  invited_by: string | null;
+  status: "pending" | "accepted" | "revoked" | "expired";
+  expires_at: string;
+  accepted_by: string | null;
+  accepted_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DocumentTemplateStatus = "uploaded" | "processing" | "ready" | "failed";
 
 export type DocumentTemplateRow = {

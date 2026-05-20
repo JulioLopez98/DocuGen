@@ -4,6 +4,7 @@ import { WorkspaceMembersManager } from "@/components/WorkspaceMembersManager";
 import type {
   DocumentRow,
   Profile,
+  WorkspaceInvitationRow,
   WorkspaceMemberProfile,
   WorkspaceMemberRow,
   WorkspaceRow,
@@ -14,13 +15,24 @@ type WorkspacePanelProps = {
   workspaces: WorkspaceRow[];
   members: WorkspaceMemberRow[];
   memberProfiles: WorkspaceMemberProfile[];
+  invitations: WorkspaceInvitationRow[];
   documents: Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[];
 };
 
-export function WorkspacePanel({ profile, workspaces, members, memberProfiles, documents }: WorkspacePanelProps) {
+export function WorkspacePanel({
+  profile,
+  workspaces,
+  members,
+  memberProfiles,
+  invitations,
+  documents,
+}: WorkspacePanelProps) {
   const primaryWorkspace = workspaces[0] || null;
   const workspaceMembers = primaryWorkspace
     ? members.filter((member) => member.workspace_id === primaryWorkspace.id)
+    : [];
+  const workspaceInvitations = primaryWorkspace
+    ? invitations.filter((invitation) => invitation.workspace_id === primaryWorkspace.id)
     : [];
   const workspaceDocuments = primaryWorkspace
     ? documents.filter((document) => document.workspace_id === primaryWorkspace.id)
@@ -72,6 +84,7 @@ export function WorkspacePanel({ profile, workspaces, members, memberProfiles, d
           workspace={primaryWorkspace}
           members={workspaceMembers}
           memberProfiles={memberProfiles}
+          invitations={workspaceInvitations}
         />
 
         <section className="surface rounded-md p-6">

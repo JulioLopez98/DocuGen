@@ -5,6 +5,7 @@ import {
   createSupabaseServiceClient,
   getCurrentProfile,
   type DocumentRow,
+  type WorkspaceInvitationRow,
   type WorkspaceMemberProfile,
   type WorkspaceMemberRow,
   type WorkspaceRow,
@@ -55,6 +56,16 @@ export default async function WorkspacePage() {
     .order("created_at", { ascending: false })
     .limit(40)
     .returns<Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[]>();
+  const { data: invitations } =
+    serviceClient && workspaceIds.length
+      ? await serviceClient
+          .from("workspace_invitations")
+          .select("*")
+          .in("workspace_id", workspaceIds)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .returns<WorkspaceInvitationRow[]>()
+      : { data: [] as WorkspaceInvitationRow[] };
 
   return (
     <section className="container-page py-10">
@@ -63,6 +74,7 @@ export default async function WorkspacePage() {
         workspaces={workspaces || []}
         members={allMembers || []}
         memberProfiles={memberProfiles || []}
+        invitations={invitations || []}
         documents={documents || []}
       />
     </section>
