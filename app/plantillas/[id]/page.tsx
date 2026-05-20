@@ -44,7 +44,6 @@ export default async function TemplateDetailPage({ params }: Props) {
     .from("document_templates")
     .select("*")
     .eq("id", params.id)
-    .eq("user_id", profile.id)
     .single<DocumentTemplateRow>();
 
   if (!template) {
@@ -56,7 +55,6 @@ export default async function TemplateDetailPage({ params }: Props) {
   const { data: generatedDocuments } = await supabase
     .from("documents")
     .select("id, doc_type, doc_label, created_at, template_usage_mode")
-    .eq("user_id", profile.id)
     .eq("reference_template_id", template.id)
     .order("created_at", { ascending: false })
     .returns<LinkedTemplateDocument[]>();

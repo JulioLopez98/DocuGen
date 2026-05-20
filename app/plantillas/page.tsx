@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
 import { TemplateLibraryClient } from "@/components/TemplateLibraryClient";
 import { buildTemplateUsageMetrics, type TemplateUsageMetricEvent } from "@/lib/template-metrics";
-import { getCurrentProfile, type DocumentTemplateRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type DocumentTemplateRow, type WorkspaceMemberRow, type WorkspaceRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Plantillas",
@@ -28,7 +28,6 @@ export default async function TemplatesPage() {
     : await supabase
         .from("document_templates")
         .select("*")
-        .eq("user_id", profile.id)
         .order("is_favorite", { ascending: false })
         .order("created_at", { ascending: false })
         .returns<DocumentTemplateRow[]>();
@@ -41,6 +40,23 @@ export default async function TemplatesPage() {
         .not("reference_template_id", "is", null)
         .returns<TemplateUsageMetricEvent[]>();
   const templateMetrics = buildTemplateUsageMetrics(templateUsageEvents || []);
+  const { data: memberships } =
+    profile.plan === "empresa"
+      ? await supabase
+          .from("workspace_members")
+          .select("*")
+          .eq("user_id", profile.id)
+          .returns<WorkspaceMemberRow[]>()
+      : { data: [] as WorkspaceMemberRow[] };
+  const workspaceIds = (memberships || []).map((membership) => membership.workspace_id);
+  const { data: workspaces } = workspaceIds.length
+    ? await supabase
+        .from("workspaces")
+        .select("*")
+        .in("id", workspaceIds)
+        .order("created_at", { ascending: true })
+        .returns<WorkspaceRow[]>()
+    : { data: [] as WorkspaceRow[] };
 
   return (
     <section className="container-page py-10">
@@ -112,7 +128,12 @@ export default async function TemplatesPage() {
             secondaryAction={{ href: "/generar", label: "Seguir generando" }}
           />
         ) : (
-          <TemplateLibraryClient userId={profile.id} initialTemplates={templates || []} initialTemplateMetrics={templateMetrics} />
+          <TemplateLibraryClient
+            userId={profile.id}
+            initialTemplates={templates || []}
+            initialTemplateMetrics={templateMetrics}
+            workspaces={workspaces || []}
+          />
         )}
       </div>
     </section>

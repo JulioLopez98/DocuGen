@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
+import { canUseWorkspace } from "@/lib/workspace-access";
 
 const TEMPLATE_BUCKET = "document-templates";
 
@@ -13,6 +14,7 @@ const templateCreateSchema = z.object({
   mimeType: z.string().trim().max(160).optional().nullable(),
   fileSize: z.number().int().positive().max(10 * 1024 * 1024).optional().nullable(),
   storagePath: z.string().trim().min(3).max(700),
+  workspaceId: z.string().uuid().optional().nullable(),
 });
 
 const errorResponse = (status: number, error: string, message: string) =>
@@ -29,7 +31,6 @@ export async function GET() {
     const { data, error } = await supabase
       .from("document_templates")
       .select("*")
-      .eq("user_id", user.id)
       .order("is_favorite", { ascending: false })
       .order("created_at", { ascending: false })
       .returns<DocumentTemplateRow[]>();
@@ -70,6 +71,18 @@ export async function POST(request: Request) {
     }
 
     const payload = templateCreateSchema.parse(await request.json());
+    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, payload.workspaceId);
+
+    if (!workspaceAccess.allowed) {
+      const reason = workspaceAccess.reason || "not_member";
+      return errorResponse(
+        reason === "empresa_required" ? 403 : 404,
+        reason,
+        reason === "empresa_required"
+          ? "Guardar plantillas en workspace esta disponible en el plan Empresa."
+          : "No tienes acceso a ese workspace.",
+      );
+    }
 
     if (!payload.storagePath.startsWith(`${user.id}/`)) {
       return errorResponse(400, "invalid_storage_path", "La ruta del archivo no pertenece a tu cuenta.");
@@ -79,6 +92,7 @@ export async function POST(request: Request) {
       .from("document_templates")
       .insert({
         user_id: user.id,
+        workspace_id: workspaceAccess.workspaceId,
         name: payload.name,
         description: payload.description || null,
         category: payload.category || null,

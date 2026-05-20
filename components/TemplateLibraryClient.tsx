@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import { getTemplateQaReport, getTemplateQaStyles } from "@/lib/template-qa";
 import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
-import type { DocumentTemplateRow } from "@/lib/supabase-server";
+import type { DocumentTemplateRow, WorkspaceRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 const TEMPLATE_BUCKET = "document-templates";
@@ -20,6 +20,7 @@ type TemplateLibraryClientProps = {
   userId: string;
   initialTemplates: DocumentTemplateRow[];
   initialTemplateMetrics: TemplateUsageMetricsMap;
+  workspaces?: WorkspaceRow[];
 };
 
 type ApiError = {
@@ -35,12 +36,18 @@ type UploadQueueItem = {
   message: string;
 };
 
-export function TemplateLibraryClient({ userId, initialTemplates, initialTemplateMetrics }: TemplateLibraryClientProps) {
+export function TemplateLibraryClient({
+  userId,
+  initialTemplates,
+  initialTemplateMetrics,
+  workspaces = [],
+}: TemplateLibraryClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [templates, setTemplates] = useState<DocumentTemplateRow[]>(initialTemplates);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  const [workspaceId, setWorkspaceId] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -144,6 +151,7 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
             mimeType: selectedFile.type || null,
             fileSize: selectedFile.size,
             storagePath,
+            workspaceId: workspaceId || null,
           }),
         });
         const payload = (await response.json()) as { template?: DocumentTemplateRow } & ApiError;
@@ -353,6 +361,27 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
             />
           </label>
 
+          {workspaces.length > 0 && (
+            <label className="block">
+              <span className="text-sm font-bold">Guardar en</span>
+              <select
+                value={workspaceId}
+                onChange={(event) => setWorkspaceId(event.target.value)}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm"
+              >
+                <option value="">Biblioteca personal</option>
+                {workspaces.map((workspace) => (
+                  <option key={workspace.id} value={workspace.id}>
+                    {workspace.name}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-2 block text-xs text-slate-500">
+                Las plantillas de workspace podran usarlas otros miembros del equipo como referencia.
+              </span>
+            </label>
+          )}
+
           <label className="block">
             <span className="text-sm font-bold">Archivos</span>
             <input
@@ -503,6 +532,7 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
               <TemplateCard
                 key={template.id}
                 template={template}
+                workspaceName={workspaces.find((workspace) => workspace.id === template.workspace_id)?.name || null}
                 metrics={getTemplateUsageMetrics(initialTemplateMetrics, template.id)}
                 workingId={workingId}
                 onToggleFavorite={toggleFavorite}
@@ -521,6 +551,7 @@ export function TemplateLibraryClient({ userId, initialTemplates, initialTemplat
 
 function TemplateCard({
   template,
+  workspaceName,
   metrics,
   workingId,
   onToggleFavorite,
@@ -529,6 +560,7 @@ function TemplateCard({
   onDeleteTemplate,
 }: {
   template: DocumentTemplateRow;
+  workspaceName: string | null;
   metrics: ReturnType<typeof getTemplateUsageMetrics>;
   workingId: string | null;
   onToggleFavorite: (template: DocumentTemplateRow) => void;
@@ -546,6 +578,11 @@ function TemplateCard({
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold">{template.name}</h3>
                       {template.is_favorite && <FavoriteBadge />}
+                      {workspaceName && (
+                        <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">
+                          {workspaceName}
+                        </span>
+                      )}
                       <StatusBadge status={template.status} />
                       <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getTemplateQaStyles(qaReport.level)}`}>
                         QA {qaReport.label}

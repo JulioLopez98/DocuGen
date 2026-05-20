@@ -7,13 +7,14 @@ import { EmptyState } from "@/components/EmptyState";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
-import type { DocumentRequestTone, DocumentRow } from "@/lib/supabase-server";
+import type { DocumentRequestTone, DocumentRow, WorkspaceRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 type HistoryClientProps = {
   documents: DocumentRow[];
   canExportDocx: boolean;
   brandSettings?: PdfBrandSettings | null;
+  workspaces?: WorkspaceRow[];
 };
 
 type GenerateResponse = {
@@ -23,7 +24,7 @@ type GenerateResponse = {
 
 type SortMode = "newest" | "oldest" | "type";
 
-export function HistoryClient({ documents, canExportDocx, brandSettings }: HistoryClientProps) {
+export function HistoryClient({ documents, canExportDocx, brandSettings, workspaces = [] }: HistoryClientProps) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
   );
   const groupedByMonth = useMemo(() => groupDocumentsByMonth(filteredDocuments), [filteredDocuments]);
   const hasFilters = query.trim().length > 0 || typeFilter !== "all" || sortMode !== "newest";
+  const workspaceById = useMemo(() => new Map(workspaces.map((workspace) => [workspace.id, workspace])), [workspaces]);
 
   async function deleteDocument(id: string) {
     if (!window.confirm("Borrar este documento del historial?")) {
@@ -268,6 +270,11 @@ export function HistoryClient({ documents, canExportDocx, brandSettings }: Histo
                             Con plantilla
                           </span>
                         )}
+                        {doc.workspace_id && (
+                          <span className="rounded-full bg-[#1f2933] px-2 py-1 text-xs font-semibold text-white">
+                            {workspaceById.get(doc.workspace_id)?.name || "Workspace"}
+                          </span>
+                        )}
                       </div>
                       <p className="mt-1 text-xs text-slate-500">
                         Creado el {createdAt.toLocaleDateString("es-ES")} a las{" "}
@@ -437,6 +444,7 @@ function buildCatalogRegeneratePayload(doc: DocumentRow) {
   return {
     docType: doc.doc_type,
     formData: stripInternalFormData(doc.form_data),
+    workspaceId: doc.workspace_id,
     referenceTemplateId: doc.reference_template_id,
     templateUsageMode: doc.template_usage_mode || undefined,
   };

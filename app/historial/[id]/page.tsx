@@ -36,7 +36,6 @@ export default async function HistoryDetailPage({ params }: Props) {
     .from("document_versions")
     .select("id,document_id,user_id,version_number,content,change_summary,created_at")
     .eq("document_id", document.id)
-    .eq("user_id", profile.id)
     .order("version_number", { ascending: false })
     .returns<DocumentVersionRow[]>();
 

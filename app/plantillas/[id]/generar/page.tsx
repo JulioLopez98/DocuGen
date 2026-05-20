@@ -34,7 +34,6 @@ export default async function GenerateFromTemplatePage({ params }: Props) {
     .from("document_templates")
     .select("*")
     .eq("id", params.id)
-    .eq("user_id", profile.id)
     .single<DocumentTemplateRow>();
 
   if (!template) {

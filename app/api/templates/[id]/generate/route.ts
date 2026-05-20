@@ -59,7 +59,6 @@ export async function POST(request: Request, { params }: Params) {
       .from("document_templates")
       .select("*")
       .eq("id", id)
-      .eq("user_id", user.id)
       .single<DocumentTemplateRow>();
 
     if (templateError || !template) {
@@ -114,6 +113,7 @@ export async function POST(request: Request, { params }: Params) {
       .from("documents")
       .insert({
         user_id: user.id,
+        workspace_id: template.workspace_id,
         doc_type: `template:${template.id}`,
         doc_label: docLabel,
         content,

@@ -10,7 +10,7 @@ import { DocResult, type DocumentTemplateTrace } from "@/components/DocResult";
 import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, type DocumentType } from "@/lib/document-types";
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
-import type { CommunityDocumentTypeRow, DocumentTemplateRow } from "@/lib/supabase-server";
+import type { CommunityDocumentTypeRow, DocumentTemplateRow, WorkspaceRow } from "@/lib/supabase-server";
 import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
 import {
   defaultTemplateUsageMode,
@@ -32,11 +32,12 @@ type GeneratedDocument = {
 type GenerateRequestPayload = {
   docType: string;
   formData: Record<string, string>;
+  workspaceId?: string | null;
   referenceTemplateId?: string | null;
   templateUsageMode?: TemplateUsageMode;
 };
 
-type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite">;
+type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite" | "workspace_id">;
 type CommunityTypeOption = Pick<
   CommunityDocumentTypeRow,
   "id" | "label" | "description" | "category" | "required_plan" | "suggested_fields" | "status"
@@ -54,6 +55,7 @@ type GeneratorClientProps = {
   plan?: "free" | "pro" | "empresa";
   referenceTemplates?: TemplateOption[];
   referenceTemplateMetrics?: TemplateUsageMetricsMap;
+  workspaces?: WorkspaceRow[];
   communityTypes?: CommunityTypeOption[];
   initialReferenceTemplateId?: string;
   initialTemplateUsageMode?: TemplateUsageMode;
@@ -68,6 +70,7 @@ export function GeneratorClient({
   plan = "free",
   referenceTemplates = [],
   referenceTemplateMetrics = {},
+  workspaces = [],
   communityTypes = [],
   initialReferenceTemplateId,
   initialTemplateUsageMode,
@@ -93,6 +96,7 @@ export function GeneratorClient({
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
+  const [workspaceId, setWorkspaceId] = useState("");
   const [templateUsageMode, setTemplateUsageMode] = useState<TemplateUsageMode>(initialTemplateUsageMode || defaultTemplateUsageMode);
 
   const config = getDocumentConfig(selected)!;
@@ -101,15 +105,23 @@ export function GeneratorClient({
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
   const visibleReferenceTemplates = useMemo(
-    () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView),
-    [referenceTemplates, referenceTemplateMetrics, templateQuery, templateView],
+    () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId || null),
+    [referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId],
   );
   const recommendedReferenceTemplates = useMemo(
-    () => getRecommendedReferenceTemplates(referenceTemplates, referenceTemplateMetrics, config.category),
-    [referenceTemplates, referenceTemplateMetrics, config.category],
+    () =>
+      getRecommendedReferenceTemplates(
+        referenceTemplates.filter((template) =>
+          workspaceId ? template.workspace_id === workspaceId || template.workspace_id === null : template.workspace_id === null,
+        ),
+        referenceTemplateMetrics,
+        config.category,
+      ),
+    [referenceTemplates, referenceTemplateMetrics, config.category, workspaceId],
   );
   const isTemplateMode = Boolean(initialFormData && initialDocType);
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
+  const selectedWorkspace = workspaces.find((workspace) => workspace.id === workspaceId);
   const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
   const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
   const isFreePlan = plan === "free";
@@ -177,6 +189,7 @@ export function GeneratorClient({
     setError(null);
     const requestPayload: GenerateRequestPayload = {
       ...payload,
+      workspaceId: workspaceId || null,
       referenceTemplateId: referenceTemplateId || null,
       templateUsageMode,
     };
@@ -331,6 +344,38 @@ export function GeneratorClient({
             </button>
           </div>
         </section>
+
+        {workspaces.length > 0 && (
+          <section className="surface-flat rounded-md p-5">
+            <p className="text-sm font-bold text-[#2d6a4f]">Espacio de trabajo</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Decide si el documento queda solo en tu historial personal o compartido con un workspace.
+            </p>
+            <label className="mt-4 block">
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guardar en</span>
+              <select
+                value={workspaceId}
+                onChange={(event) => {
+                  setWorkspaceId(event.target.value);
+                  setReferenceTemplateId("");
+                }}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              >
+                <option value="">Personal</option>
+                {workspaces.map((workspace) => (
+                  <option key={workspace.id} value={workspace.id}>
+                    {workspace.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {selectedWorkspace && (
+              <p className="mt-3 rounded-md bg-white/75 p-3 text-xs leading-5 text-slate-600">
+                El documento sera visible para miembros de {selectedWorkspace.name}.
+              </p>
+            )}
+          </section>
+        )}
 
         <section className="surface-flat rounded-md p-5">
           <div className="flex items-center justify-between gap-3">
@@ -882,6 +927,7 @@ function filterAndRankReferenceTemplates(
   metricsMap: TemplateUsageMetricsMap,
   query: string,
   view: "all" | "favorites" | "used" | "recent",
+  workspaceId: string | null,
 ) {
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -890,13 +936,14 @@ function filterAndRankReferenceTemplates(
       const metrics = getTemplateUsageMetrics(metricsMap, template.id);
       const searchable = `${template.name} ${template.category || ""} ${template.summary || ""}`.toLowerCase();
       const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+      const matchesScope = workspaceId ? template.workspace_id === workspaceId || template.workspace_id === null : template.workspace_id === null;
       const matchesView =
         view === "all" ||
         (view === "favorites" && template.is_favorite) ||
         (view === "used" && metrics.totalUses > 0) ||
         view === "recent";
 
-      return matchesQuery && matchesView;
+      return matchesQuery && matchesView && matchesScope;
     })
     .sort((first, second) => {
       const firstMetrics = getTemplateUsageMetrics(metricsMap, first.id);

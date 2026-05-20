@@ -870,6 +870,7 @@ export const documentTypeValues = documentTypes.map((item) => item.type) as [Doc
 export const generatePayloadSchema = z.object({
   docType: z.enum(documentTypeValues),
   formData: z.record(z.string(), z.string().trim().max(4000)),
+  workspaceId: z.string().uuid().optional().nullable(),
   referenceTemplateId: z.string().uuid().optional().nullable(),
   templateUsageMode: z.enum(templateUsageModes).optional().default(defaultTemplateUsageMode),
 });

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { HistoryClient } from "@/components/HistoryClient";
-import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type DocumentRow, type WorkspaceRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Historial",
@@ -28,6 +28,10 @@ export default async function HistoryPage() {
     profile.plan !== "free"
       ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
       : { data: null };
+  const workspaceIds = Array.from(new Set((documents || []).map((document) => document.workspace_id).filter((id): id is string => Boolean(id))));
+  const { data: workspaces } = workspaceIds.length
+    ? await supabase.from("workspaces").select("*").in("id", workspaceIds).returns<WorkspaceRow[]>()
+    : { data: [] as WorkspaceRow[] };
 
   return (
     <section className="container-page py-10">
@@ -49,6 +53,7 @@ export default async function HistoryPage() {
         documents={documents || []}
         canExportDocx={profile.plan !== "free"}
         brandSettings={brandSettings || null}
+        workspaces={workspaces || []}
       />
     </section>
   );

@@ -6,6 +6,7 @@ import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limi
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import type { TemplateUsageMode } from "@/lib/template-usage";
+import { canUseWorkspace } from "@/lib/workspace-access";
 
 const errorResponse = (status: number, error: string, message: string) =>
   NextResponse.json({ error, message }, { status });
@@ -43,6 +44,19 @@ export async function POST(request: Request) {
 
     if (profile.plan === "free" && requiresPro(config)) {
       return errorResponse(403, "pro_required", "Este tipo de documento esta disponible solo en DocuGen Pro.");
+    }
+
+    const workspaceAccess = await canUseWorkspace(supabase, user.id, profile, payload.workspaceId);
+
+    if (!workspaceAccess.allowed) {
+      const reason = workspaceAccess.reason || "not_member";
+      return errorResponse(
+        reason === "empresa_required" ? 403 : 404,
+        reason,
+        reason === "empresa_required"
+          ? "Guardar documentos en workspace esta disponible en el plan Empresa."
+          : "No tienes acceso a ese workspace.",
+      );
     }
 
     const templateReference = payload.referenceTemplateId
@@ -83,6 +97,7 @@ export async function POST(request: Request) {
       .from("documents")
       .insert({
         user_id: user.id,
+        workspace_id: workspaceAccess.workspaceId,
         doc_type: config.type,
         doc_label: config.label,
         content,
@@ -175,10 +190,9 @@ async function getTemplateReference(
     .from("document_templates")
     .select("*")
     .eq("id", templateId)
-    .eq("user_id", userId)
     .single<DocumentTemplateRow>();
 
-  if (error || !template) {
+  if (error || !template || (template.user_id !== userId && !template.workspace_id)) {
     console.error("reference_template_not_found", error);
     return errorResponse(404, "template_not_found", "No se encontro la plantilla de referencia.");
   }

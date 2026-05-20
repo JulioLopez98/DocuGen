@@ -11,6 +11,8 @@ import {
   type CommunityDocumentTypeRow,
   type DocumentRow,
   type DocumentTemplateRow,
+  type WorkspaceMemberRow,
+  type WorkspaceRow,
 } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
@@ -64,13 +66,12 @@ export default async function GeneratePage({ searchParams }: Props) {
     supabase && profile && profile.plan !== "free"
       ? await supabase
           .from("document_templates")
-          .select("id,name,category,summary,created_at,is_favorite")
-          .eq("user_id", profile.id)
+          .select("id,name,category,summary,created_at,is_favorite,workspace_id")
           .eq("status", "ready")
           .not("extracted_text", "is", null)
           .order("is_favorite", { ascending: false })
           .order("created_at", { ascending: false })
-          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite">[]>()
+          .returns<Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite" | "workspace_id">[]>()
       : { data: [] };
   const { data: templateUsageEvents } =
     supabase && profile && profile.plan !== "free"
@@ -82,6 +83,24 @@ export default async function GeneratePage({ searchParams }: Props) {
           .returns<TemplateUsageMetricEvent[]>()
       : { data: [] };
   const referenceTemplateMetrics = buildTemplateUsageMetrics(templateUsageEvents || []);
+  const { data: memberships } =
+    supabase && profile && profile.plan === "empresa"
+      ? await supabase
+          .from("workspace_members")
+          .select("*")
+          .eq("user_id", profile.id)
+          .returns<WorkspaceMemberRow[]>()
+      : { data: [] as WorkspaceMemberRow[] };
+  const workspaceIds = (memberships || []).map((membership) => membership.workspace_id);
+  const { data: workspaces } =
+    supabase && workspaceIds.length
+      ? await supabase
+          .from("workspaces")
+          .select("*")
+          .in("id", workspaceIds)
+          .order("created_at", { ascending: true })
+          .returns<WorkspaceRow[]>()
+      : { data: [] as WorkspaceRow[] };
   const { data: communityTypes } =
     supabase && profile
       ? await supabase
@@ -116,6 +135,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           plan={profile?.plan}
           referenceTemplates={referenceTemplates || []}
           referenceTemplateMetrics={referenceTemplateMetrics}
+          workspaces={workspaces || []}
           communityTypes={communityTypes || []}
           initialReferenceTemplateId={requestedReferenceTemplateId}
           initialTemplateUsageMode={requestedTemplateUsageMode}
