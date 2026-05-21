@@ -9,6 +9,11 @@ import type {
   WorkspaceMemberRow,
   WorkspaceRow,
 } from "@/lib/supabase-server";
+import {
+  inferWorkspaceRolePreset,
+  workspaceRolePresets,
+  type WorkspaceRolePreset,
+} from "@/lib/workspace-roles";
 
 type WorkspaceMembersManagerProps = {
   profile: Profile;
@@ -28,6 +33,13 @@ type InvitationApiResponse = {
   message?: string;
 };
 
+const rolePresetOptions: Array<{ value: WorkspaceRolePreset; label: string }> = [
+  { value: "admin", label: workspaceRolePresets.admin.label },
+  { value: "editor", label: workspaceRolePresets.editor.label },
+  { value: "contributor", label: workspaceRolePresets.contributor.label },
+  { value: "viewer", label: workspaceRolePresets.viewer.label },
+];
+
 export function WorkspaceMembersManager({
   profile,
   workspace,
@@ -39,7 +51,7 @@ export function WorkspaceMembersManager({
   const [members, setMembers] = useState(initialMembers);
   const [invitations, setInvitations] = useState(initialInvitations);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"admin" | "member">("member");
+  const [rolePreset, setRolePreset] = useState<WorkspaceRolePreset>("contributor");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
@@ -68,7 +80,7 @@ export function WorkspaceMembersManager({
     const response = await fetch(`/api/workspaces/${workspace.id}/invitations`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, role }),
+      body: JSON.stringify({ email, rolePreset }),
     });
     const data = (await response.json()) as InvitationApiResponse;
 
@@ -83,13 +95,13 @@ export function WorkspaceMembersManager({
       ...current.filter((invitation) => invitation.id !== data.invitation!.id),
     ]);
     setEmail("");
-    setRole("member");
+    setRolePreset("contributor");
     setFeedback("Invitacion enviada por email.");
     setPendingAction(null);
     router.refresh();
   }
 
-  async function updateMemberRole(memberId: string, nextRole: "admin" | "member") {
+  async function updateMemberRole(memberId: string, nextRolePreset: WorkspaceRolePreset) {
     if (!workspace) {
       return;
     }
@@ -101,7 +113,7 @@ export function WorkspaceMembersManager({
     const response = await fetch(`/api/workspaces/${workspace.id}/members`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ memberId, role: nextRole }),
+      body: JSON.stringify({ memberId, rolePreset: nextRolePreset }),
     });
     const data = (await response.json()) as MemberApiResponse;
 
@@ -212,7 +224,7 @@ export function WorkspaceMembersManager({
           <p className="eyebrow">Miembros</p>
           <h2 className="font-serif-display mt-3 text-3xl font-bold">Equipo</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Invita personas por email, revisa accesos pendientes y gestiona los roles del workspace.
+            Invita personas por email y asigna roles claros: Admin, Editor, Miembro o Solo lectura.
           </p>
         </div>
         <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
@@ -228,7 +240,7 @@ export function WorkspaceMembersManager({
 
       {workspace && !canManageMembers && (
         <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
-          <p className="font-semibold text-[#2d6a4f]">Invitaciones disponibles en Empresa</p>
+          <p className="font-semibold text-[#2d6a4f]">Gestion de roles disponible en Empresa</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Puedes ver el equipo, pero invitar miembros, cambiar roles o quitarlos queda reservado para plan Empresa o
             administradores.
@@ -254,11 +266,14 @@ export function WorkspaceMembersManager({
               Rol inicial
               <select
                 className="focus-ring rounded-md border border-[#c7ded0] bg-white px-3 py-3 font-normal"
-                value={role}
-                onChange={(event) => setRole(event.target.value as "admin" | "member")}
+                value={rolePreset}
+                onChange={(event) => setRolePreset(event.target.value as WorkspaceRolePreset)}
               >
-                <option value="member">Miembro</option>
-                <option value="admin">Admin</option>
+                {rolePresetOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
             <button className="focus-ring btn-primary px-4 py-3 text-sm" type="submit" disabled={pendingAction === "invite"}>
@@ -266,7 +281,8 @@ export function WorkspaceMembersManager({
             </button>
           </div>
           <p className="text-xs leading-5 text-slate-500">
-            La invitacion caduca en 7 dias y debe aceptarse iniciando sesion con el mismo email.
+            {workspaceRolePresets[rolePreset].description} La invitacion caduca en 7 dias y debe aceptarse iniciando
+            sesion con el mismo email.
           </p>
         </form>
       )}
@@ -291,7 +307,7 @@ export function WorkspaceMembersManager({
                   <div>
                     <p className="font-semibold">{invitation.email}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Rol {invitation.role === "admin" ? "Admin" : "Miembro"} · caduca el{" "}
+                      Rol {getRoleLabel(getInvitationPreset(invitation))} - caduca el{" "}
                       {new Date(invitation.expires_at).toLocaleDateString("es-ES")}
                     </p>
                   </div>
@@ -325,6 +341,7 @@ export function WorkspaceMembersManager({
             const displayEmail = memberProfile?.email || (isCurrentUser ? profile.email : null) || member.user_id;
             const canEditThisMember = canManageMembers && !isOwner;
             const permissionItems = getPermissionItems(member);
+            const inferredRole = inferWorkspaceRolePreset(member);
 
             return (
               <article key={member.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
@@ -347,6 +364,9 @@ export function WorkspaceMembersManager({
                       Unido el {new Date(member.joined_at).toLocaleDateString("es-ES")}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-[#faf9f6] px-2 py-1 text-[11px] font-bold text-[#1f2933]">
+                        {getRoleLabel(inferredRole)}
+                      </span>
                       {permissionItems.map((item) => (
                         <span
                           key={item.key}
@@ -364,16 +384,24 @@ export function WorkspaceMembersManager({
                     {canEditThisMember ? (
                       <select
                         className="focus-ring rounded-md border border-[#c7ded0] bg-white px-3 py-2 text-sm"
-                        value={member.role}
-                        onChange={(event) => updateMemberRole(member.id, event.target.value as "admin" | "member")}
+                        value={inferredRole === "custom" ? "custom" : inferredRole}
+                        onChange={(event) => updateMemberRole(member.id, event.target.value as WorkspaceRolePreset)}
                         disabled={pendingAction === `role-${member.id}`}
                       >
-                        <option value="member">Miembro</option>
-                        <option value="admin">Admin</option>
+                        {rolePresetOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                        {inferredRole === "custom" && (
+                          <option value="custom" disabled>
+                            Personalizado
+                          </option>
+                        )}
                       </select>
                     ) : (
                       <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-                        {member.role === "admin" ? "Admin" : "Miembro"}
+                        {getRoleLabel(inferredRole)}
                       </span>
                     )}
 
@@ -391,8 +419,15 @@ export function WorkspaceMembersManager({
                 </div>
                 {canEditThisMember && member.role !== "admin" && (
                   <div className="mt-4 grid gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 sm:grid-cols-2">
+                    <p className="text-xs leading-5 text-slate-500 sm:col-span-2">
+                      Puedes partir de un rol predefinido y ajustar permisos concretos. Si cambias un permiso, el rol
+                      pasara a Personalizado.
+                    </p>
                     {permissionItems.map((item) => (
-                      <label key={item.key} className="flex items-center justify-between gap-3 rounded-md bg-white/75 px-3 py-2 text-xs">
+                      <label
+                        key={item.key}
+                        className="flex items-center justify-between gap-3 rounded-md bg-white/75 px-3 py-2 text-xs"
+                      >
                         <span>
                           <span className="block font-bold text-[#1f2933]">{item.label}</span>
                           <span className="mt-0.5 block text-slate-500">{item.description}</span>
@@ -453,4 +488,22 @@ function getPermissionItems(member: WorkspaceMemberRow) {
       enabled: admin || Boolean(member.can_invite_members),
     },
   ];
+}
+
+function getRoleLabel(preset: WorkspaceRolePreset | "custom") {
+  if (preset === "custom") {
+    return "Personalizado";
+  }
+
+  return workspaceRolePresets[preset].label;
+}
+
+function getInvitationPreset(invitation: WorkspaceInvitationRow) {
+  return inferWorkspaceRolePreset({
+    role: invitation.role,
+    can_create_documents: invitation.can_create_documents,
+    can_upload_templates: invitation.can_upload_templates,
+    can_manage_templates: invitation.can_manage_templates,
+    can_invite_members: invitation.can_invite_members,
+  });
 }

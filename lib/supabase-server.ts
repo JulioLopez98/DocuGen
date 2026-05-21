@@ -86,6 +86,10 @@ export type WorkspaceInvitationRow = {
   workspace_id: string;
   email: string;
   role: "admin" | "member";
+  can_create_documents: boolean;
+  can_upload_templates: boolean;
+  can_manage_templates: boolean;
+  can_invite_members: boolean;
   token_hash: string;
   invited_by: string | null;
   status: "pending" | "accepted" | "revoked" | "expired";

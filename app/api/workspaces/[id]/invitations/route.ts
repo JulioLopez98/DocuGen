@@ -16,6 +16,7 @@ import {
 } from "@/lib/workspace-invitations";
 import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canInviteMembers } from "@/lib/workspace-access";
+import { getWorkspaceRolePreset } from "@/lib/workspace-roles";
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -24,6 +25,7 @@ const paramsSchema = z.object({
 const createInvitationSchema = z.object({
   email: z.string().trim().email().max(240).transform((value) => value.toLowerCase()),
   role: z.enum(["admin", "member"]).default("member"),
+  rolePreset: z.enum(["admin", "editor", "contributor", "viewer"]).optional(),
 });
 
 const deleteInvitationSchema = z.object({
@@ -48,6 +50,7 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     const payload = createInvitationSchema.parse(await request.json());
+    const presetPermissions = payload.rolePreset ? getWorkspaceRolePreset(payload.rolePreset) : getDefaultPermissions(payload.role);
     const db = createSupabaseServiceClient();
 
     if (!db) {
@@ -84,7 +87,7 @@ export async function POST(request: Request, { params }: Params) {
     const invitationPayload = {
       workspace_id: auth.workspace.id,
       email: payload.email,
-      role: payload.role,
+      ...presetPermissions,
       token_hash: tokenHash,
       invited_by: auth.user.id,
       status: "pending" as const,
@@ -122,7 +125,7 @@ export async function POST(request: Request, { params }: Params) {
       workspaceName: auth.workspace.name,
       inviterEmail: auth.profile.email,
       inviteUrl: getWorkspaceInvitationUrl(token),
-      role: payload.role,
+      role: presetPermissions.role,
     });
 
     await recordWorkspaceAuditEvent({
@@ -134,7 +137,8 @@ export async function POST(request: Request, { params }: Params) {
       targetId: invitation.id,
       summary: `Invito a ${payload.email}`,
       metadata: {
-        role: payload.role,
+        role: presetPermissions.role,
+        rolePreset: payload.rolePreset || payload.role,
         resent: Boolean(pendingInvitation),
       },
     });
@@ -148,6 +152,10 @@ export async function POST(request: Request, { params }: Params) {
     console.error("workspace_invitation_create_unhandled", error);
     return errorResponse(500, "invitation_create_failed", "No se pudo enviar la invitacion.");
   }
+}
+
+function getDefaultPermissions(role: "admin" | "member") {
+  return getWorkspaceRolePreset(role === "admin" ? "admin" : "contributor");
 }
 
 export async function DELETE(request: Request, { params }: Params) {

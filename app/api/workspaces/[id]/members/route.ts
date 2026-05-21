@@ -8,6 +8,7 @@ import {
   type WorkspaceRow,
 } from "@/lib/supabase-server";
 import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
+import { getWorkspaceRolePreset } from "@/lib/workspace-roles";
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -16,6 +17,7 @@ const paramsSchema = z.object({
 const addMemberSchema = z.object({
   email: z.string().trim().email().max(240),
   role: z.enum(["admin", "member"]).default("member"),
+  rolePreset: z.enum(["admin", "editor", "contributor", "viewer"]).optional(),
 });
 
 const updateMemberSchema = z
@@ -30,8 +32,9 @@ const updateMemberSchema = z
         canInviteMembers: z.boolean().optional(),
       })
       .optional(),
+    rolePreset: z.enum(["admin", "editor", "contributor", "viewer"]).optional(),
   })
-  .refine((payload) => payload.role !== undefined || payload.permissions !== undefined);
+  .refine((payload) => payload.role !== undefined || payload.permissions !== undefined || payload.rolePreset !== undefined);
 
 const deleteMemberSchema = z.object({
   memberId: z.string().uuid(),
@@ -55,6 +58,7 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     const payload = addMemberSchema.parse(await request.json());
+    const presetPermissions = payload.rolePreset ? getWorkspaceRolePreset(payload.rolePreset) : getDefaultPermissions(payload.role);
     const db = createSupabaseServiceClient() || auth.supabase;
     const { data: targetProfile, error: targetError } = await db
       .from("profiles")
@@ -76,8 +80,7 @@ export async function POST(request: Request, { params }: Params) {
       .insert({
         workspace_id: auth.workspace.id,
         user_id: targetProfile.id,
-        role: payload.role,
-        ...getDefaultPermissions(payload.role),
+        ...presetPermissions,
       })
       .select("*")
       .single<WorkspaceMemberRow>();
@@ -101,6 +104,7 @@ export async function POST(request: Request, { params }: Params) {
       summary: `Anadio a ${targetProfile.email || "un miembro"}`,
       metadata: {
         role: member.role,
+        rolePreset: payload.rolePreset || payload.role,
         userId: targetProfile.id,
       },
     });
@@ -143,7 +147,9 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const updatePayload: Partial<WorkspaceMemberRow> = {};
 
-    if (payload.role) {
+    if (payload.rolePreset) {
+      Object.assign(updatePayload, getWorkspaceRolePreset(payload.rolePreset));
+    } else if (payload.role) {
       updatePayload.role = payload.role;
       Object.assign(updatePayload, getDefaultPermissions(payload.role));
     }
@@ -172,13 +178,14 @@ export async function PATCH(request: Request, { params }: Params) {
       supabase: auth.supabase,
       workspaceId: auth.workspace.id,
       actorId: auth.user.id,
-      eventType: payload.role ? "member_role_updated" : "member_permissions_updated",
+      eventType: payload.role || payload.rolePreset ? "member_role_updated" : "member_permissions_updated",
       targetType: "member",
       targetId: member.id,
-      summary: payload.role ? "Actualizo el rol de un miembro" : "Actualizo permisos de un miembro",
+      summary: payload.role || payload.rolePreset ? "Actualizo el rol de un miembro" : "Actualizo permisos de un miembro",
       metadata: {
         memberUserId: member.user_id,
         role: member.role,
+        rolePreset: payload.rolePreset,
         permissions: {
           canCreateDocuments: member.can_create_documents,
           canUploadTemplates: member.can_upload_templates,
@@ -309,19 +316,5 @@ async function requireWorkspaceAdmin(workspaceIdParam: string) {
 }
 
 function getDefaultPermissions(role: "admin" | "member") {
-  if (role === "admin") {
-    return {
-      can_create_documents: true,
-      can_upload_templates: true,
-      can_manage_templates: true,
-      can_invite_members: true,
-    };
-  }
-
-  return {
-    can_create_documents: true,
-    can_upload_templates: false,
-    can_manage_templates: false,
-    can_invite_members: false,
-  };
+  return getWorkspaceRolePreset(role === "admin" ? "admin" : "contributor");
 }
