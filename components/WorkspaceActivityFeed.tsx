@@ -1,11 +1,16 @@
-import type { WorkspaceAuditEventRow, WorkspaceMemberProfile } from "@/lib/supabase-server";
+"use client";
+
+import { useMemo, useState } from "react";
+import type { WorkspaceAuditEventRow, WorkspaceAuditEventType, WorkspaceMemberProfile } from "@/lib/supabase-server";
 
 type WorkspaceActivityFeedProps = {
   events: WorkspaceAuditEventRow[];
   actorProfiles: WorkspaceMemberProfile[];
 };
 
-const eventLabels: Record<WorkspaceAuditEventRow["event_type"], string> = {
+type ActivityFilter = "all" | "documents" | "templates" | "team";
+
+const eventLabels: Record<WorkspaceAuditEventType, string> = {
   document_created: "Documento creado",
   document_deleted: "Documento borrado",
   documents_cleared: "Historial borrado",
@@ -21,8 +26,20 @@ const eventLabels: Record<WorkspaceAuditEventRow["event_type"], string> = {
   invitation_revoked: "Invitacion revocada",
 };
 
+const filterLabels: Array<{ value: ActivityFilter; label: string }> = [
+  { value: "all", label: "Todo" },
+  { value: "documents", label: "Documentos" },
+  { value: "templates", label: "Plantillas" },
+  { value: "team", label: "Equipo" },
+];
+
 export function WorkspaceActivityFeed({ events, actorProfiles }: WorkspaceActivityFeedProps) {
-  const actorById = new Map(actorProfiles.map((profile) => [profile.id, profile.email]));
+  const [filter, setFilter] = useState<ActivityFilter>("all");
+  const actorById = useMemo(
+    () => new Map(actorProfiles.map((profile) => [profile.id, profile.email])),
+    [actorProfiles],
+  );
+  const filteredEvents = events.filter((event) => getEventFilter(event.event_type) === filter || filter === "all");
 
   return (
     <section className="surface rounded-md p-6">
@@ -35,17 +52,32 @@ export function WorkspaceActivityFeed({ events, actorProfiles }: WorkspaceActivi
           </p>
         </div>
         <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-          {events.length} eventos
+          {filteredEvents.length} eventos
         </span>
       </div>
 
+      <div className="mt-5 flex flex-wrap gap-2">
+        {filterLabels.map((item) => (
+          <button
+            key={item.value}
+            className={`focus-ring rounded-full px-3 py-2 text-xs font-bold transition ${
+              filter === item.value ? "bg-[#2d6a4f] text-white" : "bg-[#faf9f6] text-[#2d6a4f] hover:bg-[#d8f3dc]"
+            }`}
+            type="button"
+            onClick={() => setFilter(item.value)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-5 grid gap-3">
-        {events.length === 0 ? (
+        {filteredEvents.length === 0 ? (
           <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
-            Aun no hay actividad auditada en este workspace. Los nuevos eventos apareceran aqui.
+            No hay actividad para este filtro todavia.
           </div>
         ) : (
-          events.map((event) => (
+          filteredEvents.map((event) => (
             <article key={event.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -56,7 +88,7 @@ export function WorkspaceActivityFeed({ events, actorProfiles }: WorkspaceActivi
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
-                    {actorById.get(event.actor_id || "") || "Sistema"} ·{" "}
+                    {actorById.get(event.actor_id || "") || "Sistema"} -{" "}
                     {new Date(event.created_at).toLocaleString("es-ES", {
                       day: "2-digit",
                       month: "2-digit",
@@ -78,4 +110,16 @@ export function WorkspaceActivityFeed({ events, actorProfiles }: WorkspaceActivi
       </div>
     </section>
   );
+}
+
+function getEventFilter(eventType: WorkspaceAuditEventType): ActivityFilter {
+  if (eventType.startsWith("document")) {
+    return "documents";
+  }
+
+  if (eventType.startsWith("template")) {
+    return "templates";
+  }
+
+  return "team";
 }

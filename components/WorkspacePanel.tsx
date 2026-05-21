@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { PlanBadge } from "@/components/PlanBadge";
 import { WorkspaceActivityFeed } from "@/components/WorkspaceActivityFeed";
 import { WorkspaceMembersManager } from "@/components/WorkspaceMembersManager";
@@ -39,24 +42,42 @@ export function WorkspacePanel({
   notificationActorProfiles,
   documents,
 }: WorkspacePanelProps) {
-  const primaryWorkspace = workspaces[0] || null;
-  const workspaceMembers = primaryWorkspace
-    ? members.filter((member) => member.workspace_id === primaryWorkspace.id)
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(workspaces[0]?.id || "");
+  const selectedWorkspace = useMemo(
+    () => workspaces.find((workspace) => workspace.id === selectedWorkspaceId) || workspaces[0] || null,
+    [selectedWorkspaceId, workspaces],
+  );
+  const currentMembership = selectedWorkspace
+    ? members.find((member) => member.workspace_id === selectedWorkspace.id && member.user_id === profile.id)
+    : null;
+  const workspaceMembers = selectedWorkspace
+    ? members.filter((member) => member.workspace_id === selectedWorkspace.id)
     : [];
-  const workspaceInvitations = primaryWorkspace
-    ? invitations.filter((invitation) => invitation.workspace_id === primaryWorkspace.id)
+  const workspaceInvitations = selectedWorkspace
+    ? invitations.filter((invitation) => invitation.workspace_id === selectedWorkspace.id)
     : [];
-  const workspaceDocuments = primaryWorkspace
-    ? documents.filter((document) => document.workspace_id === primaryWorkspace.id)
+  const workspaceDocuments = selectedWorkspace
+    ? documents.filter((document) => document.workspace_id === selectedWorkspace.id)
     : [];
-  const workspaceAuditEvents = primaryWorkspace
-    ? auditEvents.filter((event) => event.workspace_id === primaryWorkspace.id)
+  const workspaceAuditEvents = selectedWorkspace
+    ? auditEvents.filter((event) => event.workspace_id === selectedWorkspace.id)
     : [];
-  const workspaceNotifications = primaryWorkspace
-    ? notifications.filter((notification) => notification.workspace_id === primaryWorkspace.id)
+  const workspaceNotifications = selectedWorkspace
+    ? notifications.filter((notification) => notification.workspace_id === selectedWorkspace.id)
     : [];
   const personalDocuments = documents.filter((document) => !document.workspace_id);
+  const unreadNotifications = workspaceNotifications.filter((notification) => !notification.read_at).length;
   const isEmpresa = profile.plan === "empresa";
+  const isWorkspaceAdmin = Boolean(currentMembership?.role === "admin" || profile.role === "admin");
+  const canCreateInWorkspace = Boolean(
+    selectedWorkspace && (isWorkspaceAdmin || currentMembership?.can_create_documents),
+  );
+  const canUploadTemplates = Boolean(
+    selectedWorkspace && (isWorkspaceAdmin || currentMembership?.can_upload_templates),
+  );
+  const canInviteMembers = Boolean(
+    selectedWorkspace && (isWorkspaceAdmin || currentMembership?.can_invite_members),
+  );
 
   return (
     <div className="grid gap-6">
@@ -65,22 +86,53 @@ export function WorkspacePanel({
           <div>
             <p className="eyebrow">Workspace</p>
             <h1 className="font-serif-display mt-3 text-4xl font-bold">
-              {primaryWorkspace?.name || "Workspace personal"}
+              {selectedWorkspace?.name || "Workspace personal"}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-              Organiza documentos, miembros y configuración compartida. Esta base permite trabajar con equipos y preparar
-              la capa Empresa sin mezclarla con tus documentos personales.
+              Organiza documentos, miembros, avisos y actividad compartida desde una vista pensada para equipos.
             </p>
           </div>
           <PlanBadge plan={profile.plan} />
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-4">
+        {workspaces.length > 1 && (
+          <div className="mt-6 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-[#2d6a4f]">Cambiar workspace</p>
+                <p className="mt-1 text-xs text-slate-500">Filtra miembros, documentos, avisos y auditoria.</p>
+              </div>
+              <select
+                className="focus-ring min-w-64 rounded-md border border-[#c7ded0] bg-white px-3 py-3 text-sm font-semibold"
+                value={selectedWorkspace?.id || ""}
+                onChange={(event) => setSelectedWorkspaceId(event.target.value)}
+              >
+                {workspaces.map((workspace) => (
+                  <option key={workspace.id} value={workspace.id}>
+                    {workspace.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 grid gap-3 md:grid-cols-5">
           <WorkspaceMetric label="Workspaces" value={workspaces.length.toString()} helper="Accesibles para ti" />
-          <WorkspaceMetric label="Miembros" value={workspaceMembers.length.toString()} helper="En el workspace principal" />
-          <WorkspaceMetric label="Documentos" value={workspaceDocuments.length.toString()} helper="Compartidos en workspace" />
-          <WorkspaceMetric label="Personales" value={personalDocuments.length.toString()} helper="Sin workspace asociado" />
+          <WorkspaceMetric label="Miembros" value={workspaceMembers.length.toString()} helper="En este workspace" />
+          <WorkspaceMetric label="Documentos" value={workspaceDocuments.length.toString()} helper="Compartidos aqui" />
+          <WorkspaceMetric label="Avisos" value={unreadNotifications.toString()} helper="Sin leer" />
+          <WorkspaceMetric label="Personales" value={personalDocuments.length.toString()} helper="Sin workspace" />
         </div>
+
+        {selectedWorkspace && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            <WorkspaceCapability enabled={isWorkspaceAdmin} label="Admin" />
+            <WorkspaceCapability enabled={canCreateInWorkspace} label="Puede generar" />
+            <WorkspaceCapability enabled={canUploadTemplates} label="Puede subir plantillas" />
+            <WorkspaceCapability enabled={canInviteMembers} label="Puede invitar" />
+          </div>
+        )}
 
         {!isEmpresa && (
           <div className="mt-6 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
@@ -99,7 +151,7 @@ export function WorkspacePanel({
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <WorkspaceMembersManager
           profile={profile}
-          workspace={primaryWorkspace}
+          workspace={selectedWorkspace}
           members={workspaceMembers}
           memberProfiles={memberProfiles}
           invitations={workspaceInvitations}
@@ -109,7 +161,10 @@ export function WorkspacePanel({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Documentos</p>
-              <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad del workspace</h2>
+              <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos compartidos</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Ultimos documentos vinculados a este workspace.
+              </p>
             </div>
             <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
               Crear documento
@@ -127,7 +182,7 @@ export function WorkspacePanel({
                   <div>
                     <p className="font-semibold">{document.doc_label}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {document.doc_type} · {new Date(document.created_at).toLocaleDateString("es-ES")}
+                      {document.doc_type} - {new Date(document.created_at).toLocaleDateString("es-ES")}
                     </p>
                   </div>
                   <Link href={`/historial/${document.id}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
@@ -141,7 +196,7 @@ export function WorkspacePanel({
       </div>
 
       <WorkspaceNotificationsPanel
-        workspaceId={primaryWorkspace?.id || null}
+        workspaceId={selectedWorkspace?.id || null}
         notifications={workspaceNotifications}
         actorProfiles={notificationActorProfiles}
       />
@@ -158,6 +213,18 @@ function WorkspaceMetric({ label, value, helper }: { label: string; value: strin
       <p className="mt-2 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
       <p className="mt-1 text-xs text-slate-500">{helper}</p>
     </div>
+  );
+}
+
+function WorkspaceCapability({ enabled, label }: { enabled: boolean; label: string }) {
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-bold ${
+        enabled ? "bg-[#d8f3dc] text-[#2d6a4f]" : "bg-slate-100 text-slate-500"
+      }`}
+    >
+      {label}
+    </span>
   );
 }
 

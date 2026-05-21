@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { WorkspaceMemberProfile, WorkspaceNotificationRow } from "@/lib/supabase-server";
+import type { WorkspaceAuditEventType, WorkspaceMemberProfile, WorkspaceNotificationRow } from "@/lib/supabase-server";
 
 type WorkspaceNotificationsPanelProps = {
   workspaceId: string | null;
@@ -14,6 +14,16 @@ type WorkspaceNotificationsPanelProps = {
 type NotificationApiResponse = {
   message?: string;
 };
+
+type NotificationFilter = "all" | "unread" | "documents" | "templates" | "team";
+
+const filterLabels: Array<{ value: NotificationFilter; label: string }> = [
+  { value: "all", label: "Todo" },
+  { value: "unread", label: "Sin leer" },
+  { value: "documents", label: "Documentos" },
+  { value: "templates", label: "Plantillas" },
+  { value: "team", label: "Equipo" },
+];
 
 export function WorkspaceNotificationsPanel({
   workspaceId,
@@ -28,6 +38,18 @@ export function WorkspaceNotificationsPanel({
     [actorProfiles],
   );
   const unreadCount = notifications.filter((notification) => !notification.read_at).length;
+  const [filter, setFilter] = useState<NotificationFilter>("unread");
+  const filteredNotifications = notifications.filter((notification) => {
+    if (filter === "all") {
+      return true;
+    }
+
+    if (filter === "unread") {
+      return !notification.read_at;
+    }
+
+    return getNotificationFilter(notification.notification_type) === filter;
+  });
 
   async function markAsRead(notificationId?: string) {
     if (!notificationId && !workspaceId) {
@@ -85,13 +107,28 @@ export function WorkspaceNotificationsPanel({
         <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
 
+      <div className="mt-5 flex flex-wrap gap-2">
+        {filterLabels.map((item) => (
+          <button
+            key={item.value}
+            className={`focus-ring rounded-full px-3 py-2 text-xs font-bold transition ${
+              filter === item.value ? "bg-[#2d6a4f] text-white" : "bg-[#faf9f6] text-[#2d6a4f] hover:bg-[#d8f3dc]"
+            }`}
+            type="button"
+            onClick={() => setFilter(item.value)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-5 grid gap-3">
-        {notifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
-            Aun no tienes notificaciones internas. Cuando otro miembro actue en el workspace apareceran aqui.
+            No hay notificaciones para este filtro.
           </div>
         ) : (
-          notifications.map((notification) => {
+          filteredNotifications.map((notification) => {
             const unread = !notification.read_at;
             const actor = notification.actor_id ? actorById.get(notification.actor_id) : null;
             const content = (
@@ -147,4 +184,16 @@ export function WorkspaceNotificationsPanel({
       </div>
     </section>
   );
+}
+
+function getNotificationFilter(notificationType: WorkspaceAuditEventType): NotificationFilter {
+  if (notificationType.startsWith("document")) {
+    return "documents";
+  }
+
+  if (notificationType.startsWith("template")) {
+    return "templates";
+  }
+
+  return "team";
 }
