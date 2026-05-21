@@ -76,6 +76,36 @@ create table if not exists public.workspace_audit_events (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.workspace_notifications (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.workspaces(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  actor_id uuid references auth.users(id) on delete set null,
+  audit_event_id uuid references public.workspace_audit_events(id) on delete cascade,
+  notification_type text not null check (
+    notification_type in (
+      'document_created',
+      'document_deleted',
+      'documents_cleared',
+      'template_uploaded',
+      'template_processed',
+      'template_updated',
+      'template_deleted',
+      'member_invited',
+      'member_joined',
+      'member_role_updated',
+      'member_permissions_updated',
+      'member_removed',
+      'invitation_revoked'
+    )
+  ),
+  title text not null,
+  body text not null,
+  href text,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.documents (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -233,6 +263,9 @@ on public.workspace_invitations(workspace_id, lower(email))
 where status = 'pending';
 create index if not exists workspace_audit_events_workspace_created_idx on public.workspace_audit_events(workspace_id, created_at desc);
 create index if not exists workspace_audit_events_actor_idx on public.workspace_audit_events(actor_id, created_at desc);
+create index if not exists workspace_notifications_user_created_idx on public.workspace_notifications(user_id, created_at desc);
+create index if not exists workspace_notifications_user_unread_idx on public.workspace_notifications(user_id, read_at) where read_at is null;
+create index if not exists workspace_notifications_workspace_idx on public.workspace_notifications(workspace_id, created_at desc);
 create index if not exists document_templates_user_created_idx on public.document_templates(user_id, created_at desc);
 create index if not exists document_templates_workspace_idx on public.document_templates(workspace_id);
 create index if not exists document_templates_status_idx on public.document_templates(status);
@@ -387,6 +420,7 @@ alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
 alter table public.workspace_invitations enable row level security;
 alter table public.workspace_audit_events enable row level security;
+alter table public.workspace_notifications enable row level security;
 alter table public.documents enable row level security;
 alter table public.document_versions enable row level security;
 alter table public.generation_events enable row level security;
@@ -481,6 +515,19 @@ for select using (public.is_workspace_member(workspace_id) or public.is_admin())
 drop policy if exists "workspace_audit_events_insert_workspace_member_or_admin" on public.workspace_audit_events;
 create policy "workspace_audit_events_insert_workspace_member_or_admin" on public.workspace_audit_events
 for insert with check (public.is_workspace_member(workspace_id) or public.is_admin());
+
+drop policy if exists "workspace_notifications_select_own" on public.workspace_notifications;
+create policy "workspace_notifications_select_own" on public.workspace_notifications
+for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "workspace_notifications_update_own" on public.workspace_notifications;
+create policy "workspace_notifications_update_own" on public.workspace_notifications
+for update using (user_id = auth.uid() or public.is_admin())
+with check (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "workspace_notifications_insert_workspace_member_or_admin" on public.workspace_notifications;
+create policy "workspace_notifications_insert_workspace_member_or_admin" on public.workspace_notifications
+for insert with check ((user_id = auth.uid() and public.is_workspace_member(workspace_id)) or public.is_admin());
 
 drop policy if exists "documents_select_own_workspace_or_admin" on public.documents;
 create policy "documents_select_own_workspace_or_admin" on public.documents

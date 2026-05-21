@@ -9,6 +9,7 @@ import {
   type WorkspaceInvitationRow,
   type WorkspaceMemberProfile,
   type WorkspaceMemberRow,
+  type WorkspaceNotificationRow,
   type WorkspaceRow,
 } from "@/lib/supabase-server";
 
@@ -87,6 +88,28 @@ export default async function WorkspacePage() {
           .in("id", auditActorIds)
           .returns<WorkspaceMemberProfile[]>()
       : { data: [] as WorkspaceMemberProfile[] };
+  const { data: notifications } =
+    workspaceIds.length
+      ? await supabase
+          .from("workspace_notifications")
+          .select("*")
+          .eq("user_id", profile.id)
+          .in("workspace_id", workspaceIds)
+          .order("created_at", { ascending: false })
+          .limit(30)
+          .returns<WorkspaceNotificationRow[]>()
+      : { data: [] as WorkspaceNotificationRow[] };
+  const notificationActorIds = Array.from(
+    new Set((notifications || []).map((notification) => notification.actor_id).filter((id): id is string => Boolean(id))),
+  );
+  const { data: notificationActorProfiles } =
+    serviceClient && notificationActorIds.length
+      ? await serviceClient
+          .from("profiles")
+          .select("id,email")
+          .in("id", notificationActorIds)
+          .returns<WorkspaceMemberProfile[]>()
+      : { data: [] as WorkspaceMemberProfile[] };
 
   return (
     <section className="container-page py-10">
@@ -98,6 +121,8 @@ export default async function WorkspacePage() {
         invitations={invitations || []}
         auditEvents={auditEvents || []}
         auditActorProfiles={auditActorProfiles || []}
+        notifications={notifications || []}
+        notificationActorProfiles={notificationActorProfiles || []}
         documents={documents || []}
       />
     </section>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PlanBadge } from "@/components/PlanBadge";
 import { WorkspaceActivityFeed } from "@/components/WorkspaceActivityFeed";
 import { WorkspaceMembersManager } from "@/components/WorkspaceMembersManager";
+import { WorkspaceNotificationsPanel } from "@/components/WorkspaceNotificationsPanel";
 import type {
   DocumentRow,
   Profile,
@@ -9,6 +10,7 @@ import type {
   WorkspaceInvitationRow,
   WorkspaceMemberProfile,
   WorkspaceMemberRow,
+  WorkspaceNotificationRow,
   WorkspaceRow,
 } from "@/lib/supabase-server";
 
@@ -20,6 +22,8 @@ type WorkspacePanelProps = {
   invitations: WorkspaceInvitationRow[];
   auditEvents: WorkspaceAuditEventRow[];
   auditActorProfiles: WorkspaceMemberProfile[];
+  notifications: WorkspaceNotificationRow[];
+  notificationActorProfiles: WorkspaceMemberProfile[];
   documents: Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[];
 };
 
@@ -31,6 +35,8 @@ export function WorkspacePanel({
   invitations,
   auditEvents,
   auditActorProfiles,
+  notifications,
+  notificationActorProfiles,
   documents,
 }: WorkspacePanelProps) {
   const primaryWorkspace = workspaces[0] || null;
@@ -45,6 +51,9 @@ export function WorkspacePanel({
     : [];
   const workspaceAuditEvents = primaryWorkspace
     ? auditEvents.filter((event) => event.workspace_id === primaryWorkspace.id)
+    : [];
+  const workspaceNotifications = primaryWorkspace
+    ? notifications.filter((notification) => notification.workspace_id === primaryWorkspace.id)
     : [];
   const personalDocuments = documents.filter((document) => !document.workspace_id);
   const isEmpresa = profile.plan === "empresa";
@@ -130,6 +139,12 @@ export function WorkspacePanel({
           </div>
         </section>
       </div>
+
+      <WorkspaceNotificationsPanel
+        workspaceId={primaryWorkspace?.id || null}
+        notifications={workspaceNotifications}
+        actorProfiles={notificationActorProfiles}
+      />
 
       <WorkspaceActivityFeed events={workspaceAuditEvents} actorProfiles={auditActorProfiles} />
     </div>

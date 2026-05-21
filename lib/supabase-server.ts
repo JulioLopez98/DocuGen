@@ -123,6 +123,20 @@ export type WorkspaceAuditEventRow = {
   created_at: string;
 };
 
+export type WorkspaceNotificationRow = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  actor_id: string | null;
+  audit_event_id: string | null;
+  notification_type: WorkspaceAuditEventType;
+  title: string;
+  body: string;
+  href: string | null;
+  read_at: string | null;
+  created_at: string;
+};
+
 export type DocumentTemplateStatus = "uploaded" | "processing" | "ready" | "failed";
 
 export type DocumentTemplateRow = {
