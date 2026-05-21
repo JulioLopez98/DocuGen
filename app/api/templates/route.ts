@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canUseWorkspace } from "@/lib/workspace-access";
 
 const TEMPLATE_BUCKET = "document-templates";
@@ -113,6 +114,20 @@ export async function POST(request: Request) {
       console.error("template_create_error", error);
       return errorResponse(500, "template_create_failed", "No se pudo guardar la plantilla.");
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: workspaceAccess.workspaceId,
+      actorId: user.id,
+      eventType: "template_uploaded",
+      targetType: "template",
+      targetId: data.id,
+      summary: `Subio la plantilla ${data.name}`,
+      metadata: {
+        fileType: data.file_type,
+        originalFilename: data.original_filename,
+      },
+    });
 
     return NextResponse.json({ template: data }, { status: 201 });
   } catch (error) {

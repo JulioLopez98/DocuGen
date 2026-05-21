@@ -6,6 +6,7 @@ import {
   type WorkspaceInvitationRow,
   type WorkspaceMemberRow,
 } from "@/lib/supabase-server";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { hashInvitationToken } from "@/lib/workspace-invitations";
 
 const acceptInvitationSchema = z.object({
@@ -87,6 +88,19 @@ export async function POST(request: Request) {
     if (updateError) {
       console.error("workspace_invitation_accept_update_error", updateError);
     }
+
+    await recordWorkspaceAuditEvent({
+      workspaceId: invitation.workspace_id,
+      actorId: user.id,
+      eventType: "member_joined",
+      targetType: "member",
+      targetId: member.id,
+      summary: `${user.email} acepto la invitacion`,
+      metadata: {
+        role: invitation.role,
+        invitationId: invitation.id,
+      },
+    });
 
     return NextResponse.json({ member, workspaceId: invitation.workspace_id });
   } catch (error) {

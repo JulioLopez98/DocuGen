@@ -6,6 +6,7 @@ import {
   type DocumentTemplateRow,
   type Profile,
 } from "@/lib/supabase-server";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canUseWorkspace } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
@@ -69,6 +70,19 @@ export async function DELETE(_request: Request, { params }: Params) {
       return errorResponse(500, "template_delete_failed", "No se pudo borrar la plantilla.");
     }
 
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: access.template.workspace_id,
+      actorId: user.id,
+      eventType: "template_deleted",
+      targetType: "template",
+      targetId: access.template.id,
+      summary: `Borro la plantilla ${access.template.name}`,
+      metadata: {
+        originalFilename: access.template.original_filename,
+      },
+    });
+
     return NextResponse.json({ deleted: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -125,6 +139,20 @@ export async function PATCH(request: Request, { params }: Params) {
       console.error("template_update_error", updateError);
       return errorResponse(404, "template_not_found", "No se encontro la plantilla.");
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: template.workspace_id,
+      actorId: user.id,
+      eventType: "template_updated",
+      targetType: "template",
+      targetId: template.id,
+      summary: `Actualizo la plantilla ${template.name}`,
+      metadata: {
+        changedFavorite: payload.isFavorite !== undefined,
+        changedVariables: payload.variables !== undefined,
+      },
+    });
 
     return NextResponse.json({ template });
   } catch (error) {

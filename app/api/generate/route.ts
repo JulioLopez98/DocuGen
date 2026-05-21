@@ -6,6 +6,7 @@ import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limi
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import type { TemplateUsageMode } from "@/lib/template-usage";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canUseWorkspace } from "@/lib/workspace-access";
 
 const errorResponse = (status: number, error: string, message: string) =>
@@ -138,6 +139,21 @@ export async function POST(request: Request) {
     if (updateError) {
       console.error("profile_update_error", updateError);
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: workspaceAccess.workspaceId,
+      actorId: user.id,
+      eventType: "document_created",
+      targetType: "document",
+      targetId: document.id,
+      summary: `Creo ${config.label}`,
+      metadata: {
+        docType: config.type,
+        docLabel: config.label,
+        referenceTemplateId: templateReference?.id || null,
+      },
+    });
 
     await recordGenerationEvent(supabase, user.id);
 

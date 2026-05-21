@@ -14,6 +14,7 @@ import {
   getWorkspaceInvitationUrl,
   hashInvitationToken,
 } from "@/lib/workspace-invitations";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canInviteMembers } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
@@ -124,6 +125,20 @@ export async function POST(request: Request, { params }: Params) {
       role: payload.role,
     });
 
+    await recordWorkspaceAuditEvent({
+      supabase: auth.supabase,
+      workspaceId: auth.workspace.id,
+      actorId: auth.user.id,
+      eventType: "member_invited",
+      targetType: "invitation",
+      targetId: invitation.id,
+      summary: `Invito a ${payload.email}`,
+      metadata: {
+        role: payload.role,
+        resent: Boolean(pendingInvitation),
+      },
+    });
+
     return NextResponse.json({ invitation }, { status: pendingInvitation ? 200 : 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -163,6 +178,19 @@ export async function DELETE(request: Request, { params }: Params) {
       console.error("workspace_invitation_revoke_error", updateError);
       return errorResponse(404, "invitation_not_found", "No se encontro una invitacion pendiente.");
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase: auth.supabase,
+      workspaceId: auth.workspace.id,
+      actorId: auth.user.id,
+      eventType: "invitation_revoked",
+      targetType: "invitation",
+      targetId: invitation.id,
+      summary: `Revoco la invitacion a ${invitation.email}`,
+      metadata: {
+        role: invitation.role,
+      },
+    });
 
     return NextResponse.json({ invitation });
   } catch (error) {

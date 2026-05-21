@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { PlanBadge } from "@/components/PlanBadge";
+import { WorkspaceActivityFeed } from "@/components/WorkspaceActivityFeed";
 import { WorkspaceMembersManager } from "@/components/WorkspaceMembersManager";
 import type {
   DocumentRow,
   Profile,
+  WorkspaceAuditEventRow,
   WorkspaceInvitationRow,
   WorkspaceMemberProfile,
   WorkspaceMemberRow,
@@ -16,6 +18,8 @@ type WorkspacePanelProps = {
   members: WorkspaceMemberRow[];
   memberProfiles: WorkspaceMemberProfile[];
   invitations: WorkspaceInvitationRow[];
+  auditEvents: WorkspaceAuditEventRow[];
+  auditActorProfiles: WorkspaceMemberProfile[];
   documents: Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[];
 };
 
@@ -25,6 +29,8 @@ export function WorkspacePanel({
   members,
   memberProfiles,
   invitations,
+  auditEvents,
+  auditActorProfiles,
   documents,
 }: WorkspacePanelProps) {
   const primaryWorkspace = workspaces[0] || null;
@@ -36,6 +42,9 @@ export function WorkspacePanel({
     : [];
   const workspaceDocuments = primaryWorkspace
     ? documents.filter((document) => document.workspace_id === primaryWorkspace.id)
+    : [];
+  const workspaceAuditEvents = primaryWorkspace
+    ? auditEvents.filter((event) => event.workspace_id === primaryWorkspace.id)
     : [];
   const personalDocuments = documents.filter((document) => !document.workspace_id);
   const isEmpresa = profile.plan === "empresa";
@@ -121,6 +130,8 @@ export function WorkspacePanel({
           </div>
         </section>
       </div>
+
+      <WorkspaceActivityFeed events={workspaceAuditEvents} actorProfiles={auditActorProfiles} />
     </div>
   );
 }

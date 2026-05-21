@@ -11,6 +11,7 @@ import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limi
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import { defaultTemplateUsageMode } from "@/lib/template-usage";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canUseWorkspace } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
@@ -161,6 +162,20 @@ export async function POST(request: Request, { params }: Params) {
     if (updateError) {
       console.error("template_direct_profile_update_error", updateError);
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: template.workspace_id,
+      actorId: user.id,
+      eventType: "document_created",
+      targetType: "document",
+      targetId: document.id,
+      summary: `Creo un documento desde ${template.name}`,
+      metadata: {
+        templateId: template.id,
+        templateName: template.name,
+      },
+    });
 
     await recordGenerationEvent(supabase, user.id);
 

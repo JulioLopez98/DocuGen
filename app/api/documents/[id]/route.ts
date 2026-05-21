@@ -6,7 +6,8 @@ import {
   insertDocumentVersions,
   type DocumentVersionInsert,
 } from "@/lib/document-versions";
-import { createSupabaseServiceClient, requireUser } from "@/lib/supabase-server";
+import { createSupabaseServiceClient, requireUser, type DocumentRow } from "@/lib/supabase-server";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 
 const documentUpdateSchema = z.object({
   content: z.string().trim().min(1).max(100000),
@@ -141,11 +142,32 @@ export async function DELETE(_request: Request, { params }: Params) {
     }
 
     const db = createSupabaseServiceClient() || supabase;
+    const { data: document } = await db
+      .from("documents")
+      .select("*")
+      .eq("id", params.id)
+      .eq("user_id", user.id)
+      .maybeSingle<DocumentRow>();
     const { error } = await db.from("documents").delete().eq("id", params.id).eq("user_id", user.id);
 
     if (error) {
       console.error("document_delete_error", error);
       return errorResponse(500, "delete_failed", "No se pudo borrar el documento.");
+    }
+
+    if (document) {
+      await recordWorkspaceAuditEvent({
+        supabase,
+        workspaceId: document.workspace_id,
+        actorId: user.id,
+        eventType: "document_deleted",
+        targetType: "document",
+        targetId: document.id,
+        summary: `Borro ${document.doc_label}`,
+        metadata: {
+          docType: document.doc_type,
+        },
+      });
     }
 
     return NextResponse.json({ deleted: true });

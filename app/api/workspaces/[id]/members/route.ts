@@ -7,6 +7,7 @@ import {
   type WorkspaceMemberRow,
   type WorkspaceRow,
 } from "@/lib/supabase-server";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -90,6 +91,20 @@ export async function POST(request: Request, { params }: Params) {
       );
     }
 
+    await recordWorkspaceAuditEvent({
+      supabase: auth.supabase,
+      workspaceId: auth.workspace.id,
+      actorId: auth.user.id,
+      eventType: "member_joined",
+      targetType: "member",
+      targetId: member.id,
+      summary: `Anadio a ${targetProfile.email || "un miembro"}`,
+      metadata: {
+        role: member.role,
+        userId: targetProfile.id,
+      },
+    });
+
     return NextResponse.json({ member, profile: { id: targetProfile.id, email: targetProfile.email } }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -153,6 +168,26 @@ export async function PATCH(request: Request, { params }: Params) {
       return errorResponse(500, "member_update_failed", "No se pudo actualizar el miembro.");
     }
 
+    await recordWorkspaceAuditEvent({
+      supabase: auth.supabase,
+      workspaceId: auth.workspace.id,
+      actorId: auth.user.id,
+      eventType: payload.role ? "member_role_updated" : "member_permissions_updated",
+      targetType: "member",
+      targetId: member.id,
+      summary: payload.role ? "Actualizo el rol de un miembro" : "Actualizo permisos de un miembro",
+      metadata: {
+        memberUserId: member.user_id,
+        role: member.role,
+        permissions: {
+          canCreateDocuments: member.can_create_documents,
+          canUploadTemplates: member.can_upload_templates,
+          canManageTemplates: member.can_manage_templates,
+          canInviteMembers: member.can_invite_members,
+        },
+      },
+    });
+
     return NextResponse.json({ member });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -199,6 +234,20 @@ export async function DELETE(request: Request, { params }: Params) {
       console.error("workspace_member_delete_error", deleteError);
       return errorResponse(500, "member_delete_failed", "No se pudo quitar el miembro.");
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase: auth.supabase,
+      workspaceId: auth.workspace.id,
+      actorId: auth.user.id,
+      eventType: "member_removed",
+      targetType: "member",
+      targetId: memberToDelete.id,
+      summary: "Quito un miembro del workspace",
+      metadata: {
+        memberUserId: memberToDelete.user_id,
+        role: memberToDelete.role,
+      },
+    });
 
     return NextResponse.json({ deleted: true });
   } catch (error) {

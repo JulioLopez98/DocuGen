@@ -96,6 +96,33 @@ export type WorkspaceInvitationRow = {
   updated_at: string;
 };
 
+export type WorkspaceAuditEventType =
+  | "document_created"
+  | "document_deleted"
+  | "documents_cleared"
+  | "template_uploaded"
+  | "template_processed"
+  | "template_updated"
+  | "template_deleted"
+  | "member_invited"
+  | "member_joined"
+  | "member_role_updated"
+  | "member_permissions_updated"
+  | "member_removed"
+  | "invitation_revoked";
+
+export type WorkspaceAuditEventRow = {
+  id: string;
+  workspace_id: string;
+  actor_id: string | null;
+  event_type: WorkspaceAuditEventType;
+  target_type: string | null;
+  target_id: string | null;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
 export type DocumentTemplateStatus = "uploaded" | "processing" | "ready" | "failed";
 
 export type DocumentTemplateRow = {

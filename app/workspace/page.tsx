@@ -5,6 +5,7 @@ import {
   createSupabaseServiceClient,
   getCurrentProfile,
   type DocumentRow,
+  type WorkspaceAuditEventRow,
   type WorkspaceInvitationRow,
   type WorkspaceMemberProfile,
   type WorkspaceMemberRow,
@@ -52,7 +53,6 @@ export default async function WorkspacePage() {
   const { data: documents } = await supabase
     .from("documents")
     .select("id,doc_type,doc_label,workspace_id,created_at")
-    .eq("user_id", profile.id)
     .order("created_at", { ascending: false })
     .limit(40)
     .returns<Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[]>();
@@ -66,6 +66,27 @@ export default async function WorkspacePage() {
           .order("created_at", { ascending: false })
           .returns<WorkspaceInvitationRow[]>()
       : { data: [] as WorkspaceInvitationRow[] };
+  const { data: auditEvents } =
+    workspaceIds.length
+      ? await supabase
+          .from("workspace_audit_events")
+          .select("*")
+          .in("workspace_id", workspaceIds)
+          .order("created_at", { ascending: false })
+          .limit(40)
+          .returns<WorkspaceAuditEventRow[]>()
+      : { data: [] as WorkspaceAuditEventRow[] };
+  const auditActorIds = Array.from(
+    new Set((auditEvents || []).map((event) => event.actor_id).filter((id): id is string => Boolean(id))),
+  );
+  const { data: auditActorProfiles } =
+    serviceClient && auditActorIds.length
+      ? await serviceClient
+          .from("profiles")
+          .select("id,email")
+          .in("id", auditActorIds)
+          .returns<WorkspaceMemberProfile[]>()
+      : { data: [] as WorkspaceMemberProfile[] };
 
   return (
     <section className="container-page py-10">
@@ -75,6 +96,8 @@ export default async function WorkspacePage() {
         members={allMembers || []}
         memberProfiles={memberProfiles || []}
         invitations={invitations || []}
+        auditEvents={auditEvents || []}
+        auditActorProfiles={auditActorProfiles || []}
         documents={documents || []}
       />
     </section>

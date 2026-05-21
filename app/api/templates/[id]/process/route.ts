@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { processTemplateFile } from "@/lib/template-processing";
 import { createSupabaseServiceClient, requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
+import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canUseWorkspace } from "@/lib/workspace-access";
 
 const paramsSchema = z.object({
@@ -103,6 +104,20 @@ export async function POST(_request: Request, { params }: Params) {
       console.error("template_process_update_error", updateError);
       return errorResponse(500, "template_process_failed", "No se pudo guardar el resultado del procesamiento.");
     }
+
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: template.workspace_id,
+      actorId: user.id,
+      eventType: "template_processed",
+      targetType: "template",
+      targetId: template.id,
+      summary: `Proceso la plantilla ${template.name}`,
+      metadata: {
+        status: result.status,
+        words: result.text ? result.text.trim().split(/\s+/).filter(Boolean).length : 0,
+      },
+    });
 
     return NextResponse.json({ template: updatedTemplate });
   } catch (error) {
