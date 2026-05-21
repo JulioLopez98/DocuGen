@@ -9,16 +9,21 @@ type PricingCardsProps = {
 };
 
 export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<"pro" | "empresa" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const isPro = currentPlan === "pro" || currentPlan === "empresa";
+  const isPro = currentPlan === "pro";
+  const isEmpresa = currentPlan === "empresa";
 
-  async function startCheckout() {
-    setLoading(true);
+  async function startCheckout(plan: "pro" | "empresa") {
+    setLoading(plan);
     setError(null);
 
     try {
-      const response = await fetch("/api/create-checkout", { method: "POST" });
+      const response = await fetch("/api/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
       const payload = (await response.json()) as { url?: string; message?: string };
 
       if (!response.ok || !payload.url) {
@@ -30,7 +35,7 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
     } catch {
       setError("No se pudo conectar con Stripe.");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   }
 
@@ -65,27 +70,30 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
         "Modelo premium configurado para planes de pago",
         "Gestion de suscripcion desde Stripe",
       ],
-      action: isPro ? "Plan actual" : loading ? "Conectando..." : "Actualizar a Pro",
-      onClick: isPro ? undefined : startCheckout,
-      href: isPro ? "/dashboard" : undefined,
+      action: isPro ? "Plan actual" : loading === "pro" ? "Conectando..." : isEmpresa ? "Incluido en Empresa" : "Actualizar a Pro",
+      onClick: isPro || isEmpresa ? undefined : () => startCheckout("pro"),
+      href: isPro || isEmpresa ? "/dashboard" : undefined,
       highlighted: true,
-      disabled: isPro,
+      disabled: isPro || isEmpresa,
       badge: "Mas recomendable",
     },
     {
       name: "Empresa",
       price: "39 EUR",
       cadence: "al mes",
-      description: "Preparado para equipos, workspaces y uso compartido en fases posteriores.",
+      description: "Para equipos que necesitan roles, workspace compartido y biblioteca documental de empresa.",
       features: [
-        "Workspaces preparados",
-        "Roles de equipo",
+        "Todo lo incluido en Pro",
+        "Workspaces de equipo",
+        "Roles avanzados: Admin, Editor, Miembro y Solo lectura",
         "Biblioteca documental de empresa",
-        "Arquitectura multiusuario",
-        "Price ID listo en Stripe",
+        "Actividad, auditoria y notificaciones internas",
+        "Preparado para colaboracion multiusuario",
       ],
-      action: "Proximamente",
-      disabled: true,
+      action: isEmpresa ? "Plan actual" : loading === "empresa" ? "Conectando..." : "Actualizar a Empresa",
+      onClick: isEmpresa ? undefined : () => startCheckout("empresa"),
+      href: isEmpresa ? "/workspace" : undefined,
+      disabled: isEmpresa,
     },
   ];
 
@@ -131,7 +139,7 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
               <button
                 type="button"
                 onClick={card.onClick}
-                disabled={loading || card.disabled}
+                disabled={loading !== null || card.disabled}
                 className="focus-ring btn-primary mt-6 w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {card.action}

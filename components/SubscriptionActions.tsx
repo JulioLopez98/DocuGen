@@ -12,12 +12,17 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
   const [loading, setLoading] = useState<string | null>(null);
   const isPaid = plan !== "free";
 
-  async function go(endpoint: "/api/create-checkout" | "/api/create-portal") {
-    setLoading(endpoint);
+  async function go(endpoint: "/api/create-checkout" | "/api/create-portal", targetPlan?: "pro" | "empresa") {
+    const loadingKey = targetPlan ? `${endpoint}:${targetPlan}` : endpoint;
+    setLoading(loadingKey);
     setError(null);
 
     try {
-      const response = await fetch(endpoint, { method: "POST" });
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: targetPlan ? { "Content-Type": "application/json" } : undefined,
+        body: targetPlan ? JSON.stringify({ plan: targetPlan }) : undefined,
+      });
       const payload = (await response.json()) as { url?: string; message?: string };
 
       if (!response.ok || !payload.url) {
@@ -38,11 +43,21 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
       {!isPaid && (
         <button
           type="button"
-          onClick={() => go("/api/create-checkout")}
+          onClick={() => go("/api/create-checkout", "pro")}
           disabled={loading !== null}
           className="focus-ring btn-primary px-4 py-2 text-sm disabled:opacity-60"
         >
-          {loading === "/api/create-checkout" ? "Conectando..." : "Actualizar a Pro"}
+          {loading === "/api/create-checkout:pro" ? "Conectando..." : "Actualizar a Pro"}
+        </button>
+      )}
+      {plan !== "empresa" && (
+        <button
+          type="button"
+          onClick={() => go("/api/create-checkout", "empresa")}
+          disabled={loading !== null}
+          className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
+        >
+          {loading === "/api/create-checkout:empresa" ? "Conectando..." : "Actualizar a Empresa"}
         </button>
       )}
       {isPaid && hasCustomer && (

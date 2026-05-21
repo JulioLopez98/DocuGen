@@ -8,14 +8,14 @@ import { createSupabaseServerClient, type Profile } from "@/lib/supabase-server"
 export const metadata: Metadata = {
   title: "Precios de DocuGen",
   description:
-    "Compara DocuGen Free y Pro. Empieza con 3 documentos gratis al mes y desbloquea documentos ilimitados, Word y marca personalizada con Pro.",
+    "Compara DocuGen Free, Pro y Empresa. Empieza gratis y desbloquea documentos ilimitados, Word, marca personalizada y workspaces de equipo.",
   alternates: {
     canonical: "/precios",
   },
   openGraph: {
-    title: "Precios de DocuGen | Free y Pro",
+    title: "Precios de DocuGen | Free, Pro y Empresa",
     description:
-      "Empieza gratis y actualiza a Pro cuando necesites documentos ilimitados, exportacion Word y marca personalizada.",
+      "Empieza gratis y actualiza a Pro o Empresa cuando necesites documentos ilimitados, Word, marca personalizada y trabajo en equipo.",
     url: "/precios",
     type: "website",
   },
@@ -24,14 +24,14 @@ export const metadata: Metadata = {
 type DocumentTypeItem = (typeof documentTypes)[number];
 
 const comparisonRows = [
-  { label: "Documentos al mes", free: "3", pro: "Ilimitados" },
-  { label: "Plantillas disponibles", free: "Esenciales", pro: "Catalogo completo + Pro" },
-  { label: "Exportacion", free: "PDF y TXT", pro: "PDF, TXT y Word" },
-  { label: "Marca personalizada", free: "No incluida", pro: "Logo y datos de empresa" },
-  { label: "Biblioteca de plantillas", free: "No incluida", pro: "Preparada para Pro" },
-  { label: "Modelo IA", free: "Modelo estandar", pro: "Modelo premium configurado" },
-  { label: "Historial", free: "Basico", pro: "Completo, reutilizable y descargable" },
-  { label: "Suscripcion", free: "Sin tarjeta", pro: "Gestion desde portal Stripe" },
+  { label: "Documentos al mes", free: "3", pro: "Ilimitados", empresa: "Ilimitados" },
+  { label: "Plantillas disponibles", free: "Esenciales", pro: "Catalogo completo + Pro", empresa: "Catalogo + biblioteca de equipo" },
+  { label: "Exportacion", free: "PDF y TXT", pro: "PDF, TXT y Word", empresa: "PDF, TXT y Word" },
+  { label: "Marca personalizada", free: "No incluida", pro: "Logo y datos de empresa", empresa: "Marca compartida de empresa" },
+  { label: "Workspaces", free: "No incluido", pro: "Personal", empresa: "Equipo y roles" },
+  { label: "Roles", free: "No incluido", pro: "Usuario unico", empresa: "Admin, Editor, Miembro y Solo lectura" },
+  { label: "Actividad y avisos", free: "No incluido", pro: "Personal", empresa: "Auditoria y notificaciones internas" },
+  { label: "Suscripcion", free: "Sin tarjeta", pro: "Gestion desde portal Stripe", empresa: "Gestion desde portal Stripe" },
 ];
 
 const faqs = [
@@ -86,7 +86,7 @@ export default async function PricingPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600">
               Empieza gratis, crea tus primeros borradores y pasa a Pro cuando necesites volumen, documentos avanzados,
-              Word y marca profesional en tus entregas.
+              Word, marca profesional y trabajo en equipo cuando lo necesites.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href={user ? "/generar" : "/auth"} className="focus-ring btn-primary px-5 py-3 text-sm">
@@ -111,7 +111,7 @@ export default async function PricingPage() {
                 { value: documentTypes.length.toString(), label: "tipos de documento" },
                 { value: "3", label: "gratis al mes" },
                 { value: "Word", label: "incluido en Pro" },
-                { value: "9 EUR", label: "al mes" },
+                { value: "39 EUR", label: "Empresa al mes" },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-md border border-[#d8f3dc] bg-[#faf9f6]/78 p-4">
                   <p className="font-serif-display text-3xl font-bold text-[#2d6a4f]">{stat.value}</p>
@@ -120,8 +120,8 @@ export default async function PricingPage() {
               ))}
             </div>
             <div className="mt-5 rounded-md bg-[#d8f3dc]/60 p-4 text-sm leading-6">
-              Free es perfecto para probar. Pro esta pensado para quien prepara contratos, presupuestos, cartas,
-              politicas web o documentos internos de forma recurrente.
+              Free es perfecto para probar. Pro esta pensado para uso recurrente. Empresa suma workspaces, roles,
+              auditoria y colaboracion interna.
             </div>
           </div>
         </div>
@@ -138,20 +138,22 @@ export default async function PricingPage() {
             <h2 className="font-serif-display mt-3 text-4xl font-bold">Lo importante, sin rodeos</h2>
           </div>
           <div className="overflow-x-auto rounded-md border border-[#d8f3dc] bg-white/80">
-            <div className="min-w-[680px]">
-              <div className="grid grid-cols-[1.1fr_0.9fr_0.9fr] border-b border-[#d8f3dc] bg-[#faf9f6] text-sm font-bold">
+            <div className="min-w-[860px]">
+              <div className="grid grid-cols-[1.1fr_0.8fr_0.9fr_1fr] border-b border-[#d8f3dc] bg-[#faf9f6] text-sm font-bold">
                 <div className="p-4">Caracteristica</div>
                 <div className="p-4">Free</div>
                 <div className="p-4 text-[#2d6a4f]">Pro</div>
+                <div className="p-4 text-[#2d6a4f]">Empresa</div>
               </div>
               {comparisonRows.map((row) => (
                 <div
                   key={row.label}
-                  className="grid grid-cols-[1.1fr_0.9fr_0.9fr] border-b border-[#d8f3dc] text-sm last:border-0"
+                  className="grid grid-cols-[1.1fr_0.8fr_0.9fr_1fr] border-b border-[#d8f3dc] text-sm last:border-0"
                 >
                   <div className="p-4 font-semibold">{row.label}</div>
                   <div className="p-4 text-slate-600">{row.free}</div>
                   <div className="p-4 font-semibold text-[#2d6a4f]">{row.pro}</div>
+                  <div className="p-4 font-semibold text-[#2d6a4f]">{row.empresa}</div>
                 </div>
               ))}
             </div>
