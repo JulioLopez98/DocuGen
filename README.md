@@ -588,6 +588,12 @@ La fase 11.8 añade limpieza y retencion de logs:
 - SQL incremental: `supabase-log-retention.sql`.
 - Informe disponible en `docs/log-retention.md`.
 
+La fase 11.9 cierra QA de seguridad y operaciones:
+
+- Checklist completa para admin, health checks, alertas, logs, RLS, service role y flujos criticos.
+- Archivo rapido: `SECURITY_OPERATIONS_QA.md`.
+- Guia completa: `docs/security-operations-qa.md`.
+
 ## Comandos
 
 ```bash
