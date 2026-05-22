@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { recordSecurityEvent } from "@/lib/security-events";
 
 type RateLimitResult = {
   allowed: boolean;
@@ -23,6 +24,7 @@ type ActionRateLimitOptions = {
   workspaceId?: string | null;
   workspaceLimit?: number;
   windowSeconds?: number;
+  route?: string;
 };
 
 type ActionRateLimitResult = RateLimitResult & {
@@ -71,6 +73,7 @@ export async function checkActionRateLimit({
   workspaceId,
   workspaceLimit,
   windowSeconds = 60 * 60,
+  route,
 }: ActionRateLimitOptions): Promise<ActionRateLimitResult> {
   const since = new Date(Date.now() - windowSeconds * 1000).toISOString();
   const userCount = await countRateLimitEvents(supabase, {
@@ -84,6 +87,16 @@ export async function checkActionRateLimit({
   }
 
   if (userCount >= userLimit) {
+    await recordRateLimitBlockedEvent(supabase, {
+      userId,
+      workspaceId,
+      action,
+      route,
+      scope: "user",
+      limit: userLimit,
+      windowSeconds,
+    });
+
     return {
       allowed: false,
       remaining: 0,
@@ -104,6 +117,16 @@ export async function checkActionRateLimit({
     }
 
     if (workspaceCount >= workspaceLimit) {
+      await recordRateLimitBlockedEvent(supabase, {
+        userId,
+        workspaceId,
+        action,
+        route,
+        scope: "workspace",
+        limit: workspaceLimit,
+        windowSeconds,
+      });
+
       return {
         allowed: false,
         remaining: 0,
@@ -191,4 +214,43 @@ function allowFallback(remaining: number, retryAfterSeconds: number): ActionRate
     scope: null,
     retryAfterSeconds,
   };
+}
+
+async function recordRateLimitBlockedEvent(
+  supabase: SupabaseClient,
+  {
+    userId,
+    workspaceId,
+    action,
+    route,
+    scope,
+    limit,
+    windowSeconds,
+  }: {
+    userId: string;
+    workspaceId?: string | null;
+    action: RateLimitAction;
+    route?: string;
+    scope: "user" | "workspace";
+    limit: number;
+    windowSeconds: number;
+  },
+) {
+  await recordSecurityEvent(supabase, {
+    userId,
+    workspaceId: workspaceId || null,
+    eventType: "rate_limit_blocked",
+    severity: scope === "workspace" ? "high" : "medium",
+    route: route || action,
+    summary:
+      scope === "workspace"
+        ? `Workspace bloqueado por limite de ${action}`
+        : `Usuario bloqueado por limite de ${action}`,
+    metadata: {
+      action,
+      scope,
+      limit,
+      windowSeconds,
+    },
+  });
 }

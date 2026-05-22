@@ -157,6 +157,18 @@ create table if not exists public.rate_limit_events (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.security_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  workspace_id uuid references public.workspaces(id) on delete set null,
+  event_type text not null,
+  severity text not null default 'medium' check (severity in ('low', 'medium', 'high')),
+  route text,
+  summary text not null,
+  metadata jsonb not null default '{}',
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.document_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -266,6 +278,11 @@ create index if not exists rate_limit_events_user_action_created_idx on public.r
 create index if not exists rate_limit_events_workspace_action_created_idx on public.rate_limit_events(workspace_id, action, created_at desc)
 where workspace_id is not null;
 create index if not exists rate_limit_events_cleanup_idx on public.rate_limit_events(created_at);
+create index if not exists security_events_created_idx on public.security_events(created_at desc);
+create index if not exists security_events_severity_idx on public.security_events(severity, created_at desc);
+create index if not exists security_events_user_idx on public.security_events(user_id, created_at desc);
+create index if not exists security_events_workspace_idx on public.security_events(workspace_id, created_at desc)
+where workspace_id is not null;
 create index if not exists document_requests_user_created_idx on public.document_requests(user_id, created_at desc);
 create index if not exists document_requests_status_idx on public.document_requests(status);
 create index if not exists document_requests_generated_document_idx on public.document_requests(generated_document_id);
@@ -486,6 +503,7 @@ alter table public.documents enable row level security;
 alter table public.document_versions enable row level security;
 alter table public.generation_events enable row level security;
 alter table public.rate_limit_events enable row level security;
+alter table public.security_events enable row level security;
 alter table public.document_requests enable row level security;
 alter table public.community_document_types enable row level security;
 alter table public.brand_settings enable row level security;
@@ -694,6 +712,21 @@ for insert with check (
 
 drop policy if exists "rate_limit_events_delete_admin" on public.rate_limit_events;
 create policy "rate_limit_events_delete_admin" on public.rate_limit_events
+for delete using (public.is_admin());
+
+drop policy if exists "security_events_select_admin" on public.security_events;
+create policy "security_events_select_admin" on public.security_events
+for select using (public.is_admin());
+
+drop policy if exists "security_events_insert_own_or_admin" on public.security_events;
+create policy "security_events_insert_own_or_admin" on public.security_events
+for insert with check (
+  public.is_admin()
+  or user_id = auth.uid()
+);
+
+drop policy if exists "security_events_delete_admin" on public.security_events;
+create policy "security_events_delete_admin" on public.security_events
 for delete using (public.is_admin());
 
 drop policy if exists "document_requests_select_own_or_admin" on public.document_requests;

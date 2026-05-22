@@ -547,6 +547,14 @@ La fase 11.3 añade rate limits por accion y workspace:
 - SQL incremental: `supabase-rate-limit-events.sql`.
 - Informe disponible en `docs/rate-limits-anti-abuse.md`.
 
+La fase 11.4 añade logs de seguridad y panel admin:
+
+- Nueva tabla `security_events` para bloqueos por rate limit y eventos sensibles.
+- `/admin` muestra resumen de seguridad, acciones con mas actividad y cambios sensibles de workspaces.
+- Los bloqueos por rate limit se registran automaticamente con severidad.
+- SQL incremental: `supabase-security-events.sql`.
+- Informe disponible en `docs/security-events-admin.md`.
+
 ## Comandos
 
 ```bash

@@ -9,7 +9,10 @@ import {
   getCurrentProfile,
   type CommunityDocumentTypeRow,
   type DocumentRequestRow,
+  type WorkspaceAuditEventRow,
 } from "@/lib/supabase-server";
+import type { RateLimitAction } from "@/lib/rate-limit";
+import type { SecurityEventRow } from "@/lib/security-events";
 
 type AdminProfile = {
   id: string;
@@ -28,6 +31,14 @@ type AdminDocument = {
   model_used: string | null;
   tokens_input: number | null;
   tokens_output: number | null;
+  created_at: string;
+};
+
+type AdminRateLimitEvent = {
+  id: string;
+  user_id: string;
+  workspace_id: string | null;
+  action: RateLimitAction;
   created_at: string;
 };
 
@@ -72,6 +83,9 @@ export default async function AdminPage() {
     events24Result,
     requestsResult,
     communityTypesResult,
+    rateLimitEventsResult,
+    securityEventsResult,
+    auditEventsResult,
   ] = await Promise.all([
     adminClient.from("profiles").select("id,email,plan,role,docs_this_month,created_at").order("created_at", { ascending: false }).returns<AdminProfile[]>(),
     adminClient.from("documents").select("id,user_id,doc_type,doc_label,model_used,tokens_input,tokens_output,created_at").order("created_at", { ascending: false }).limit(200).returns<AdminDocument[]>(),
@@ -82,18 +96,38 @@ export default async function AdminPage() {
     adminClient.from("generation_events").select("id", { count: "exact", head: true }).gte("created_at", new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()),
     adminClient.from("document_requests").select("*").order("created_at", { ascending: false }).limit(30).returns<DocumentRequestRow[]>(),
     adminClient.from("community_document_types").select("*").order("created_at", { ascending: false }).limit(20).returns<CommunityDocumentTypeRow[]>(),
+    adminClient
+      .from("rate_limit_events")
+      .select("id,user_id,workspace_id,action,created_at")
+      .order("created_at", { ascending: false })
+      .limit(80)
+      .returns<AdminRateLimitEvent[]>(),
+    adminClient.from("security_events").select("*").order("created_at", { ascending: false }).limit(40).returns<SecurityEventRow[]>(),
+    adminClient
+      .from("workspace_audit_events")
+      .select("*")
+      .in("event_type", ["member_invited", "member_role_updated", "member_permissions_updated", "member_removed", "invitation_revoked"])
+      .order("created_at", { ascending: false })
+      .limit(40)
+      .returns<WorkspaceAuditEventRow[]>(),
   ]);
 
   const profiles = profilesResult.data || [];
   const documents = documentsResult.data || [];
   const documentRequests = requestsResult.data || [];
   const communityTypes = communityTypesResult.data || [];
+  const rateLimitEvents = rateLimitEventsResult.data || [];
+  const securityEvents = securityEventsResult.data || [];
+  const sensitiveAuditEvents = auditEventsResult.data || [];
   const planCounts = countPlans(profiles);
   const estimatedMrr = planCounts.pro * 9 + planCounts.empresa * 39;
   const popularTypes = getPopularTypes(documents).slice(0, 8);
   const recentDocuments = documents.slice(0, 8);
   const recentUsers = profiles.slice(0, 6);
   const totalTokens = documents.reduce((sum, doc) => sum + (doc.tokens_input || 0) + (doc.tokens_output || 0), 0);
+  const profileById = new Map(profiles.map((item) => [item.id, item]));
+  const rateLimitSummary = getRateLimitSummary(rateLimitEvents);
+  const highSeverityCount = securityEvents.filter((event) => event.severity === "high").length;
 
   return (
     <section className="container-page py-10">
@@ -121,6 +155,67 @@ export default async function AdminPage() {
         <MetricCard label="Documentos" value={(totalDocumentsResult.count || 0).toString()} helper={`${docs30Result.count || 0} en 30 dias`} />
         <MetricCard label="Eventos 24h" value={(events24Result.count || 0).toString()} helper="Generaciones registradas" />
       </div>
+
+      <section className="surface mt-4 rounded-md p-6">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="eyebrow">Seguridad</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Eventos sensibles</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Bloqueos por rate limit, actividad sensible de equipos y senales que conviene revisar si aparecen picos.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <SmallStat label="Bloqueos" value={securityEvents.length.toString()} />
+            <SmallStat label="Alta severidad" value={highSeverityCount.toString()} />
+            <SmallStat label="Rate events" value={rateLimitEvents.length.toString()} />
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4">
+            <h3 className="font-serif-display text-2xl font-bold">Acciones con mas actividad</h3>
+            <div className="mt-4 grid gap-3">
+              {rateLimitSummary.map((item) => (
+                <div key={item.action} className="flex items-center justify-between gap-4 rounded-md bg-[#faf9f6] p-3">
+                  <div>
+                    <p className="font-semibold">{formatActionLabel(item.action)}</p>
+                    <p className="mt-1 text-xs text-slate-500">{item.uniqueUsers} usuarios distintos</p>
+                  </div>
+                  <span className="font-serif-display text-2xl font-bold text-[#2d6a4f]">{item.count}</span>
+                </div>
+              ))}
+              {rateLimitSummary.length === 0 && (
+                <EmptyState
+                  eyebrow="Sin senales"
+                  title="No hay eventos de rate limit recientes"
+                  description="Cuando haya actividad suficiente o bloqueos, apareceran aqui por tipo de accion."
+                  variant="flat"
+                  primaryAction={{ href: "/admin", label: "Actualizar panel" }}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4">
+            <h3 className="font-serif-display text-2xl font-bold">Ultimos eventos bloqueados</h3>
+            <div className="mt-4 divide-y divide-[#d8f3dc]">
+              {securityEvents.slice(0, 8).map((event) => (
+                <SecurityEventItem key={event.id} event={event} profile={event.user_id ? profileById.get(event.user_id) : undefined} />
+              ))}
+              {securityEvents.length === 0 && (
+                <EmptyState
+                  eyebrow="Sin bloqueos"
+                  title="Aun no hay eventos de seguridad"
+                  description="Los rate limits bloqueados y futuras senales de abuso se registraran aqui."
+                  variant="flat"
+                  primaryAction={{ href: "/dashboard", label: "Volver al dashboard" }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="surface rounded-md p-6">
@@ -258,6 +353,44 @@ export default async function AdminPage() {
         </div>
       </section>
 
+      <section className="surface mt-4 rounded-md p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="eyebrow">Empresa</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad sensible de workspaces</h2>
+          </div>
+          <Link href="/workspace" className="btn-ghost px-3 py-2 text-sm">
+            Ver workspace
+          </Link>
+        </div>
+        <div className="divide-y divide-[#d8f3dc]">
+          {sensitiveAuditEvents.slice(0, 10).map((event) => (
+            <article key={event.id} className="py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold">{event.summary}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {formatWorkspaceEventLabel(event.event_type)} - {new Date(event.created_at).toLocaleString("es-ES")}
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
+                  {event.actor_id ? profileById.get(event.actor_id)?.email || "Usuario" : "Sistema"}
+                </span>
+              </div>
+            </article>
+          ))}
+          {sensitiveAuditEvents.length === 0 && (
+            <EmptyState
+              eyebrow="Sin cambios sensibles"
+              title="No hay actividad reciente de roles o invitaciones"
+              description="Cuando un equipo cambie miembros, roles o invitaciones, se vera aqui."
+              variant="flat"
+              primaryAction={{ href: "/workspace", label: "Ir a Empresa" }}
+            />
+          )}
+        </div>
+      </section>
+
       <AdminDocumentRequests requests={documentRequests} communityTypes={communityTypes} />
     </section>
   );
@@ -300,6 +433,27 @@ function PlanRow({ label, count, total }: { label: string; count: number; total:
   );
 }
 
+function SecurityEventItem({ event, profile }: { event: SecurityEventRow; profile?: AdminProfile }) {
+  return (
+    <article className="py-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-full px-2 py-1 text-xs font-bold ${getSeverityClass(event.severity)}`}>
+              {event.severity}
+            </span>
+            <p className="font-semibold">{event.summary}</p>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            {profile?.email || "Usuario no disponible"} - {new Date(event.created_at).toLocaleString("es-ES")}
+          </p>
+        </div>
+        <span className="rounded-full border border-[#d8f3dc] px-2 py-1 text-xs text-slate-600">{event.route || event.event_type}</span>
+      </div>
+    </article>
+  );
+}
+
 function countPlans(profiles: AdminProfile[]) {
   return profiles.reduce(
     (counts, item) => {
@@ -328,6 +482,73 @@ function getPopularTypes(documents: AdminDocument[]) {
       };
     })
     .sort((a, b) => b.count - a.count);
+}
+
+function getRateLimitSummary(events: AdminRateLimitEvent[]) {
+  const grouped = new Map<RateLimitAction, { count: number; users: Set<string> }>();
+
+  for (const event of events) {
+    const current = grouped.get(event.action) || { count: 0, users: new Set<string>() };
+    current.count += 1;
+    current.users.add(event.user_id);
+    grouped.set(event.action, current);
+  }
+
+  return Array.from(grouped.entries())
+    .map(([action, value]) => ({
+      action,
+      count: value.count,
+      uniqueUsers: value.users.size,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+}
+
+function formatActionLabel(action: RateLimitAction) {
+  const labels: Record<RateLimitAction, string> = {
+    document_generate: "Generacion de documentos",
+    document_improve: "Mejoras con IA",
+    assistant_chat: "Chat asistente",
+    assistant_generate: "Generar desde chat",
+    template_upload: "Subida de plantillas",
+    template_process: "Procesamiento de plantillas",
+    workspace_invite: "Invitaciones",
+    workspace_member_manage: "Gestion de miembros",
+  };
+
+  return labels[action];
+}
+
+function formatWorkspaceEventLabel(eventType: WorkspaceAuditEventRow["event_type"]) {
+  const labels: Record<WorkspaceAuditEventRow["event_type"], string> = {
+    document_created: "Documento creado",
+    document_deleted: "Documento eliminado",
+    documents_cleared: "Historial limpiado",
+    template_uploaded: "Plantilla subida",
+    template_processed: "Plantilla procesada",
+    template_updated: "Plantilla actualizada",
+    template_deleted: "Plantilla eliminada",
+    member_invited: "Invitacion enviada",
+    member_joined: "Miembro anadido",
+    member_role_updated: "Rol actualizado",
+    member_permissions_updated: "Permisos actualizados",
+    member_removed: "Miembro eliminado",
+    invitation_revoked: "Invitacion revocada",
+  };
+
+  return labels[eventType];
+}
+
+function getSeverityClass(severity: SecurityEventRow["severity"]) {
+  if (severity === "high") {
+    return "bg-red-50 text-red-700";
+  }
+
+  if (severity === "medium") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-slate-100 text-slate-700";
 }
 
 function formatNumber(value: number) {
