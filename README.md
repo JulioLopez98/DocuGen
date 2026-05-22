@@ -532,6 +532,13 @@ La fase 11.1 endurece seguridad y RLS:
 - Bucket `brand-logos` limitado a carpetas por usuario para escritura.
 - Informe disponible en `docs/security-rls-audit.md`.
 
+La fase 11.2 revisa rutas server con service role:
+
+- Matriz de endpoints que saltan RLS con `createSupabaseServiceClient`.
+- Correccion de lectura de invitaciones pendientes en `/workspace`.
+- Checklist manual para validar permisos server-side.
+- Informe disponible en `docs/service-role-audit.md`.
+
 ## Comandos
 
 ```bash

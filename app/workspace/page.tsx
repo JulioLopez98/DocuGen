@@ -41,6 +41,16 @@ export default async function WorkspacePage() {
   const { data: allMembers } = workspaceIds.length
     ? await supabase.from("workspace_members").select("*").in("workspace_id", workspaceIds).returns<WorkspaceMemberRow[]>()
     : { data: [] as WorkspaceMemberRow[] };
+  const invitationWorkspaceIds =
+    profile.role === "admin"
+      ? workspaceIds
+      : (memberships || [])
+          .filter(
+            (membership) =>
+              profile.plan === "empresa" &&
+              (membership.role === "admin" || Boolean(membership.can_invite_members)),
+          )
+          .map((membership) => membership.workspace_id);
   const memberUserIds = Array.from(new Set((allMembers || []).map((member) => member.user_id)));
   const serviceClient = createSupabaseServiceClient();
   const { data: memberProfiles } =
@@ -58,11 +68,11 @@ export default async function WorkspacePage() {
     .limit(40)
     .returns<Pick<DocumentRow, "id" | "doc_label" | "doc_type" | "workspace_id" | "created_at">[]>();
   const { data: invitations } =
-    serviceClient && workspaceIds.length
+    serviceClient && invitationWorkspaceIds.length
       ? await serviceClient
           .from("workspace_invitations")
           .select("*")
-          .in("workspace_id", workspaceIds)
+          .in("workspace_id", invitationWorkspaceIds)
           .eq("status", "pending")
           .order("created_at", { ascending: false })
           .returns<WorkspaceInvitationRow[]>()
