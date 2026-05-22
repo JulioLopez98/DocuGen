@@ -517,6 +517,13 @@ La fase 10.1 expone el workspace real:
 - La base usa las tablas ya existentes `workspaces` y `workspace_members`, creadas automaticamente al registrar usuarios.
 - Las invitaciones y documentos compartidos reales quedan preparados para los siguientes pasos.
 
+La fase 10.11 deja una guia de QA real de Empresa:
+
+- Checklist de Stripe Checkout para Empresa.
+- Validacion de webhooks de alta, cambio, cancelacion y pago fallido.
+- Pruebas SQL para comprobar `profiles.plan`, `workspaces.plan` y permisos de invitados.
+- Guia disponible en `docs/qa-empresa.md`.
+
 ## Comandos
 
 ```bash
