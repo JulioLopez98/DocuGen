@@ -572,6 +572,14 @@ La fase 11.6 añade monitorizacion de errores de APIs:
 - SQL incremental: `supabase-api-error-events.sql`.
 - Informe disponible en `docs/api-error-monitoring.md`.
 
+La fase 11.7 añade health checks internos:
+
+- Nuevo helper `runInternalHealthChecks`.
+- Nueva API admin: `GET /api/admin/health`.
+- `/admin` muestra estado de variables, Supabase, OpenAI, Stripe y Resend.
+- No requiere SQL nuevo.
+- Informe disponible en `docs/internal-health-checks.md`.
+
 ## Comandos
 
 ```bash

@@ -6,6 +6,7 @@ import { AdminOperationalAlerts } from "@/components/AdminOperationalAlerts";
 import { EmptyState } from "@/components/EmptyState";
 import type { ApiErrorEventRow } from "@/lib/api-error-monitor";
 import { getDocumentConfig } from "@/lib/document-types";
+import { runInternalHealthChecks, type HealthCheckReport, type HealthCheckStatus } from "@/lib/health-checks";
 import {
   createSupabaseServiceClient,
   getCurrentProfile,
@@ -91,6 +92,7 @@ export default async function AdminPage() {
     auditEventsResult,
     operationalAlertsResult,
     apiErrorEventsResult,
+    healthReport,
   ] = await Promise.all([
     adminClient.from("profiles").select("id,email,plan,role,docs_this_month,created_at").order("created_at", { ascending: false }).returns<AdminProfile[]>(),
     adminClient.from("documents").select("id,user_id,doc_type,doc_label,model_used,tokens_input,tokens_output,created_at").order("created_at", { ascending: false }).limit(200).returns<AdminDocument[]>(),
@@ -128,6 +130,7 @@ export default async function AdminPage() {
       .order("created_at", { ascending: false })
       .limit(50)
       .returns<ApiErrorEventRow[]>(),
+    runInternalHealthChecks(adminClient),
   ]);
 
   const profiles = profilesResult.data || [];
@@ -175,6 +178,8 @@ export default async function AdminPage() {
         <MetricCard label="Documentos" value={(totalDocumentsResult.count || 0).toString()} helper={`${docs30Result.count || 0} en 30 dias`} />
         <MetricCard label="Eventos 24h" value={(events24Result.count || 0).toString()} helper="Generaciones registradas" />
       </div>
+
+      <AdminHealthChecks report={healthReport} />
 
       <AdminOperationalAlerts alerts={operationalAlerts} profiles={profiles} />
 
@@ -492,6 +497,59 @@ function SmallStat({ label, value }: { label: string; value: string }) {
   );
 }
 
+function AdminHealthChecks({ report }: { report: HealthCheckReport }) {
+  const summary = countHealthStatuses(report);
+
+  return (
+    <section className="surface mt-4 rounded-md p-6">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">Health checks</p>
+          <h2 className="font-serif-display mt-3 text-3xl font-bold">Estado interno</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            Comprobacion rapida de variables, tablas criticas y proveedores necesarios para operar DocuGen.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <SmallStat label="OK" value={summary.ok.toString()} />
+          <SmallStat label="Avisos" value={summary.warning.toString()} />
+          <SmallStat label="Errores" value={summary.error.toString()} />
+        </div>
+      </div>
+
+      <div className="grid gap-3 xl:grid-cols-5">
+        {report.groups.map((group) => (
+          <div key={group.id} className="rounded-md border border-[#d8f3dc] bg-white/75 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-serif-display text-xl font-bold">{group.label}</h3>
+              <span className={`rounded-full px-2 py-1 text-xs font-bold ${getHealthStatusClass(group.status)}`}>
+                {formatHealthStatus(group.status)}
+              </span>
+            </div>
+            <div className="mt-4 grid gap-2">
+              {group.checks.map((check) => (
+                <div key={check.id} className="rounded-md bg-[#faf9f6] p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold">{check.label}</p>
+                      <p className="mt-1 text-xs text-slate-500">{check.message}</p>
+                    </div>
+                    <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${getHealthStatusClass(check.status)}`}>
+                      {formatHealthStatus(check.status)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-4 text-xs text-slate-500">Ultima comprobacion: {new Date(report.generatedAt).toLocaleString("es-ES")}</p>
+    </section>
+  );
+}
+
 function PlanRow({ label, count, total }: { label: string; count: number; total: number }) {
   const percent = total > 0 ? Math.round((count / total) * 100) : 0;
 
@@ -626,6 +684,38 @@ function getSeverityClass(severity: SecurityEventRow["severity"]) {
   }
 
   return "bg-slate-100 text-slate-700";
+}
+
+function getHealthStatusClass(status: HealthCheckStatus) {
+  if (status === "error") {
+    return "bg-red-50 text-red-700";
+  }
+
+  if (status === "warning") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-emerald-50 text-emerald-700";
+}
+
+function formatHealthStatus(status: HealthCheckStatus) {
+  const labels: Record<HealthCheckStatus, string> = {
+    ok: "OK",
+    warning: "Aviso",
+    error: "Error",
+  };
+
+  return labels[status];
+}
+
+function countHealthStatuses(report: HealthCheckReport) {
+  return report.groups.flatMap((group) => group.checks).reduce(
+    (counts, check) => {
+      counts[check.status] += 1;
+      return counts;
+    },
+    { ok: 0, warning: 0, error: 0 },
+  );
 }
 
 function formatNumber(value: number) {
