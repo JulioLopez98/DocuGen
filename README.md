@@ -524,6 +524,14 @@ La fase 10.11 deja una guia de QA real de Empresa:
 - Pruebas SQL para comprobar `profiles.plan`, `workspaces.plan` y permisos de invitados.
 - Guia disponible en `docs/qa-empresa.md`.
 
+La fase 11.1 endurece seguridad y RLS:
+
+- Helpers RLS para plan y permisos de workspace.
+- Policies de Empresa reforzadas en documentos, plantillas, miembros e invitaciones.
+- Insercion directa de auditoria/notificaciones restringida.
+- Bucket `brand-logos` limitado a carpetas por usuario para escritura.
+- Informe disponible en `docs/security-rls-audit.md`.
+
 ## Comandos
 
 ```bash
