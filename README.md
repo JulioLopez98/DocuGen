@@ -580,6 +580,14 @@ La fase 11.7 añade health checks internos:
 - No requiere SQL nuevo.
 - Informe disponible en `docs/internal-health-checks.md`.
 
+La fase 11.8 añade limpieza y retencion de logs:
+
+- Nueva funcion SQL `cleanup_operational_logs`.
+- Retencion por defecto: 30 dias para eventos de generacion/rate limit, 90 dias para seguridad/API y 365 dias para alertas resueltas.
+- Incluye ejemplo opcional de `pg_cron`.
+- SQL incremental: `supabase-log-retention.sql`.
+- Informe disponible en `docs/log-retention.md`.
+
 ## Comandos
 
 ```bash
