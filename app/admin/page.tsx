@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AdminDocumentRequests } from "@/components/AdminDocumentRequests";
 import { AdminOperationalAlerts } from "@/components/AdminOperationalAlerts";
 import { EmptyState } from "@/components/EmptyState";
+import type { ApiErrorEventRow } from "@/lib/api-error-monitor";
 import { getDocumentConfig } from "@/lib/document-types";
 import {
   createSupabaseServiceClient,
@@ -89,6 +90,7 @@ export default async function AdminPage() {
     securityEventsResult,
     auditEventsResult,
     operationalAlertsResult,
+    apiErrorEventsResult,
   ] = await Promise.all([
     adminClient.from("profiles").select("id,email,plan,role,docs_this_month,created_at").order("created_at", { ascending: false }).returns<AdminProfile[]>(),
     adminClient.from("documents").select("id,user_id,doc_type,doc_label,model_used,tokens_input,tokens_output,created_at").order("created_at", { ascending: false }).limit(200).returns<AdminDocument[]>(),
@@ -120,6 +122,12 @@ export default async function AdminPage() {
       .order("created_at", { ascending: false })
       .limit(30)
       .returns<OperationalAlertRow[]>(),
+    adminClient
+      .from("api_error_events")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .returns<ApiErrorEventRow[]>(),
   ]);
 
   const profiles = profilesResult.data || [];
@@ -130,6 +138,7 @@ export default async function AdminPage() {
   const securityEvents = securityEventsResult.data || [];
   const sensitiveAuditEvents = auditEventsResult.data || [];
   const operationalAlerts = operationalAlertsResult.data || [];
+  const apiErrorEvents = apiErrorEventsResult.data || [];
   const planCounts = countPlans(profiles);
   const estimatedMrr = planCounts.pro * 9 + planCounts.empresa * 39;
   const popularTypes = getPopularTypes(documents).slice(0, 8);
@@ -168,6 +177,61 @@ export default async function AdminPage() {
       </div>
 
       <AdminOperationalAlerts alerts={operationalAlerts} profiles={profiles} />
+
+      <section className="surface mt-4 rounded-md p-6">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="eyebrow">APIs</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Errores monitorizados</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Fallos recientes de OpenAI, Stripe, Resend, Supabase y errores internos registrados por servidor.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <SmallStat label="Total" value={apiErrorEvents.length.toString()} />
+            <SmallStat label="Criticos" value={apiErrorEvents.filter((event) => event.severity === "high").length.toString()} />
+            <SmallStat label="Proveedores" value={new Set(apiErrorEvents.map((event) => event.provider)).size.toString()} />
+          </div>
+        </div>
+
+        <div className="divide-y divide-[#d8f3dc]">
+          {apiErrorEvents.slice(0, 10).map((event) => (
+            <article key={event.id} className="py-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-2 py-1 text-xs font-bold ${getSeverityClass(event.severity)}`}>
+                      {event.severity}
+                    </span>
+                    <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
+                      {event.provider}
+                    </span>
+                    <span className="rounded-full border border-[#d8f3dc] px-2 py-1 text-xs text-slate-600">
+                      {event.error_code}
+                    </span>
+                  </div>
+                  <p className="mt-3 font-semibold">{event.message}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {event.route} - {new Date(event.created_at).toLocaleString("es-ES")}
+                  </p>
+                </div>
+                <span className="text-xs text-slate-500">
+                  {event.user_id ? profileById.get(event.user_id)?.email || "Usuario" : "Sistema"}
+                </span>
+              </div>
+            </article>
+          ))}
+          {apiErrorEvents.length === 0 && (
+            <EmptyState
+              eyebrow="Sin errores"
+              title="No hay errores de APIs registrados"
+              description="Cuando falle un proveedor externo o una ruta critica, aparecera aqui."
+              variant="flat"
+              primaryAction={{ href: "/admin", label: "Actualizar panel" }}
+            />
+          )}
+        </div>
+      </section>
 
       <section className="surface mt-4 rounded-md p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">

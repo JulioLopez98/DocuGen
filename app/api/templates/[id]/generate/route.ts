@@ -7,6 +7,7 @@ import {
   PREMIUM_MODEL,
   type TemplateReference,
 } from "@/lib/openai";
+import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
@@ -112,6 +113,16 @@ export async function POST(request: Request, { params }: Params) {
     const openai = getOpenAIClient();
 
     if (!openai) {
+      await recordApiErrorEvent({
+        supabase,
+        userId: user.id,
+        route: "/api/templates/[id]/generate",
+        provider: "openai",
+        errorCode: "openai_not_configured",
+        severity: "high",
+        message: "OPENAI_API_KEY no esta configurada.",
+        metadata: { templateId: template.id },
+      });
       return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para generar documentos.");
     }
 
@@ -233,6 +244,13 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     console.error("template_direct_generate_error", error);
+    await recordApiErrorEvent({
+      route: "/api/templates/[id]/generate",
+      provider: "openai",
+      errorCode: "generation_failed",
+      severity: "high",
+      message: getErrorMessage(error),
+    });
     return errorResponse(500, "generation_failed", "No se pudo generar el documento desde la plantilla.");
   }
 }

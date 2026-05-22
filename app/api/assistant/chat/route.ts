@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { buildAssistantChatPrompt, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { checkActionRateLimit, recordActionRateLimitEvent } from "@/lib/rate-limit";
 import { requireUser, type ChatMessageRow, type ChatSessionRow, type Profile } from "@/lib/supabase-server";
@@ -82,6 +83,15 @@ export async function POST(request: Request) {
     const openai = getOpenAIClient();
 
     if (!openai) {
+      await recordApiErrorEvent({
+        supabase,
+        userId: user.id,
+        route: "/api/assistant/chat",
+        provider: "openai",
+        errorCode: "openai_not_configured",
+        severity: "high",
+        message: "OPENAI_API_KEY no esta configurada.",
+      });
       return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para usar el asistente.");
     }
 
@@ -142,6 +152,13 @@ export async function POST(request: Request) {
     }
 
     console.error("assistant_chat_error", error);
+    await recordApiErrorEvent({
+      route: "/api/assistant/chat",
+      provider: "openai",
+      errorCode: "assistant_failed",
+      severity: "medium",
+      message: getErrorMessage(error),
+    });
     return errorResponse(500, "assistant_failed", "No se pudo responder desde el asistente.");
   }
 }

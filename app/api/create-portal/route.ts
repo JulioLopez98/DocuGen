@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { getStripe } from "@/lib/stripe";
 import { requireUser, type Profile } from "@/lib/supabase-server";
 
@@ -16,6 +17,15 @@ export async function POST() {
     const stripe = getStripe();
 
     if (!stripe) {
+      await recordApiErrorEvent({
+        supabase,
+        userId: user.id,
+        route: "/api/create-portal",
+        provider: "stripe",
+        errorCode: "stripe_not_configured",
+        severity: "high",
+        message: "Stripe no esta configurado.",
+      });
       return errorResponse(500, "stripe_not_configured", "Configura Stripe antes de abrir el portal.");
     }
 
@@ -37,6 +47,13 @@ export async function POST() {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("portal_error", error);
+    await recordApiErrorEvent({
+      route: "/api/create-portal",
+      provider: "stripe",
+      errorCode: "portal_failed",
+      severity: "high",
+      message: getErrorMessage(error),
+    });
     return errorResponse(500, "portal_failed", "No se pudo abrir el portal de cliente.");
   }
 }

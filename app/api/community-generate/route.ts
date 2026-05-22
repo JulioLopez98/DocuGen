@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { buildCommunityDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
@@ -73,6 +74,15 @@ export async function POST(request: Request) {
     const openai = getOpenAIClient();
 
     if (!openai) {
+      await recordApiErrorEvent({
+        supabase,
+        userId: user.id,
+        route: "/api/community-generate",
+        provider: "openai",
+        errorCode: "openai_not_configured",
+        severity: "high",
+        message: "OPENAI_API_KEY no esta configurada.",
+      });
       return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para generar documentos.");
     }
 
@@ -162,6 +172,13 @@ export async function POST(request: Request) {
     }
 
     console.error("community_generate_error", error);
+    await recordApiErrorEvent({
+      route: "/api/community-generate",
+      provider: "openai",
+      errorCode: "generation_failed",
+      severity: "high",
+      message: getErrorMessage(error),
+    });
     return errorResponse(500, "generation_failed", "No se pudo generar el documento comunitario.");
   }
 }

@@ -564,6 +564,14 @@ La fase 11.5 añade alertas operativas:
 - SQL incremental: `supabase-operational-alerts.sql`.
 - Informe disponible en `docs/operational-alerts.md`.
 
+La fase 11.6 añade monitorizacion de errores de APIs:
+
+- Nueva tabla `api_error_events` para errores de OpenAI, Stripe, Resend, Supabase y app.
+- Errores criticos crean alertas operativas deduplicadas.
+- `/admin` muestra los ultimos fallos por proveedor, ruta y severidad.
+- SQL incremental: `supabase-api-error-events.sql`.
+- Informe disponible en `docs/api-error-monitoring.md`.
+
 ## Comandos
 
 ```bash

@@ -1,6 +1,7 @@
 import { DocumentReadyEmail } from "@/emails/document-ready";
 import { WelcomeEmail } from "@/emails/welcome";
 import { WorkspaceInvitationEmail } from "@/emails/workspace-invitation";
+import { recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { Resend } from "resend";
 
 const DEFAULT_FROM = "DocuGen <onboarding@resend.dev>";
@@ -49,6 +50,14 @@ export async function sendWelcomeEmail({ to, name }: SendWelcomeEmailInput) {
 
   if (result.error) {
     console.error("resend_welcome_error", result.error);
+    await recordApiErrorEvent({
+      route: "lib/resend.sendWelcomeEmail",
+      provider: "resend",
+      errorCode: "welcome_email_failed",
+      severity: "medium",
+      message: result.error.message,
+      metadata: { to },
+    });
     throw new Error(result.error.message);
   }
 
@@ -72,6 +81,14 @@ export async function sendDocumentReadyEmail({ to, documentTitle, documentUrl }:
 
   if (result.error) {
     console.error("resend_document_ready_error", result.error);
+    await recordApiErrorEvent({
+      route: "lib/resend.sendDocumentReadyEmail",
+      provider: "resend",
+      errorCode: "document_ready_email_failed",
+      severity: "medium",
+      message: result.error.message,
+      metadata: { to, documentTitle },
+    });
     throw new Error(result.error.message);
   }
 
@@ -104,6 +121,14 @@ export async function sendWorkspaceInvitationEmail({
 
   if (result.error) {
     console.error("resend_workspace_invitation_error", result.error);
+    await recordApiErrorEvent({
+      route: "lib/resend.sendWorkspaceInvitationEmail",
+      provider: "resend",
+      errorCode: "workspace_invitation_email_failed",
+      severity: "high",
+      message: result.error.message,
+      metadata: { to, workspaceName, role },
+    });
     throw new Error(result.error.message);
   }
 

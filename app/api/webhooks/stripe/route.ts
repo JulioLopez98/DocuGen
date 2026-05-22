@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { getPlanFromStripePriceId, getStripe } from "@/lib/stripe";
 import { createSupabaseServiceClient, type Profile } from "@/lib/supabase-server";
 
@@ -15,6 +16,14 @@ export async function POST(request: Request) {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!stripe || !supabase || !webhookSecret) {
+      await recordApiErrorEvent({
+        supabase,
+        route: "/api/webhooks/stripe",
+        provider: "stripe",
+        errorCode: "webhook_not_configured",
+        severity: "high",
+        message: "Webhook de Stripe no configurado.",
+      });
       return errorResponse(500, "webhook_not_configured", "Webhook de Stripe no configurado.");
     }
 
@@ -33,6 +42,14 @@ export async function POST(request: Request) {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (error) {
       console.error("stripe_signature_error", error);
+      await recordApiErrorEvent({
+        supabase,
+        route: "/api/webhooks/stripe",
+        provider: "stripe",
+        errorCode: "invalid_signature",
+        severity: "medium",
+        message: getErrorMessage(error),
+      });
       return errorResponse(400, "invalid_signature", "Firma de Stripe no valida.");
     }
 
@@ -116,6 +133,13 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("stripe_webhook_error", error);
+    await recordApiErrorEvent({
+      route: "/api/webhooks/stripe",
+      provider: "stripe",
+      errorCode: "webhook_failed",
+      severity: "high",
+      message: getErrorMessage(error),
+    });
     return errorResponse(500, "webhook_failed", "No se pudo procesar el webhook.");
   }
 }

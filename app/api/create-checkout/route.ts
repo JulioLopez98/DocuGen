@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { getStripe, getStripePriceIdForPlan, type StripePaidPlan } from "@/lib/stripe";
 import { requireUser, type Profile } from "@/lib/supabase-server";
 
@@ -24,6 +25,15 @@ export async function POST(request: Request) {
     const priceId = getStripePriceIdForPlan(targetPlan);
 
     if (!stripe || !priceId) {
+      await recordApiErrorEvent({
+        supabase,
+        userId: user.id,
+        route: "/api/create-checkout",
+        provider: "stripe",
+        errorCode: "stripe_not_configured",
+        severity: "high",
+        message: `Stripe no esta configurado para el plan ${targetPlan}.`,
+      });
       return errorResponse(
         500,
         "stripe_not_configured",
@@ -89,6 +99,13 @@ export async function POST(request: Request) {
     }
 
     console.error("checkout_error", error);
+    await recordApiErrorEvent({
+      route: "/api/create-checkout",
+      provider: "stripe",
+      errorCode: "checkout_failed",
+      severity: "high",
+      message: getErrorMessage(error),
+    });
     return errorResponse(500, "checkout_failed", "No se pudo crear la sesion de pago.");
   }
 }
