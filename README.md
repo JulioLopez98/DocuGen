@@ -594,6 +594,13 @@ La fase 11.9 cierra QA de seguridad y operaciones:
 - Archivo rapido: `SECURITY_OPERATIONS_QA.md`.
 - Guia completa: `docs/security-operations-qa.md`.
 
+La fase 11.10.1 simplifica navegacion y visibilidad por plan:
+
+- Header reducido a Panel, Crear, Documentos y funciones principales segun plan.
+- Menu `Mas` para Asistente, Tipos de documento, Equipo, Precios, Ajustes y Admin.
+- Renombrados visibles: Historial -> Documentos, Workspace -> Equipo, Catalogo -> Tipos de documento.
+- Informe disponible en `docs/ux-navigation-onboarding.md`.
+
 ## Comandos
 
 ```bash
