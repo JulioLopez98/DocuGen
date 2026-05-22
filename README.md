@@ -555,6 +555,15 @@ La fase 11.4 añade logs de seguridad y panel admin:
 - SQL incremental: `supabase-security-events.sql`.
 - Informe disponible en `docs/security-events-admin.md`.
 
+La fase 11.5 añade alertas operativas:
+
+- Nueva tabla `operational_alerts` con estados `open`, `acknowledged` y `resolved`.
+- Los eventos de seguridad `high` crean alertas deduplicadas automaticamente.
+- `/admin` permite revisar y resolver alertas abiertas.
+- API admin: `PATCH /api/admin/operational-alerts/[id]`.
+- SQL incremental: `supabase-operational-alerts.sql`.
+- Informe disponible en `docs/operational-alerts.md`.
+
 ## Comandos
 
 ```bash

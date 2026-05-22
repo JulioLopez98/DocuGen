@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AdminDocumentRequests } from "@/components/AdminDocumentRequests";
+import { AdminOperationalAlerts } from "@/components/AdminOperationalAlerts";
 import { EmptyState } from "@/components/EmptyState";
 import { getDocumentConfig } from "@/lib/document-types";
 import {
@@ -12,6 +13,7 @@ import {
   type WorkspaceAuditEventRow,
 } from "@/lib/supabase-server";
 import type { RateLimitAction } from "@/lib/rate-limit";
+import type { OperationalAlertRow } from "@/lib/operational-alerts";
 import type { SecurityEventRow } from "@/lib/security-events";
 
 type AdminProfile = {
@@ -86,6 +88,7 @@ export default async function AdminPage() {
     rateLimitEventsResult,
     securityEventsResult,
     auditEventsResult,
+    operationalAlertsResult,
   ] = await Promise.all([
     adminClient.from("profiles").select("id,email,plan,role,docs_this_month,created_at").order("created_at", { ascending: false }).returns<AdminProfile[]>(),
     adminClient.from("documents").select("id,user_id,doc_type,doc_label,model_used,tokens_input,tokens_output,created_at").order("created_at", { ascending: false }).limit(200).returns<AdminDocument[]>(),
@@ -110,6 +113,13 @@ export default async function AdminPage() {
       .order("created_at", { ascending: false })
       .limit(40)
       .returns<WorkspaceAuditEventRow[]>(),
+    adminClient
+      .from("operational_alerts")
+      .select("*")
+      .neq("status", "resolved")
+      .order("created_at", { ascending: false })
+      .limit(30)
+      .returns<OperationalAlertRow[]>(),
   ]);
 
   const profiles = profilesResult.data || [];
@@ -119,6 +129,7 @@ export default async function AdminPage() {
   const rateLimitEvents = rateLimitEventsResult.data || [];
   const securityEvents = securityEventsResult.data || [];
   const sensitiveAuditEvents = auditEventsResult.data || [];
+  const operationalAlerts = operationalAlertsResult.data || [];
   const planCounts = countPlans(profiles);
   const estimatedMrr = planCounts.pro * 9 + planCounts.empresa * 39;
   const popularTypes = getPopularTypes(documents).slice(0, 8);
@@ -155,6 +166,8 @@ export default async function AdminPage() {
         <MetricCard label="Documentos" value={(totalDocumentsResult.count || 0).toString()} helper={`${docs30Result.count || 0} en 30 dias`} />
         <MetricCard label="Eventos 24h" value={(events24Result.count || 0).toString()} helper="Generaciones registradas" />
       </div>
+
+      <AdminOperationalAlerts alerts={operationalAlerts} profiles={profiles} />
 
       <section className="surface mt-4 rounded-md p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
