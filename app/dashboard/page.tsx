@@ -10,7 +10,7 @@ import { getCurrentProfile, type BrandSettings, type DocumentRow } from "@/lib/s
 type DashboardDocumentConfig = (typeof documentTypes)[number];
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Panel",
   robots: {
     index: false,
     follow: false,
@@ -39,324 +39,252 @@ export default async function DashboardPage() {
   const allDocuments = documents || [];
   const recentDocuments = allDocuments.slice(0, 5);
   const lastDocument = recentDocuments[0];
-  const listedRecentDocuments = lastDocument ? recentDocuments.filter((doc) => doc.id !== lastDocument.id) : recentDocuments;
   const remaining = Math.max(3 - profile.docs_this_month, 0);
   const isFree = profile.plan === "free";
-  const mostUsedTypes = getMostUsedTypes(allDocuments);
+  const isPaid = profile.plan === "pro" || profile.plan === "empresa";
+  const isEmpresa = profile.plan === "empresa";
   const hasBrand = Boolean(brandSettings?.company_name || brandSettings?.cif || brandSettings?.address || brandSettings?.logo_url);
-  const recommendedDocuments = getRecommendedDocuments(allDocuments, isFree);
-  const nextStep = getNextStep({ isFree, remaining, hasDocuments: allDocuments.length > 0, hasBrand, canUseBrand: profile.plan !== "free" });
   const displayName = user?.email?.split("@")[0] || "tu espacio";
+  const onboardingSteps = getOnboardingSteps({
+    isPaid,
+    isEmpresa,
+    remaining,
+    hasDocuments: allDocuments.length > 0,
+    hasBrand,
+  });
+  const recommendedDocuments = getRecommendedDocuments(allDocuments, isFree);
 
   return (
     <section className="container-page py-10">
-      <div className="surface mb-6 overflow-hidden rounded-md">
-        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_320px] lg:items-center">
-          <div>
-            <p className="eyebrow">Dashboard</p>
-            <h1 className="font-serif-display mt-3 text-4xl font-bold">Bienvenido a DocuGen, {displayName}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Tu centro de trabajo para crear, reutilizar y exportar documentos profesionales sin pasar por la landing.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
-                Crear documento
-              </Link>
-              <Link href="/catalogo" className="focus-ring btn-secondary px-5 py-3 text-sm">
-                Explorar catalogo
-              </Link>
-              <Link href="/historial" className="focus-ring btn-secondary px-5 py-3 text-sm">
-                Abrir historial
-              </Link>
-            </div>
-          </div>
-
-          <div className="rounded-md border border-[#d8f3dc] bg-white/78 p-5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-[#2d6a4f]">Plan actual</p>
-              <PlanBadge plan={profile.plan} />
-            </div>
-            <div className="mt-5">
-              <UsageBar used={profile.docs_this_month} plan={profile.plan} />
-            </div>
-            <p className="mt-4 text-sm text-slate-600">
-              {isFree
-                ? remaining > 0
-                  ? `Te quedan ${remaining} documentos gratuitos este mes.`
-                  : "Has agotado tus documentos gratuitos este mes."
-                : "Documentos ilimitados activos."}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <MetricCard label="Documentos guardados" value={allDocuments.length.toString()} helper="En tu historial actual" />
-        <MetricCard
-          label="Generados este mes"
-          value={profile.docs_this_month.toString()}
-          helper={isFree ? `${remaining} restantes en Free` : "Sin limite mensual en Pro"}
-        />
-        <MetricCard
-          label="Tipo mas usado"
-          value={mostUsedTypes[0]?.label || "Sin datos"}
-          helper={mostUsedTypes[0] ? `${mostUsedTypes[0].count} documentos` : "Genera tu primer borrador"}
-        />
-      </div>
-
-      <section className="surface mt-4 rounded-md p-6">
-        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <p className="eyebrow">Free vs Pro</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">
-              {isFree ? "Tu plan Free sirve para probar el flujo completo" : "Tu plan Pro desbloquea el flujo completo"}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              {isFree
-                ? "Puedes crear 3 documentos al mes, guardarlos en historial y exportar PDF/TXT. Cuando necesites volumen, Word, plantillas o documentos a medida, Pro es el siguiente paso."
-                : "Puedes generar sin limite mensual, exportar Word, usar marca personalizada, plantillas y documentos a medida."}
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <PlanCapability label="PDF y TXT" available helper="Incluido en Free y Pro" />
-            <PlanCapability label="Word editable" available={!isFree} helper={isFree ? "Disponible en Pro" : "Incluido"} />
-            <PlanCapability label="Documentos a medida" available={!isFree} helper={isFree ? "Disponible en Pro" : "Incluido"} />
-            <PlanCapability label="Plantillas propias" available={!isFree} helper={isFree ? "Disponible en Pro" : "Incluido"} />
-          </div>
-        </div>
-      </section>
-
-      <section className="surface mt-4 rounded-md p-6">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold">Que quieres hacer ahora?</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              DocuGen se organiza en cuatro zonas. Esta guia te lleva a la pantalla correcta sin tener que adivinar.
-            </p>
-          </div>
-          <Link href="/generar" className="focus-ring btn-primary px-4 py-2 text-sm">
-            Crear documento
-          </Link>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <ActionCard
-            title="Crear desde catalogo"
-            text="Para contratos, cartas, presupuestos, politicas web y documentos ya definidos."
-            href="/generar"
-            action="Abrir generador"
-          />
-          <ActionCard
-            title="Pedir uno a medida"
-            text={isFree ? "Disponible en Pro. Sirve para documentos que no estan en el catalogo." : "Describe lo que necesitas y la IA preparara un borrador personalizado."}
-            href={isFree ? "/precios" : "/generar?mode=custom"}
-            action={isFree ? "Ver Pro" : "Crear a medida"}
-          />
-          <ActionCard
-            title="Usar mis plantillas"
-            text={profile.plan === "free" ? "En Pro puedes subir documentos de referencia para orientar estilo y estructura." : "Sube o reutiliza plantillas propias como referencia de tono y estructura."}
-            href={profile.plan === "free" ? "/precios" : "/plantillas"}
-            action={profile.plan === "free" ? "Ver Pro" : "Ir a plantillas"}
-          />
-          <ActionCard
-            title="Editar lo ya creado"
-            text="Abre historial para editar, guardar versiones, comparar mejoras IA y exportar."
-            href="/historial"
-            action="Abrir historial"
-          />
-        </div>
-      </section>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
-        <section className="surface rounded-md p-6">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold">Siguiente paso</h2>
-              <p className="mt-1 text-sm text-slate-600">{nextStep.description}</p>
-            </div>
-          </div>
-
-          <Link href={nextStep.href} className="focus-ring btn-primary mt-6 px-4 py-3 text-sm">
-            {nextStep.action}
-          </Link>
-
-          <div className="mt-6 border-t border-[#d8f3dc] pt-6">
-            <h3 className="font-semibold">Suscripcion</h3>
-            {isFree && remaining === 0 && (
-              <p className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                Has alcanzado el limite de 3 documentos gratuitos este mes.
-              </p>
-            )}
-            {!isFree && !hasBrand && (
-              <p className="mt-3 rounded-md bg-[#d8f3dc] p-3 text-sm font-medium text-[#1f2933]">
-                Tu cuenta esta en Pro. Configura la marca para que PDF y Word salgan mas profesionales.
-              </p>
-            )}
-            {!isFree && hasBrand && (
-              <p className="mt-3 rounded-md bg-[#d8f3dc] p-3 text-sm font-medium text-[#1f2933]">
-                Tu marca esta configurada. Las exportaciones pueden usar tus datos corporativos.
-              </p>
-            )}
-            <div className="mt-4">
-              <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
-            </div>
-            <Link href="/precios" className="mt-4 inline-flex text-sm font-semibold text-[#2d6a4f]">
-              Comparar planes
+      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="surface overflow-hidden rounded-md p-6 lg:p-8">
+          <p className="eyebrow">Panel</p>
+          <h1 className="font-serif-display mt-3 max-w-3xl text-4xl font-bold lg:text-5xl">
+            Hola, {displayName}. Que documento necesitas preparar?
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
+            Empieza por crear un borrador, reutiliza uno anterior o usa funciones avanzadas cuando el caso lo pida.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
+              Crear documento
             </Link>
+            <Link href={isPaid ? "/plantillas" : "/precios"} className="focus-ring btn-secondary px-5 py-3 text-sm">
+              {isPaid ? "Usar plantillas" : "Ver funciones Pro"}
+            </Link>
+            <Link href="/historial" className="focus-ring btn-ghost px-5 py-3 text-sm">
+              Ver documentos
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <QuickIntent href="/generar" label="Crear desde catálogo" text="Contratos, cartas, presupuestos y documentos web." />
+            <QuickIntent
+              href={isPaid ? "/generar?mode=custom" : "/precios"}
+              label="Pedir a medida"
+              text={isPaid ? "Describe lo que necesitas si no está en el catálogo." : "Disponible en Pro para casos no catalogados."}
+            />
+            <QuickIntent href="/historial" label="Continuar trabajo" text="Edita, versiona, exporta o reutiliza documentos." />
           </div>
         </section>
 
-        <section className="surface rounded-md p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <aside className="surface rounded-md p-6">
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold">Historial reciente</h2>
-              <p className="mt-1 text-sm text-slate-600">Ultimos borradores generados.</p>
+              <p className="text-sm font-bold text-[#2d6a4f]">Plan actual</p>
+              <p className="mt-1 text-xs text-slate-500">Uso y suscripción</p>
+            </div>
+            <PlanBadge plan={profile.plan} />
+          </div>
+          <div className="mt-6">
+            <UsageBar used={profile.docs_this_month} plan={profile.plan} />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-600">
+            {isFree
+              ? remaining > 0
+                ? `Te quedan ${remaining} documentos gratuitos este mes.`
+                : "Has agotado tus documentos gratuitos este mes."
+              : "Generaciones ilimitadas activas."}
+          </p>
+          <div className="mt-5">
+            <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
+          </div>
+          <Link href="/precios" className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">
+            Comparar planes
+          </Link>
+        </aside>
+      </div>
+
+      <section className="surface mt-4 rounded-md p-6">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="eyebrow">Guía rápida</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Tu siguiente mejor paso</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Un recorrido corto para entender DocuGen sin perderte entre funciones avanzadas.
+            </p>
+          </div>
+          <Link href="/onboarding" className="btn-secondary px-4 py-2 text-sm">
+            Ver onboarding
+          </Link>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {onboardingSteps.map((step, index) => (
+            <OnboardingStepCard key={step.title} index={index + 1} {...step} />
+          ))}
+        </div>
+      </section>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="surface rounded-md p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="eyebrow">Continuar</p>
+              <h2 className="font-serif-display mt-3 text-3xl font-bold">Trabajo reciente</h2>
             </div>
             <Link href="/historial" className="btn-ghost px-3 py-2 text-sm">
               Ver todo
             </Link>
           </div>
 
-          <div className="mt-4 divide-y divide-[#d8f3dc]">
-            {lastDocument && (
-              <div className="mb-3 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Continua donde lo dejaste</p>
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 className="font-bold">{lastDocument.doc_label}</h3>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {new Date(lastDocument.created_at).toLocaleDateString("es-ES")} -{" "}
-                      {getDocumentConfig(lastDocument.doc_type)?.category}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Link href={`/historial/${lastDocument.id}`} className="btn-secondary px-3 py-2 text-xs">
-                      Abrir
-                    </Link>
-                    <Link href={`/generar?templateId=${lastDocument.id}`} className="btn-primary px-3 py-2 text-xs">
-                      Reutilizar
-                    </Link>
-                  </div>
-                </div>
+          {lastDocument ? (
+            <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Último documento</p>
+              <h3 className="mt-2 text-xl font-bold">{lastDocument.doc_label}</h3>
+              <p className="mt-2 text-sm text-slate-500">
+                {formatDate(lastDocument.created_at)} · {getDocumentCategory(lastDocument)}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link href={`/historial/${lastDocument.id}`} className="btn-primary px-4 py-2 text-sm">
+                  Abrir documento
+                </Link>
+                <Link href={`/generar?templateId=${lastDocument.id}`} className="btn-secondary px-4 py-2 text-sm">
+                  Usar como base
+                </Link>
               </div>
-            )}
-            {listedRecentDocuments.map((doc) => (
-              <article key={doc.id} className="py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h3 className="font-semibold">{doc.doc_label}</h3>
-                    <p className="text-xs text-slate-500">
-                      {new Date(doc.created_at).toLocaleDateString("es-ES")} - {getDocumentConfig(doc.doc_type)?.category}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
+            </div>
+          ) : (
+            <EmptyPanel
+              title="Aún no has generado documentos"
+              text="Crea tu primer borrador y aquí aparecerá para editarlo, exportarlo o reutilizarlo."
+              href="/generar"
+              action="Crear primer documento"
+            />
+          )}
+
+          {recentDocuments.length > 1 && (
+            <div className="mt-4 divide-y divide-[#d8f3dc]">
+              {recentDocuments.slice(1).map((doc) => (
+                <article key={doc.id} className="py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold">{doc.doc_label}</h3>
+                      <p className="text-xs text-slate-500">
+                        {formatDate(doc.created_at)} · {getDocumentCategory(doc)}
+                      </p>
+                    </div>
                     <Link href={`/historial/${doc.id}`} className="btn-secondary px-3 py-2 text-xs">
                       Ver
                     </Link>
-                    <Link href={`/generar?templateId=${doc.id}`} className="btn-ghost px-3 py-2 text-xs">
-                      Plantilla
-                    </Link>
                   </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="surface rounded-md p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="eyebrow">Recomendado</p>
+              <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos útiles para empezar</h2>
+            </div>
+            <Link href="/catalogo" className="btn-ghost px-3 py-2 text-sm">
+              Tipos de documento
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {recommendedDocuments.map((doc) => (
+              <Link key={doc.type} href={`/generar?type=${doc.type}`} className="surface-flat interactive rounded-md p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">{doc.category}</p>
+                  {requiresPro(doc) && (
+                    <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
+                  )}
                 </div>
-              </article>
+                <h3 className="mt-2 font-semibold">{doc.label}</h3>
+                <p className="mt-2 text-xs leading-5 text-slate-600">{doc.summary}</p>
+              </Link>
             ))}
-            {recentDocuments.length === 0 && (
-              <EmptyPanel
-                title="Aun no has generado documentos"
-                text="Empieza con un contrato, propuesta o carta. Cuando generes tu primer borrador, aparecera aqui para reutilizarlo."
-                href="/generar"
-                action="Crear primer documento"
-              />
-            )}
           </div>
         </section>
       </div>
 
       <section className="surface mt-4 rounded-md p-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold">Documentos recomendados</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Sugerencias segun tu historial y los documentos mas habituales de DocuGen.
-            </p>
-          </div>
-          <Link href="/catalogo" className="btn-ghost px-3 py-2 text-sm">
-            Ver catalogo
-          </Link>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {recommendedDocuments.map((doc) => (
-            <Link key={doc.type} href={`/generar?type=${doc.type}`} className="surface-flat interactive rounded-md p-4">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">{doc.category}</p>
-                {requiresPro(doc) && (
-                  <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
-                )}
-              </div>
-              <h3 className="mt-2 font-semibold">{doc.label}</h3>
-              <p className="mt-2 text-xs leading-5 text-slate-600">{doc.summary}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="surface mt-4 rounded-md p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold">{hasBrand ? "Marca personalizada activa" : "Marca personalizada"}</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              {profile.plan === "free"
-                ? "En Pro podras anadir datos corporativos y logo a tus exportaciones Word y PDF."
-                : hasBrand
-                  ? "Tus datos corporativos estan listos para exportaciones Word, PDF y futuras plantillas de marca."
-                  : "Configura datos corporativos y logo para exportaciones Word, PDF y futuras plantillas de marca."}
-            </p>
-          </div>
-          {profile.plan === "free" ? (
-            <Link href="/precios" className="focus-ring btn-primary px-4 py-2 text-sm">
-              Ver Pro
-            </Link>
-          ) : (
-            <Link href="/ajustes" className="focus-ring btn-secondary px-4 py-2 text-sm">
-              {hasBrand ? "Editar marca" : "Configurar marca"}
-            </Link>
-          )}
+        <div className="grid gap-4 md:grid-cols-3">
+          <DashboardStat label="Documentos guardados" value={allDocuments.length.toString()} helper="En tu historial" />
+          <DashboardStat
+            label="Este mes"
+            value={profile.docs_this_month.toString()}
+            helper={isFree ? `${remaining} restantes en Free` : "Sin límite mensual"}
+          />
+          <DashboardStat
+            label="Marca"
+            value={hasBrand ? "Lista" : isPaid ? "Pendiente" : "Pro"}
+            helper={getBrandHelper({ hasBrand, isPaid })}
+          />
         </div>
       </section>
     </section>
   );
 }
 
-function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
+function QuickIntent({ href, label, text }: { href: string; label: string; text: string }) {
   return (
-    <div className="surface-flat interactive rounded-md p-5">
+    <Link href={href} className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 transition hover:-translate-y-0.5 hover:bg-white">
+      <p className="font-bold">{label}</p>
+      <p className="mt-2 text-xs leading-5 text-slate-600">{text}</p>
+    </Link>
+  );
+}
+
+function OnboardingStepCard({
+  index,
+  title,
+  text,
+  href,
+  action,
+  done,
+}: {
+  index: number;
+  title: string;
+  text: string;
+  href: string;
+  action: string;
+  done: boolean;
+}) {
+  return (
+    <Link href={href} className={`rounded-md border p-4 transition hover:-translate-y-0.5 ${done ? "border-[#d8f3dc] bg-[#d8f3dc]/45" : "border-[#d8f3dc] bg-white/75"}`}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex size-8 items-center justify-center rounded-full bg-[#2d6a4f] text-sm font-bold text-white">{index}</span>
+        <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${done ? "bg-white text-[#2d6a4f]" : "bg-[#faf9f6] text-slate-500"}`}>
+          {done ? "Hecho" : "Pendiente"}
+        </span>
+      </div>
+      <h3 className="mt-4 font-bold">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
+      <span className="mt-3 inline-flex text-sm font-bold text-[#2d6a4f]">{action}</span>
+    </Link>
+  );
+}
+
+function DashboardStat({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="surface-flat rounded-md p-5">
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-3 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
       <p className="mt-2 text-xs text-slate-500">{helper}</p>
     </div>
-  );
-}
-
-function PlanCapability({ label, available, helper }: { label: string; available: boolean; helper: string }) {
-  return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/75 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-bold">{label}</p>
-        <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${available ? "bg-[#d8f3dc] text-[#2d6a4f]" : "bg-slate-200 text-slate-500"}`}>
-          {available ? "Activo" : "Pro"}
-        </span>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-slate-500">{helper}</p>
-    </div>
-  );
-}
-
-function ActionCard({ title, text, href, action }: { title: string; text: string; href: string; action: string }) {
-  return (
-    <Link href={href} className="surface-flat interactive rounded-md p-4">
-      <h3 className="font-bold">{title}</h3>
-      <p className="mt-2 min-h-16 text-sm leading-6 text-slate-600">{text}</p>
-      <span className="mt-3 inline-flex text-sm font-bold text-[#2d6a4f]">{action}</span>
-    </Link>
   );
 }
 
@@ -372,109 +300,62 @@ function EmptyPanel({ title, text, href, action }: { title: string; text: string
   );
 }
 
-function getMostUsedTypes(documents: DocumentRow[]) {
-  const counts = new Map<string, { count: number; label: string }>();
-
-  for (const doc of documents) {
-    const current = counts.get(doc.doc_type);
-    counts.set(doc.doc_type, {
-      count: (current?.count || 0) + 1,
-      label: current?.label || getDisplayDocumentTypeLabel(doc),
-    });
-  }
-
-  return Array.from(counts.entries())
-    .map(([type, item]) => ({
-      type,
-      count: item.count,
-      label: item.label,
-    }))
-    .sort((a, b) => b.count - a.count);
-}
-
-function getDisplayDocumentTypeLabel(doc: DocumentRow) {
-  const config = getDocumentConfig(doc.doc_type);
-
-  if (config) {
-    return config.label;
-  }
-
-  if (doc.doc_type === "custom") {
-    return "Documento a medida";
-  }
-
-  if (doc.doc_type.startsWith("community:")) {
-    return cleanCommunityLabel(doc.doc_label);
-  }
-
-  return "Documento personalizado";
-}
-
-function cleanCommunityLabel(label: string) {
-  return label
-    .replace(/\s+-\s+.+$/u, "")
-    .replace(/^Borrador\s+de\s+/iu, "")
-    .trim() || "Documento comunitario";
-}
-
-function getNextStep({
-  isFree,
+function getOnboardingSteps({
+  isPaid,
+  isEmpresa,
   remaining,
   hasDocuments,
   hasBrand,
-  canUseBrand,
 }: {
-  isFree: boolean;
+  isPaid: boolean;
+  isEmpresa: boolean;
   remaining: number;
   hasDocuments: boolean;
   hasBrand: boolean;
-  canUseBrand: boolean;
 }) {
-  if (isFree && remaining === 0) {
-    return {
-      description: "Has agotado los documentos gratuitos de este mes. Pro desbloquea generaciones ilimitadas.",
-      action: "Ver planes",
-      href: "/precios",
-    };
-  }
-
-  if (!hasDocuments) {
-    return {
-      description: "Crea tu primer borrador para activar historial, plantillas y exportaciones.",
-      action: "Crear primer documento",
+  return [
+    {
+      title: "Crea tu primer documento",
+      text: "Elige un tipo, completa los campos y guarda un borrador editable.",
       href: "/generar",
-    };
-  }
-
-  if (canUseBrand && !hasBrand) {
-    return {
-      description: "Configura tu marca para que PDF y Word salgan con datos corporativos y logo.",
-      action: "Configurar marca",
-      href: "/ajustes",
-    };
-  }
-
-  if (hasDocuments) {
-    return {
-      description: "Reutiliza tu ultimo documento como base o crea un nuevo borrador desde el catalogo.",
-      action: "Continuar trabajando",
-      href: "/historial",
-    };
-  }
-
-  return {
-    description: "Explora el catalogo y elige el documento que mejor encaje con tu caso.",
-    action: "Ver catalogo",
-    href: "/catalogo",
-  };
+      action: hasDocuments ? "Crear otro" : "Empezar",
+      done: hasDocuments,
+    },
+    {
+      title: "Revisa y exporta",
+      text: "Abre el historial para editar, exportar PDF/TXT o usar Word si tienes Pro.",
+      href: hasDocuments ? "/historial" : "/generar",
+      action: hasDocuments ? "Abrir documentos" : "Crear primero",
+      done: hasDocuments,
+    },
+    {
+      title: isPaid ? "Configura tu marca" : "Desbloquea Pro",
+      text: isPaid
+        ? "Añade datos corporativos y logo para que tus exportaciones salgan más profesionales."
+        : remaining > 0
+          ? "Pro añade Word, documentos a medida, plantillas y generaciones ilimitadas."
+          : "Has agotado Free. Pro desbloquea documentos ilimitados.",
+      href: isPaid ? "/ajustes" : "/precios",
+      action: isPaid ? "Ir a ajustes" : "Ver planes",
+      done: isPaid ? hasBrand : false,
+    },
+    {
+      title: isEmpresa ? "Trabaja en equipo" : "Funciones avanzadas",
+      text: isEmpresa
+        ? "Invita miembros, comparte documentos y controla permisos."
+        : "Plantillas, asistente y equipo viven fuera del flujo básico para no saturarte.",
+      href: isEmpresa ? "/workspace" : isPaid ? "/plantillas" : "/precios",
+      action: isEmpresa ? "Abrir equipo" : isPaid ? "Ver plantillas" : "Ver Pro",
+      done: isEmpresa,
+    },
+  ];
 }
 
 function getRecommendedDocuments(documents: DocumentRow[], isFree: boolean): DashboardDocumentConfig[] {
-  const preferredTypes = documents.length > 0 ? getMostUsedTypes(documents).map((item) => item.type) : [];
   const preferredCategories = new Set<string>();
 
-  for (const type of preferredTypes) {
-    const category = getDocumentConfig(type)?.category;
+  for (const doc of documents) {
+    const category = getDocumentConfig(doc.doc_type)?.category;
 
     if (category) {
       preferredCategories.add(category);
@@ -494,7 +375,7 @@ function getRecommendedDocuments(documents: DocumentRow[], isFree: boolean): Das
     .filter((doc): doc is DashboardDocumentConfig => Boolean(doc))
     .filter((doc) => !isFree || !requiresPro(doc));
 
-  return uniqueDocuments([...candidates, ...fallback]).slice(0, 8);
+  return uniqueDocuments([...candidates, ...fallback]).slice(0, 6);
 }
 
 function uniqueDocuments(documents: DashboardDocumentConfig[]) {
@@ -508,4 +389,20 @@ function uniqueDocuments(documents: DashboardDocumentConfig[]) {
     seen.add(doc.type);
     return true;
   });
+}
+
+function getDocumentCategory(doc: DocumentRow) {
+  return getDocumentConfig(doc.doc_type)?.category || (doc.doc_type.startsWith("community:") ? "Comunitario" : "Documento");
+}
+
+function getBrandHelper({ hasBrand, isPaid }: { hasBrand: boolean; isPaid: boolean }) {
+  if (!isPaid) {
+    return "Marca disponible en Pro";
+  }
+
+  return hasBrand ? "Datos corporativos configurados" : "Añade logo y datos corporativos";
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("es-ES");
 }

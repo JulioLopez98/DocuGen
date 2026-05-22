@@ -601,6 +601,14 @@ La fase 11.10.1 simplifica navegacion y visibilidad por plan:
 - Renombrados visibles: Historial -> Documentos, Workspace -> Equipo, Catalogo -> Tipos de documento.
 - Informe disponible en `docs/ux-navigation-onboarding.md`.
 
+La fase 11.10.2 rediseña el dashboard como centro guiado:
+
+- Hero orientado a accion principal.
+- Checklist de onboarding dentro del panel.
+- Trabajo reciente destacado.
+- Recomendaciones de documentos y accesos por intencion.
+- Estadisticas relegadas al final para reducir ruido.
+
 ## Comandos
 
 ```bash

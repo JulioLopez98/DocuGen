@@ -45,3 +45,27 @@ Admin:
 ## Siguiente mejora
 
 Fase 11.10.2: redisenar dashboard como centro guiado con acciones recomendadas y checklist de onboarding.
+
+## Fase 11.10.2
+
+Se rediseña `/dashboard` como centro de trabajo guiado.
+
+Cambios:
+
+- Hero con pregunta directa y accion principal `Crear documento`.
+- Accesos por intencion: catalogo, a medida, continuar trabajo.
+- Checklist breve de onboarding con 4 pasos.
+- Bloque de trabajo reciente con ultimo documento destacado.
+- Recomendaciones de documentos sin saturar la pantalla.
+- Estado del plan y uso en un lateral claro.
+- Estadisticas movidas al final para que no compitan con la accion principal.
+
+Objetivo:
+
+- Un usuario nuevo entiende que debe empezar por crear.
+- Un usuario recurrente encuentra rapido su ultimo documento.
+- Funciones avanzadas aparecen como siguiente paso, no como ruido inicial.
+
+Siguiente mejora:
+
+Fase 11.10.3: mejorar `/generar` para elegir documento por intencion y categoria, reduciendo la sensacion de catalogo enorme.
