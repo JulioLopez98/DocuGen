@@ -8,7 +8,7 @@ import {
   PREMIUM_MODEL,
 } from "@/lib/openai";
 import { documentTypeValues, getDocumentConfig, requiresPro } from "@/lib/document-types";
-import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
+import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { refinementLabels, type RefinementMode } from "@/lib/refinement";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type Profile } from "@/lib/supabase-server";
@@ -62,6 +62,17 @@ export async function POST(request: Request) {
 
     if (!rateLimit.allowed) {
       return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de generaciones por hora.");
+    }
+
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      action: "document_improve",
+      userLimit: profile.plan === "free" ? 10 : 60,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de mejoras con IA por hora.");
     }
 
     const openai = getOpenAIClient();
@@ -121,6 +132,10 @@ export async function POST(request: Request) {
     }
 
     await recordGenerationEvent(supabase, user.id);
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      action: "document_improve",
+    });
 
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

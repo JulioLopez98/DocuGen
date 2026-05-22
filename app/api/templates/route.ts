@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { checkActionRateLimit, recordActionRateLimitEvent } from "@/lib/rate-limit";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { canUseWorkspace } from "@/lib/workspace-access";
@@ -87,6 +88,25 @@ export async function POST(request: Request) {
       );
     }
 
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      workspaceId: workspaceAccess.workspaceId,
+      action: "template_upload",
+      userLimit: profile.plan === "empresa" ? 60 : 25,
+      workspaceLimit: profile.plan === "empresa" ? 160 : undefined,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(
+        429,
+        "rate_limit_reached",
+        actionRateLimit.scope === "workspace"
+          ? "El workspace ha alcanzado el limite de subidas de plantillas por hora."
+          : "Has alcanzado el limite de subidas de plantillas por hora.",
+      );
+    }
+
     if (!payload.storagePath.startsWith(`${user.id}/`)) {
       return errorResponse(400, "invalid_storage_path", "La ruta del archivo no pertenece a tu cuenta.");
     }
@@ -127,6 +147,12 @@ export async function POST(request: Request) {
         fileType: data.file_type,
         originalFilename: data.original_filename,
       },
+    });
+
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      workspaceId: workspaceAccess.workspaceId,
+      action: "template_upload",
     });
 
     return NextResponse.json({ template: data }, { status: 201 });

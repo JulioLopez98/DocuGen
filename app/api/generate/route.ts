@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { generatePayloadSchema, getDocumentConfig, requiresPro } from "@/lib/document-types";
-import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
+import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import type { TemplateUsageMode } from "@/lib/template-usage";
@@ -74,6 +74,25 @@ export async function POST(request: Request) {
 
     if (!rateLimit.allowed) {
       return errorResponse(429, "rate_limit_reached", "Has alcanzado el límite de generaciones por hora.");
+    }
+
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      workspaceId: workspaceAccess.workspaceId,
+      action: "document_generate",
+      userLimit: profile.plan === "free" ? 10 : 80,
+      workspaceLimit: profile.plan === "empresa" ? 240 : undefined,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(
+        429,
+        "rate_limit_reached",
+        actionRateLimit.scope === "workspace"
+          ? "El workspace ha alcanzado el límite de generaciones por hora."
+          : "Has alcanzado el límite de generaciones por hora.",
+      );
     }
 
     const openai = getOpenAIClient();
@@ -156,6 +175,11 @@ export async function POST(request: Request) {
     });
 
     await recordGenerationEvent(supabase, user.id);
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      workspaceId: workspaceAccess.workspaceId,
+      action: "document_generate",
+    });
 
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

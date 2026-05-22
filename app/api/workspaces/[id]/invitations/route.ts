@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { checkActionRateLimit, recordActionRateLimitEvent } from "@/lib/rate-limit";
 import { sendWorkspaceInvitationEmail } from "@/lib/resend";
 import {
   createSupabaseServiceClient,
@@ -51,6 +52,25 @@ export async function POST(request: Request, { params }: Params) {
 
     const payload = createInvitationSchema.parse(await request.json());
     const presetPermissions = payload.rolePreset ? getWorkspaceRolePreset(payload.rolePreset) : getDefaultPermissions(payload.role);
+    const actionRateLimit = await checkActionRateLimit({
+      supabase: auth.supabase,
+      userId: auth.user.id,
+      workspaceId: auth.workspace.id,
+      action: "workspace_invite",
+      userLimit: 20,
+      workspaceLimit: 80,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(
+        429,
+        "rate_limit_reached",
+        actionRateLimit.scope === "workspace"
+          ? "El workspace ha alcanzado el limite de invitaciones por hora."
+          : "Has alcanzado el limite de invitaciones por hora.",
+      );
+    }
+
     const db = createSupabaseServiceClient();
 
     if (!db) {
@@ -141,6 +161,12 @@ export async function POST(request: Request, { params }: Params) {
         rolePreset: payload.rolePreset || payload.role,
         resent: Boolean(pendingInvitation),
       },
+    });
+
+    await recordActionRateLimitEvent(auth.supabase, {
+      userId: auth.user.id,
+      workspaceId: auth.workspace.id,
+      action: "workspace_invite",
     });
 
     return NextResponse.json({ invitation }, { status: pendingInvitation ? 200 : 201 });

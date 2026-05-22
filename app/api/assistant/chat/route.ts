@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildAssistantChatPrompt, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
+import { checkActionRateLimit, recordActionRateLimitEvent } from "@/lib/rate-limit";
 import { requireUser, type ChatMessageRow, type ChatSessionRow, type Profile } from "@/lib/supabase-server";
 
 const assistantChatSchema = z.object({
@@ -33,6 +34,17 @@ export async function POST(request: Request) {
 
     if (profile.plan === "free") {
       return errorResponse(403, "pro_required", "El asistente conversacional esta disponible solo en DocuGen Pro.");
+    }
+
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      action: "assistant_chat",
+      userLimit: profile.plan === "empresa" ? 120 : 60,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de mensajes del asistente por hora.");
     }
 
     const session = payload.sessionId
@@ -72,6 +84,11 @@ export async function POST(request: Request) {
     if (!openai) {
       return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para usar el asistente.");
     }
+
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      action: "assistant_chat",
+    });
 
     const response = await openai.responses.create({
       model: PREMIUM_MODEL,

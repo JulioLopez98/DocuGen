@@ -539,6 +539,14 @@ La fase 11.2 revisa rutas server con service role:
 - Checklist manual para validar permisos server-side.
 - Informe disponible en `docs/service-role-audit.md`.
 
+La fase 11.3 añade rate limits por accion y workspace:
+
+- Nueva tabla `rate_limit_events` para eventos anti-abuso por usuario, accion y workspace.
+- Limites adicionales en generacion, mejoras IA, asistente, plantillas, invitaciones y miembros.
+- Falla en abierto si falta la tabla para no romper despliegues antes de ejecutar SQL.
+- SQL incremental: `supabase-rate-limit-events.sql`.
+- Informe disponible en `docs/rate-limits-anti-abuse.md`.
+
 ## Comandos
 
 ```bash

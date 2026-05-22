@@ -7,6 +7,7 @@ import {
   type WorkspaceMemberRow,
   type WorkspaceRow,
 } from "@/lib/supabase-server";
+import { checkActionRateLimit, recordActionRateLimitEvent } from "@/lib/rate-limit";
 import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 import { getWorkspaceRolePreset } from "@/lib/workspace-roles";
 
@@ -59,6 +60,12 @@ export async function POST(request: Request, { params }: Params) {
 
     const payload = addMemberSchema.parse(await request.json());
     const presetPermissions = payload.rolePreset ? getWorkspaceRolePreset(payload.rolePreset) : getDefaultPermissions(payload.role);
+    const actionRateLimit = await checkMemberManageRateLimit(auth.supabase, auth.user.id, auth.workspace.id);
+
+    if (actionRateLimit instanceof NextResponse) {
+      return actionRateLimit;
+    }
+
     const db = createSupabaseServiceClient() || auth.supabase;
     const { data: targetProfile, error: targetError } = await db
       .from("profiles")
@@ -109,6 +116,12 @@ export async function POST(request: Request, { params }: Params) {
       },
     });
 
+    await recordActionRateLimitEvent(auth.supabase, {
+      userId: auth.user.id,
+      workspaceId: auth.workspace.id,
+      action: "workspace_member_manage",
+    });
+
     return NextResponse.json({ member, profile: { id: targetProfile.id, email: targetProfile.email } }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -129,6 +142,12 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     const payload = updateMemberSchema.parse(await request.json());
+    const actionRateLimit = await checkMemberManageRateLimit(auth.supabase, auth.user.id, auth.workspace.id);
+
+    if (actionRateLimit instanceof NextResponse) {
+      return actionRateLimit;
+    }
+
     const db = createSupabaseServiceClient() || auth.supabase;
     const { data: memberToUpdate, error: findError } = await db
       .from("workspace_members")
@@ -195,6 +214,12 @@ export async function PATCH(request: Request, { params }: Params) {
       },
     });
 
+    await recordActionRateLimitEvent(auth.supabase, {
+      userId: auth.user.id,
+      workspaceId: auth.workspace.id,
+      action: "workspace_member_manage",
+    });
+
     return NextResponse.json({ member });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -215,6 +240,12 @@ export async function DELETE(request: Request, { params }: Params) {
     }
 
     const payload = deleteMemberSchema.parse(await request.json());
+    const actionRateLimit = await checkMemberManageRateLimit(auth.supabase, auth.user.id, auth.workspace.id);
+
+    if (actionRateLimit instanceof NextResponse) {
+      return actionRateLimit;
+    }
+
     const db = createSupabaseServiceClient() || auth.supabase;
     const { data: memberToDelete, error: findError } = await db
       .from("workspace_members")
@@ -254,6 +285,12 @@ export async function DELETE(request: Request, { params }: Params) {
         memberUserId: memberToDelete.user_id,
         role: memberToDelete.role,
       },
+    });
+
+    await recordActionRateLimitEvent(auth.supabase, {
+      userId: auth.user.id,
+      workspaceId: auth.workspace.id,
+      action: "workspace_member_manage",
     });
 
     return NextResponse.json({ deleted: true });
@@ -317,4 +354,31 @@ async function requireWorkspaceAdmin(workspaceIdParam: string) {
 
 function getDefaultPermissions(role: "admin" | "member") {
   return getWorkspaceRolePreset(role === "admin" ? "admin" : "contributor");
+}
+
+async function checkMemberManageRateLimit(
+  supabase: NonNullable<Awaited<ReturnType<typeof requireUser>>["supabase"]>,
+  userId: string,
+  workspaceId: string,
+) {
+  const actionRateLimit = await checkActionRateLimit({
+    supabase,
+    userId,
+    workspaceId,
+    action: "workspace_member_manage",
+    userLimit: 40,
+    workspaceLimit: 160,
+  });
+
+  if (!actionRateLimit.allowed) {
+    return errorResponse(
+      429,
+      "rate_limit_reached",
+      actionRateLimit.scope === "workspace"
+        ? "El workspace ha alcanzado el limite de cambios de miembros por hora."
+        : "Has alcanzado el limite de cambios de miembros por hora.",
+    );
+  }
+
+  return actionRateLimit;
 }

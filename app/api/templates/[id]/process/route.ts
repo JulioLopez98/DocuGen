@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { checkActionRateLimit, recordActionRateLimitEvent } from "@/lib/rate-limit";
 import { processTemplateFile } from "@/lib/template-processing";
 import { createSupabaseServiceClient, requireUser, type DocumentTemplateRow, type Profile } from "@/lib/supabase-server";
 import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
@@ -66,6 +67,25 @@ export async function POST(_request: Request, { params }: Params) {
       }
     }
 
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      workspaceId: template.workspace_id,
+      action: "template_process",
+      userLimit: profile.plan === "empresa" ? 40 : 15,
+      workspaceLimit: profile.plan === "empresa" ? 100 : undefined,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(
+        429,
+        "rate_limit_reached",
+        actionRateLimit.scope === "workspace"
+          ? "El workspace ha alcanzado el limite de procesamiento de plantillas por hora."
+          : "Has alcanzado el limite de procesamiento de plantillas por hora.",
+      );
+    }
+
     const db = createSupabaseServiceClient() || supabase;
     await db
       .from("document_templates")
@@ -117,6 +137,12 @@ export async function POST(_request: Request, { params }: Params) {
         status: result.status,
         words: result.text ? result.text.trim().split(/\s+/).filter(Boolean).length : 0,
       },
+    });
+
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      workspaceId: template.workspace_id,
+      action: "template_process",
     });
 
     return NextResponse.json({ template: updatedTemplate });

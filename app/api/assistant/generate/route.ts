@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildAssistantDocumentProposal } from "@/lib/assistant-proposals";
 import { buildAssistantDocumentPrompt, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
-import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
+import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type ChatMessageRow, type ChatSessionRow, type Profile } from "@/lib/supabase-server";
 
@@ -71,6 +71,17 @@ export async function POST(request: Request) {
 
     if (!rateLimit.allowed) {
       return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de generaciones por hora.");
+    }
+
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      action: "assistant_generate",
+      userLimit: profile.plan === "empresa" ? 80 : 40,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de generaciones desde el asistente por hora.");
     }
 
     const openai = getOpenAIClient();
@@ -159,6 +170,10 @@ export async function POST(request: Request) {
     }
 
     await recordGenerationEvent(supabase, user.id);
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      action: "assistant_generate",
+    });
 
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

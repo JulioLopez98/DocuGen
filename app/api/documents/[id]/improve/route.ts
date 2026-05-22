@@ -7,7 +7,7 @@ import {
   getOpenAIClient,
   PREMIUM_MODEL,
 } from "@/lib/openai";
-import { checkGenerationRateLimit, recordGenerationEvent } from "@/lib/rate-limit";
+import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { createSupabaseServiceClient, requireUser, type Profile } from "@/lib/supabase-server";
 
 const improvePayloadSchema = z.object({
@@ -65,6 +65,17 @@ export async function POST(request: Request, { params }: Params) {
       return errorResponse(429, "rate_limit_reached", "Has alcanzado el límite de mejoras con IA por hora.");
     }
 
+    const actionRateLimit = await checkActionRateLimit({
+      supabase,
+      userId: user.id,
+      action: "document_improve",
+      userLimit: profile.plan === "free" ? 10 : 60,
+    });
+
+    if (!actionRateLimit.allowed) {
+      return errorResponse(429, "rate_limit_reached", "Has alcanzado el limite de mejoras con IA por hora.");
+    }
+
     const openai = getOpenAIClient();
 
     if (!openai) {
@@ -92,6 +103,10 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     await recordGenerationEvent(supabase, user.id);
+    await recordActionRateLimitEvent(supabase, {
+      userId: user.id,
+      action: "document_improve",
+    });
 
     return NextResponse.json({
       document: {
