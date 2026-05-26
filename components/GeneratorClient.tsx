@@ -62,6 +62,90 @@ type GeneratorClientProps = {
   initialMode?: "catalog" | "community" | "custom";
 };
 
+type GeneratorIntentId = "popular" | "sell" | "hire" | "protect" | "web" | "claim" | "operations" | "home" | "all";
+
+type GeneratorIntent = {
+  id: GeneratorIntentId;
+  label: string;
+  description: string;
+  categories?: string[];
+  types?: DocumentType[];
+  keywords?: string[];
+  sampleTypes: DocumentType[];
+};
+
+const generatorIntents: GeneratorIntent[] = [
+  {
+    id: "popular",
+    label: "Lo mas habitual",
+    description: "Empieza por los documentos que mas suelen necesitar autonomos, empresas y profesionales.",
+    types: ["contrato-freelance", "presupuesto-comercial", "propuesta-proyecto", "carta-presentacion", "aviso-legal"],
+    sampleTypes: ["contrato-freelance", "presupuesto-comercial", "carta-presentacion"],
+  },
+  {
+    id: "sell",
+    label: "Vender o presentar una propuesta",
+    description: "Presupuestos, propuestas, pedidos y condiciones para trabajar con clientes.",
+    categories: ["Comercial"],
+    keywords: ["venta", "presupuesto", "propuesta", "pedido", "albaran"],
+    sampleTypes: ["presupuesto-comercial", "propuesta-proyecto", "condiciones-generales-venta"],
+  },
+  {
+    id: "hire",
+    label: "Contratar o colaborar",
+    description: "Contratos, acuerdos de colaboracion y documentos para definir una relacion profesional.",
+    categories: ["Laboral", "Laboral y servicios", "Empresa"],
+    keywords: ["contrato", "acuerdo", "servicios", "colaboracion", "teletrabajo"],
+    sampleTypes: ["contrato-freelance", "acuerdo-colaboracion", "prestacion-servicios-empresa"],
+  },
+  {
+    id: "protect",
+    label: "Proteger informacion o derechos",
+    description: "Confidencialidad, propiedad intelectual, pactos y documentos con mayor sensibilidad legal.",
+    categories: ["Legal"],
+    keywords: ["nda", "confidencialidad", "derechos", "arras", "compraventa"],
+    sampleTypes: ["acuerdo-nda", "acuerdo-confidencialidad-ampliado", "cesion-derechos-pi"],
+  },
+  {
+    id: "web",
+    label: "Web, privacidad y ecommerce",
+    description: "Textos para webs, privacidad, cookies, devoluciones, envios y servicios digitales.",
+    categories: ["Web", "Digital"],
+    keywords: ["web", "privacidad", "cookies", "devoluciones", "envios"],
+    sampleTypes: ["aviso-legal", "politica-privacidad", "politica-cookies"],
+  },
+  {
+    id: "claim",
+    label: "Reclamar o responder",
+    description: "Cartas y emails formales para reclamar, contestar o dejar constancia por escrito.",
+    categories: ["Profesional"],
+    keywords: ["reclamacion", "respuesta", "carta", "renuncia", "certificado"],
+    sampleTypes: ["reclamacion-formal-email", "carta-reclamacion-empresa", "respuesta-reclamacion"],
+  },
+  {
+    id: "operations",
+    label: "Gestion interna",
+    description: "Documentos operativos para reuniones, compras, entregas y procesos del dia a dia.",
+    categories: ["Profesional", "Comercial", "Empresa"],
+    keywords: ["acta", "orden", "albaran", "certificado", "factura"],
+    sampleTypes: ["acta-reunion", "orden-compra", "factura-proforma"],
+  },
+  {
+    id: "home",
+    label: "Inmuebles",
+    description: "Documentos para operaciones sencillas relacionadas con locales, arras e inventarios.",
+    categories: ["Inmobiliario"],
+    keywords: ["arrendamiento", "arras", "inmueble", "local"],
+    sampleTypes: ["arrendamiento-local", "contrato-arras", "inventario-inmueble"],
+  },
+  {
+    id: "all",
+    label: "Todo el catalogo",
+    description: "Explora todos los tipos oficiales de DocuGen por categoria.",
+    sampleTypes: ["contrato-freelance", "presupuesto-comercial", "politica-privacidad"],
+  },
+];
+
 export function GeneratorClient({
   initialDocType,
   initialFormData,
@@ -78,7 +162,8 @@ export function GeneratorClient({
 }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selected, setSelected] = useState<DocumentType>(initialDocType || getDefaultDocumentType(searchParams.get("type")));
+  const initialSelectedType = initialDocType || getDefaultDocumentType(searchParams.get("type"));
+  const [selected, setSelected] = useState<DocumentType>(initialSelectedType);
   const [generated, setGenerated] = useState<GeneratedDocument | null>(null);
   const [lastPayload, setLastPayload] = useState<GenerateRequestPayload | null>(
     initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
@@ -89,6 +174,7 @@ export function GeneratorClient({
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
+  const [selectedIntentId, setSelectedIntentId] = useState<GeneratorIntentId>(() => getIntentForDocument(initialSelectedType));
   const [templateQuery, setTemplateQuery] = useState("");
   const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
@@ -103,7 +189,12 @@ export function GeneratorClient({
   const proLocked = plan === "free" && requiresPro(config);
   const customProLocked = plan === "free";
   const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
-  const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery), [documentQuery]);
+  const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery, selectedIntentId), [documentQuery, selectedIntentId]);
+  const visibleDocumentCount = useMemo(
+    () => groupedDocuments.reduce((total, group) => total + group.documents.length, 0),
+    [groupedDocuments],
+  );
+  const selectedIntent = generatorIntents.find((intent) => intent.id === selectedIntentId) || generatorIntents[0];
   const visibleReferenceTemplates = useMemo(
     () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId || null),
     [referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId],
@@ -126,8 +217,28 @@ export function GeneratorClient({
   const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
   const isFreePlan = plan === "free";
 
+  function selectCatalogIntent(intentId: GeneratorIntentId) {
+    const matchingDocuments = getDocumentsForIntent(intentId);
+    const nextSelected = matchingDocuments.some((doc) => doc.type === selected) ? selected : matchingDocuments[0]?.type || selected;
+
+    setGeneratorMode("catalog");
+    setSelectedIntentId(intentId);
+    setGenerated(null);
+    setError(null);
+
+    if (nextSelected !== selected) {
+      setSelected(nextSelected);
+      setLastPayload(null);
+      setLastCustomPayload(null);
+      setLastCommunityPayload(null);
+    }
+
+    router.replace(`/generar?mode=catalog&type=${nextSelected}`, { scroll: false });
+  }
+
   function selectDocument(type: DocumentType) {
     setSelected(type);
+    setSelectedIntentId(getIntentForDocument(type));
     setGenerated(null);
     setError(null);
     setLastPayload(null);
@@ -285,28 +396,53 @@ export function GeneratorClient({
       <aside className="space-y-4">
         <section className="surface rounded-md p-5">
           <div>
-            <p className="eyebrow">Modo de creacion</p>
-            <h2 className="font-serif-display mt-2 text-2xl font-bold">Elige el punto de partida</h2>
+            <p className="eyebrow">Punto de partida</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Que quieres crear?</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Usa el catalogo si sabes lo que necesitas. Usa comunidad para tipos aprobados a partir de solicitudes.
-              Usa a medida si no encuentras el documento exacto.
+              Primero elige la intencion. Despues veras solo los documentos que encajan, sin tener que recorrer todo el catalogo.
             </p>
           </div>
           <div className="mt-4 grid gap-2">
+            {generatorIntents.filter((intent) => intent.id !== "all").map((intent) => (
+              <button
+                key={intent.id}
+                type="button"
+                onClick={() => selectCatalogIntent(intent.id)}
+                className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
+                  generatorMode === "catalog" && selectedIntentId === intent.id
+                    ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                    : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                }`}
+              >
+                <span className="flex items-center justify-between gap-3">
+                  <span className="font-bold">{intent.label}</span>
+                  <span className="text-xs font-semibold text-[#2d6a4f]">{getDocumentsForIntent(intent.id).length}</span>
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">{intent.description}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 border-t border-[#d8f3dc] pt-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Tambien puedes</p>
+            <div className="mt-3 grid gap-2">
             <button
               type="button"
               onClick={() => {
                 setGeneratorMode("catalog");
+                setSelectedIntentId("all");
                 setGenerated(null);
                 setError(null);
                 router.replace("/generar?mode=catalog", { scroll: false });
               }}
               className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                generatorMode === "catalog" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
+                generatorMode === "catalog" && selectedIntentId === "all"
+                  ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                  : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
               }`}
             >
-              <span className="font-bold">Catalogo guiado</span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">Tipos oficiales con formulario estructurado.</span>
+              <span className="font-bold">Ver todo el catalogo</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Todos los tipos oficiales disponibles.</span>
             </button>
             <button
               type="button"
@@ -321,8 +457,8 @@ export function GeneratorClient({
                 generatorMode === "community" ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70"
               }`}
             >
-              <span className="font-bold">Catalogo comunitario</span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">Nuevos tipos revisados antes de publicarse.</span>
+              <span className="font-bold">Tipos de la comunidad</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Documentos aprobados a partir de solicitudes reales.</span>
             </button>
             <button
               type="button"
@@ -337,11 +473,12 @@ export function GeneratorClient({
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                A medida
+                Pedir un documento a medida
                 {customProLocked && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] text-white">Pro</span>}
               </span>
               <span className="mt-1 block text-xs leading-5 text-slate-500">Para documentos que no estan en el catalogo.</span>
             </button>
+            </div>
           </div>
         </section>
 
@@ -400,9 +537,10 @@ export function GeneratorClient({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Documento</p>
-              <h2 className="font-serif-display mt-2 text-2xl font-bold">Elige el tipo</h2>
+              <h2 className="font-serif-display mt-2 text-2xl font-bold">{selectedIntent.label}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{selectedIntent.description}</p>
             </div>
-            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{documentTypes.length} tipos</span>
+            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{visibleDocumentCount} tipos</span>
           </div>
 
           <label className="mt-5 block">
@@ -414,6 +552,27 @@ export function GeneratorClient({
               placeholder="Contrato, cookies, reclamacion..."
             />
           </label>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-slate-500">Sugerencia:</span>
+            {selectedIntent.sampleTypes.map((type) => {
+              const sampleConfig = getDocumentConfig(type);
+
+              if (!sampleConfig) {
+                return null;
+              }
+
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => selectDocument(type)}
+                  className="focus-ring rounded-full border border-[#d8f3dc] bg-white/75 px-3 py-1 font-semibold text-[#2d6a4f] transition hover:border-[#2d6a4f]"
+                >
+                  {sampleConfig.label}
+                </button>
+              );
+            })}
+          </div>
 
           <div className="mt-5 grid gap-2">
             {groupedDocuments.map((group) => (
@@ -902,12 +1061,16 @@ export function GeneratorClient({
   );
 }
 
-function groupDocumentTypes(query: string) {
+function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
   const groups = new Map<string, typeof documentTypes[number][]>();
   const normalizedQuery = query.trim().toLowerCase();
 
   for (const doc of documentTypes) {
     const searchable = `${doc.label} ${doc.summary} ${doc.category}`.toLowerCase();
+
+    if (!documentMatchesIntent(doc, intentId)) {
+      continue;
+    }
 
     if (normalizedQuery && !searchable.includes(normalizedQuery)) {
       continue;
@@ -920,6 +1083,56 @@ function groupDocumentTypes(query: string) {
     category,
     documents,
   }));
+}
+
+function getDocumentsForIntent(intentId: GeneratorIntentId) {
+  return documentTypes.filter((doc) => documentMatchesIntent(doc, intentId));
+}
+
+function documentMatchesIntent(doc: typeof documentTypes[number], intentId: GeneratorIntentId) {
+  if (intentId === "all") {
+    return true;
+  }
+
+  const intent = generatorIntents.find((item) => item.id === intentId);
+
+  if (!intent) {
+    return true;
+  }
+
+  if (intent.types?.includes(doc.type)) {
+    return true;
+  }
+
+  if (intent.categories?.includes(doc.category)) {
+    return true;
+  }
+
+  if (intent.keywords?.some((keyword) => normalizeForMatch(`${doc.label} ${doc.summary}`).includes(normalizeForMatch(keyword)))) {
+    return true;
+  }
+
+  return false;
+}
+
+function getIntentForDocument(type: DocumentType): GeneratorIntentId {
+  const exactIntent = generatorIntents.find((intent) => intent.id !== "all" && intent.types?.includes(type));
+
+  if (exactIntent) {
+    return exactIntent.id;
+  }
+
+  const config = getDocumentConfig(type);
+
+  if (!config) {
+    return "popular";
+  }
+
+  const categoryIntent = generatorIntents.find(
+    (intent) => intent.id !== "all" && intent.categories?.includes(config.category),
+  );
+
+  return categoryIntent?.id || "all";
 }
 
 function filterAndRankReferenceTemplates(

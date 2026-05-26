@@ -69,3 +69,26 @@ Objetivo:
 Siguiente mejora:
 
 Fase 11.10.3: mejorar `/generar` para elegir documento por intencion y categoria, reduciendo la sensacion de catalogo enorme.
+
+## Fase 11.10.3
+
+Se simplifica `/generar` para que el usuario empiece por una intencion, no por una lista completa.
+
+Cambios:
+
+- Selector inicial por intenciones: habitual, vender, contratar, proteger, web, reclamar, gestion interna e inmuebles.
+- El catalogo se filtra automaticamente segun la intencion elegida.
+- Se mantiene busqueda dentro del subconjunto visible.
+- Se muestran sugerencias rapidas de documentos frecuentes por intencion.
+- Las opciones avanzadas quedan separadas: catalogo completo, tipos de comunidad y documento a medida.
+- El formulario, plantillas, exportacion y limites por plan siguen funcionando igual.
+
+Objetivo:
+
+- Un usuario nuevo no ve todos los tipos a la vez.
+- Un usuario avanzado puede seguir buscando o abrir todo el catalogo.
+- Si no encuentra lo que necesita, el camino hacia documento a medida queda claro.
+
+Siguiente mejora:
+
+Fase 11.10.4: onboarding contextual dentro de las pantallas clave con pequenos mensajes de ayuda y estados vacios mas claros.
