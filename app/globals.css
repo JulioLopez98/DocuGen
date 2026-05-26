@@ -56,6 +56,27 @@ select {
   outline-offset: 2px;
 }
 
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  transform: translateY(-150%);
+  border-radius: 10px;
+  background: #2d6a4f;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-lift);
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid rgba(45, 106, 79, 0.35);
+  outline-offset: 2px;
+}
+
 .surface {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.82);

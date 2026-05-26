@@ -29,7 +29,7 @@ export function EmptyState({
   steps,
 }: EmptyStateProps) {
   return (
-    <div className={`${variant === "surface" ? "surface" : "surface-flat"} rounded-md p-8`}>
+    <section className={`${variant === "surface" ? "surface" : "surface-flat"} rounded-md p-8`} aria-label={title}>
       <div className="max-w-2xl">
         <p className="eyebrow">{eyebrow}</p>
         <h2 className="font-serif-display mt-3 text-3xl font-bold">{title}</h2>
@@ -39,14 +39,14 @@ export function EmptyState({
       {children && <div className="mt-6">{children}</div>}
 
       {steps && steps.length > 0 && (
-        <div className="mt-6 grid gap-2">
+        <ol className="mt-6 grid gap-2">
           {steps.map((step, index) => (
-            <p key={step} className="rounded-md border border-[#d8f3dc] bg-white/70 px-3 py-2 text-sm leading-6 text-slate-600">
+            <li key={step} className="rounded-md border border-[#d8f3dc] bg-white/70 px-3 py-2 text-sm leading-6 text-slate-600">
               <span className="mr-2 font-bold text-[#2d6a4f]">{index + 1}.</span>
               {step}
-            </p>
+            </li>
           ))}
-        </div>
+        </ol>
       )}
 
       {(primaryAction || secondaryAction) && (
@@ -63,6 +63,6 @@ export function EmptyState({
           )}
         </div>
       )}
-    </div>
+    </section>
   );
 }

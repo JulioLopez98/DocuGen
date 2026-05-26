@@ -15,6 +15,7 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = "header-more-menu";
   const isActive = links.some((link) => pathname === link.href || pathname.startsWith(`${link.href}/`));
 
   useEffect(() => {
@@ -24,8 +25,18 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
       }
     }
 
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
     document.addEventListener("mousedown", closeOnOutsideClick);
-    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
   }, []);
 
   return (
@@ -36,13 +47,16 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
         className={`nav-link rounded-full px-3 py-2 text-sm font-semibold ${isActive || open ? "nav-link-active" : ""}`}
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-controls={menuId}
       >
         Más
       </button>
 
       {open && (
         <div
+          id={menuId}
           role="menu"
+          aria-label="Más opciones de navegación"
           className="absolute right-0 top-11 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-md border border-[#d8f3dc] bg-white shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
         >
           <div className="grid p-2">

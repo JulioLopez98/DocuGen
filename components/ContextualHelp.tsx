@@ -16,7 +16,7 @@ type ContextualHelpProps = {
 };
 
 export function ContextualHelp({
-  eyebrow = "Ayuda rapida",
+  eyebrow = "Ayuda rápida",
   title,
   description,
   items = [],
@@ -25,18 +25,18 @@ export function ContextualHelp({
   tone = "default",
 }: ContextualHelpProps) {
   return (
-    <aside className={`rounded-md border p-5 ${getToneClassName(tone)}`}>
+    <aside className={`rounded-md border p-5 ${getToneClassName(tone)}`} aria-label={title}>
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{eyebrow}</p>
       <h2 className="mt-2 font-serif-display text-2xl font-bold">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
       {items.length > 0 && (
-        <div className="mt-4 grid gap-2">
+        <ul className="mt-4 grid gap-2">
           {items.map((item) => (
-            <p key={item} className="rounded-md bg-white/72 px-3 py-2 text-xs leading-5 text-slate-600">
+            <li key={item} className="rounded-md bg-white/72 px-3 py-2 text-xs leading-5 text-slate-600">
               {item}
-            </p>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
       {(primaryAction || secondaryAction) && (
         <div className="mt-5 flex flex-wrap gap-2">

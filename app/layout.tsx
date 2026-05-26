@@ -62,8 +62,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="min-h-screen bg-[#faf9f6] text-[#1f2933] antialiased">
+        <a href="#contenido-principal" className="skip-link">
+          Saltar al contenido principal
+        </a>
         <Header />
-        <main>{children}</main>
+        <main id="contenido-principal" tabIndex={-1}>
+          {children}
+        </main>
         <Footer />
       </body>
     </html>
