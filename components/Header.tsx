@@ -44,7 +44,7 @@ export async function Header() {
         </div>
 
         {user ? (
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <span className="hidden rounded-full bg-[#d8f3dc]/70 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#2d6a4f] xl:inline">
               {plan}
             </span>

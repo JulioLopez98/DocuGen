@@ -43,7 +43,7 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-11 z-50 w-72 overflow-hidden rounded-md border border-[#d8f3dc] bg-white shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
+          className="absolute right-0 top-11 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-md border border-[#d8f3dc] bg-white shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
         >
           <div className="grid p-2">
             {links.map((link) => {
