@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import { getTemplateQaReport, getTemplateQaStyles } from "@/lib/template-qa";
 import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
@@ -21,6 +22,7 @@ type TemplateLibraryClientProps = {
   initialTemplates: DocumentTemplateRow[];
   initialTemplateMetrics: TemplateUsageMetricsMap;
   workspaces?: WorkspaceRow[];
+  plan?: "pro" | "empresa";
 };
 
 type ApiError = {
@@ -41,6 +43,7 @@ export function TemplateLibraryClient({
   initialTemplates,
   initialTemplateMetrics,
   workspaces = [],
+  plan = "pro",
 }: TemplateLibraryClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [templates, setTemplates] = useState<DocumentTemplateRow[]>(initialTemplates);
@@ -517,9 +520,12 @@ export function TemplateLibraryClient({
             <EmptyState
               eyebrow="Biblioteca vacia"
               title="Sube tu primera plantilla"
-              description="Guarda documentos propios para que DocuGen pueda usarlos como referencia en las siguientes fases."
+              description="Guarda documentos propios para que DocuGen pueda usarlos como referencia al crear nuevos borradores."
               variant="flat"
-            />
+              steps={["Sube un DOCX o PDF claro.", "Procesa la plantilla para extraer texto y estructura.", "Usala desde Crear como referencia controlada."]}
+            >
+              <PlanFirstSteps plan={plan} context="templates" compact />
+            </EmptyState>
           ) : filteredTemplates.length === 0 ? (
             <EmptyState
               eyebrow="Sin resultados"

@@ -72,6 +72,7 @@ export default async function HistoryPage() {
       <HistoryClient
         documents={documents || []}
         canExportDocx={profile.plan !== "free"}
+        plan={profile.plan}
         brandSettings={brandSettings || null}
         workspaces={workspaces || []}
       />

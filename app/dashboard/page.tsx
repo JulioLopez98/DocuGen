@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ContextualHelp } from "@/components/ContextualHelp";
+import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import { PlanBadge } from "@/components/PlanBadge";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
 import { UsageBar } from "@/components/UsageBar";
@@ -135,6 +136,13 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+
+      <div className="mt-4">
+        <PlanFirstSteps
+          plan={profile.plan}
+          context={profile.plan === "empresa" ? "team" : profile.plan === "pro" ? "templates" : "documents"}
+        />
+      </div>
 
       <section className="mt-4 grid gap-4 lg:grid-cols-3">
         <ContextualHelp

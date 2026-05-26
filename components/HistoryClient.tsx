@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
+import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
@@ -13,6 +14,7 @@ import { templateUsageLabels } from "@/lib/template-usage";
 type HistoryClientProps = {
   documents: DocumentRow[];
   canExportDocx: boolean;
+  plan: "free" | "pro" | "empresa";
   brandSettings?: PdfBrandSettings | null;
   workspaces?: WorkspaceRow[];
 };
@@ -24,7 +26,7 @@ type GenerateResponse = {
 
 type SortMode = "newest" | "oldest" | "type";
 
-export function HistoryClient({ documents, canExportDocx, brandSettings, workspaces = [] }: HistoryClientProps) {
+export function HistoryClient({ documents, canExportDocx, plan, brandSettings, workspaces = [] }: HistoryClientProps) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -132,13 +134,21 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
         description="Cuando generes tu primer borrador, podras abrirlo, descargarlo, reutilizarlo como plantilla o borrarlo desde esta pantalla."
         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
+        steps={
+          plan === "free"
+            ? ["Crea uno de los tipos incluidos en Free.", "Revisa el aviso de IA y completa datos pendientes.", "Descarga PDF/TXT o mejora a Pro cuando necesites Word."]
+            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando este listo."]
+        }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-4">
+          <PlanFirstSteps plan={plan} context="documents" />
+          <div className="grid gap-3 sm:grid-cols-3">
           {["Contrato freelance", "Presupuesto comercial", "Carta de presentacion"].map((item) => (
             <div key={item} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4 text-sm font-semibold">
               {item}
             </div>
           ))}
+          </div>
         </div>
       </EmptyState>
     );

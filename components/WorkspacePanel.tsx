@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import { PlanBadge } from "@/components/PlanBadge";
 import { WorkspaceActivityFeed } from "@/components/WorkspaceActivityFeed";
 import { WorkspaceMembersManager } from "@/components/WorkspaceMembersManager";
@@ -135,15 +136,18 @@ export function WorkspacePanel({
         )}
 
         {!isEmpresa && (
-          <div className="mt-6 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
-            <p className="font-semibold text-[#2d6a4f]">Preparado para Empresa</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              El plan Empresa permitira miembros, biblioteca compartida y marca por equipo. Tu base ya esta creada
-              para migrar cuando actives ese plan.
-            </p>
-            <Link href="/precios" className="focus-ring btn-primary mt-4 inline-flex px-4 py-3 text-sm">
-              Ver plan Empresa
-            </Link>
+          <div className="mt-6 grid gap-4">
+            <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
+              <p className="font-semibold text-[#2d6a4f]">Preparado para Empresa</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                El plan Empresa permitira miembros, biblioteca compartida y marca por equipo. Tu base ya esta creada
+                para migrar cuando actives ese plan.
+              </p>
+              <Link href="/precios" className="focus-ring btn-primary mt-4 inline-flex px-4 py-3 text-sm">
+                Ver plan Empresa
+              </Link>
+            </div>
+            <PlanFirstSteps plan={profile.plan} context="team" />
           </div>
         )}
       </section>
@@ -172,7 +176,7 @@ export function WorkspacePanel({
           </div>
           <div className="mt-5 grid gap-3">
             {workspaceDocuments.length === 0 ? (
-              <EmptyWorkspaceBlock text="Aun no hay documentos compartidos en este equipo. Por ahora tus generaciones siguen siendo personales." />
+              <EmptyWorkspaceBlock text="Aun no hay documentos compartidos en este equipo. Genera uno nuevo y elige guardarlo en el equipo para que aparezca aqui." />
             ) : (
               workspaceDocuments.slice(0, 8).map((document) => (
                 <article

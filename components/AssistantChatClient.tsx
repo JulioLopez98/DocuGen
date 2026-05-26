@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DocResult } from "@/components/DocResult";
+import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import type { ChatMessageRow, ChatSessionRow } from "@/lib/supabase-server";
 
 type AssistantChatClientProps = {
@@ -192,6 +193,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               “Quiero preparar un acuerdo comercial sencillo para un colaborador”.
             </div>
           )}
+          {messages.length === 0 && <PlanFirstSteps plan="pro" context="assistant" compact />}
           {messages.map((chatMessage) => (
             <article
               key={chatMessage.id}

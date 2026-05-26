@@ -143,6 +143,7 @@ export default async function TemplatesPage() {
             description="Con Pro podras subir documentos propios, conservarlos en una biblioteca privada y prepararlos para generar nuevos borradores con tu estilo."
             primaryAction={{ href: "/precios", label: "Ver planes Pro" }}
             secondaryAction={{ href: "/generar", label: "Seguir generando" }}
+            steps={["Crea primero con los tipos esenciales.", "Prepara archivos DOCX/PDF limpios.", "Activa Pro cuando quieras usar tu estilo propio."]}
           />
         ) : (
           <TemplateLibraryClient
@@ -150,6 +151,7 @@ export default async function TemplatesPage() {
             initialTemplates={templates || []}
             initialTemplateMetrics={templateMetrics}
             workspaces={workspaces || []}
+            plan={profile.plan === "empresa" ? "empresa" : "pro"}
           />
         )}
       </div>

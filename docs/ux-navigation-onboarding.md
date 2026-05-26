@@ -147,3 +147,27 @@ Notas:
 Siguiente mejora:
 
 Fase 11.10.6: revisar estados vacios y primeros pasos por rol/plan para que Free, Pro y Empresa vean acciones diferentes y claras.
+
+## Fase 11.10.6
+
+Se mejoran los estados vacios y los primeros pasos por plan para que cada usuario vea acciones coherentes con lo que puede hacer.
+
+Cambios:
+
+- Nuevo componente `PlanFirstSteps` para mostrar recorridos segun plan y contexto.
+- `EmptyState` acepta pasos accionables en formato breve.
+- `/dashboard` muestra primeros pasos distintos para Free, Pro y Empresa.
+- `/historial` muestra una guia especifica cuando aun no hay documentos.
+- `/plantillas` diferencia claramente entre Free bloqueado y Pro/Empresa con biblioteca vacia.
+- `/asistente` muestra una guia breve para empezar un caso abierto.
+- `/workspace` explica el camino Empresa y como crear documentos compartidos.
+
+Objetivo:
+
+- Free entiende como probar sin perderse ni chocar con funciones bloqueadas.
+- Pro descubre plantillas, Word y reutilizacion.
+- Empresa entiende equipo, miembros, documentos compartidos y actividad.
+
+Siguiente mejora:
+
+Fase 11.10.7: QA visual de onboarding y navegacion en desktop/mobile antes de pasar a la siguiente fase de producto.

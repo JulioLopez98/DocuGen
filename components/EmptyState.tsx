@@ -15,6 +15,7 @@ type EmptyStateProps = {
     label: string;
   };
   children?: ReactNode;
+  steps?: string[];
 };
 
 export function EmptyState({
@@ -25,6 +26,7 @@ export function EmptyState({
   primaryAction,
   secondaryAction,
   children,
+  steps,
 }: EmptyStateProps) {
   return (
     <div className={`${variant === "surface" ? "surface" : "surface-flat"} rounded-md p-8`}>
@@ -35,6 +37,17 @@ export function EmptyState({
       </div>
 
       {children && <div className="mt-6">{children}</div>}
+
+      {steps && steps.length > 0 && (
+        <div className="mt-6 grid gap-2">
+          {steps.map((step, index) => (
+            <p key={step} className="rounded-md border border-[#d8f3dc] bg-white/70 px-3 py-2 text-sm leading-6 text-slate-600">
+              <span className="mr-2 font-bold text-[#2d6a4f]">{index + 1}.</span>
+              {step}
+            </p>
+          ))}
+        </div>
+      )}
 
       {(primaryAction || secondaryAction) && (
         <div className="mt-6 flex flex-wrap gap-3">
