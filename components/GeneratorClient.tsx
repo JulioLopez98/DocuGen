@@ -163,7 +163,10 @@ export function GeneratorClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialSelectedType = initialDocType || getDefaultDocumentType(searchParams.get("type"));
+  const initialIntentId = getValidIntentId(searchParams.get("intent")) || getIntentForDocument(initialSelectedType);
+  const startsWithExplicitDocument = Boolean(initialDocType || initialFormData || searchParams.get("type"));
   const [selected, setSelected] = useState<DocumentType>(initialSelectedType);
+  const [selectedDocumentConfirmed, setSelectedDocumentConfirmed] = useState(startsWithExplicitDocument);
   const [generated, setGenerated] = useState<GeneratedDocument | null>(null);
   const [lastPayload, setLastPayload] = useState<GenerateRequestPayload | null>(
     initialFormData && initialDocType ? { docType: initialDocType, formData: initialFormData } : null,
@@ -174,7 +177,7 @@ export function GeneratorClient({
   const [refiningMode, setRefiningMode] = useState<RefinementMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
-  const [selectedIntentId, setSelectedIntentId] = useState<GeneratorIntentId>(() => getIntentForDocument(initialSelectedType));
+  const [selectedIntentId, setSelectedIntentId] = useState<GeneratorIntentId>(initialIntentId);
   const [templateQuery, setTemplateQuery] = useState("");
   const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
@@ -223,22 +226,24 @@ export function GeneratorClient({
 
     setGeneratorMode("catalog");
     setSelectedIntentId(intentId);
+    setSelectedDocumentConfirmed(false);
     setGenerated(null);
     setError(null);
+    setLastPayload(null);
+    setLastCustomPayload(null);
+    setLastCommunityPayload(null);
 
     if (nextSelected !== selected) {
       setSelected(nextSelected);
-      setLastPayload(null);
-      setLastCustomPayload(null);
-      setLastCommunityPayload(null);
     }
 
-    router.replace(`/generar?mode=catalog&type=${nextSelected}`, { scroll: false });
+    router.replace(`/generar?mode=catalog&intent=${intentId}`, { scroll: false });
   }
 
   function selectDocument(type: DocumentType) {
     setSelected(type);
     setSelectedIntentId(getIntentForDocument(type));
+    setSelectedDocumentConfirmed(true);
     setGenerated(null);
     setError(null);
     setLastPayload(null);
@@ -431,9 +436,13 @@ export function GeneratorClient({
               onClick={() => {
                 setGeneratorMode("catalog");
                 setSelectedIntentId("all");
+                setSelectedDocumentConfirmed(false);
                 setGenerated(null);
                 setError(null);
-                router.replace("/generar?mode=catalog", { scroll: false });
+                setLastPayload(null);
+                setLastCustomPayload(null);
+                setLastCommunityPayload(null);
+                router.replace("/generar?mode=catalog&intent=all", { scroll: false });
               }}
               className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                 generatorMode === "catalog" && selectedIntentId === "all"
@@ -448,6 +457,7 @@ export function GeneratorClient({
               type="button"
               onClick={() => {
                 setGeneratorMode("community");
+                setSelectedDocumentConfirmed(false);
                 setGenerated(null);
                 setError(null);
                 router.replace("/generar?mode=community", { scroll: false });
@@ -464,6 +474,7 @@ export function GeneratorClient({
               type="button"
               onClick={() => {
                 setGeneratorMode("custom");
+                setSelectedDocumentConfirmed(false);
                 setGenerated(null);
                 setError(null);
                 router.replace("/generar?mode=custom", { scroll: false });
@@ -578,7 +589,7 @@ export function GeneratorClient({
             {groupedDocuments.map((group) => (
               <details
                 key={group.category}
-                open={documentQuery.trim().length > 0 || group.category === config.category}
+                open={documentQuery.trim().length > 0 || !selectedDocumentConfirmed || group.category === config.category}
                 className="rounded-md border border-[#d8f3dc] bg-white/58"
               >
                 <summary className="cursor-pointer list-none px-3 py-3">
@@ -591,7 +602,7 @@ export function GeneratorClient({
                 </summary>
                 <div className="grid gap-2 border-t border-[#d8f3dc] p-2">
                   {group.documents.map((doc) => {
-                    const active = doc.type === selected;
+                    const active = selectedDocumentConfirmed && doc.type === selected;
 
                     return (
                       <button
@@ -675,7 +686,7 @@ export function GeneratorClient({
           </section>
         )}
 
-        {generatorMode === "catalog" && (
+        {generatorMode === "catalog" && selectedDocumentConfirmed && (
         <section className="surface-flat rounded-md p-5">
           <p className="text-sm font-bold text-[#2d6a4f]">Seleccionado</p>
           <h3 className="font-serif-display mt-2 text-2xl font-bold">{config.label}</h3>
@@ -938,6 +949,7 @@ export function GeneratorClient({
             type="button"
             onClick={() => {
               setGeneratorMode("custom");
+              setSelectedDocumentConfirmed(false);
               setGenerated(null);
               setError(null);
             }}
@@ -952,13 +964,27 @@ export function GeneratorClient({
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-5">
           <div>
             <p className="text-sm font-semibold text-[#2d6a4f]">
-              {generatorMode === "catalog" ? config.category : generatorMode === "community" ? selectedCommunityType?.category || "Comunidad" : "Documento a medida"}
+              {generatorMode === "catalog"
+                ? selectedDocumentConfirmed
+                  ? config.category
+                  : "Paso 2"
+                : generatorMode === "community"
+                  ? selectedCommunityType?.category || "Comunidad"
+                  : "Documento a medida"}
             </p>
             <h1 className="font-serif-display mt-1 text-3xl font-bold">
-              {generatorMode === "catalog" ? config.label : generatorMode === "community" ? selectedCommunityType?.label || "Tipos de la comunidad" : "No encuentro mi documento"}
+              {generatorMode === "catalog"
+                ? selectedDocumentConfirmed
+                  ? config.label
+                  : `Elige documento para ${selectedIntent.label.toLowerCase()}`
+                : generatorMode === "community"
+                  ? selectedCommunityType?.label || "Tipos de la comunidad"
+                  : "No encuentro mi documento"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              {generatorMode === "catalog"
+              {generatorMode === "catalog" && !selectedDocumentConfirmed
+                ? "Ahora selecciona el tipo exacto. Hasta que elijas uno, no mostramos ningun formulario para evitar confusiones."
+                : generatorMode === "catalog"
                 ? "Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo."
                 : generatorMode === "community"
                   ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
@@ -967,7 +993,15 @@ export function GeneratorClient({
           </div>
           {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
         </div>
-        {generatorMode === "community" && selectedCommunityType && communityLocked ? (
+        {generatorMode === "catalog" && !selectedDocumentConfirmed ? (
+          <DocumentChoicePanel
+            groupedDocuments={groupedDocuments}
+            selectedIntent={selectedIntent}
+            documentQuery={documentQuery}
+            onQueryChange={setDocumentQuery}
+            onSelectDocument={selectDocument}
+          />
+        ) : generatorMode === "community" && selectedCommunityType && communityLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
             <p className="eyebrow">Plan requerido</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Desbloquea {selectedCommunityType.label.toLowerCase()}</h2>
@@ -1004,7 +1038,14 @@ export function GeneratorClient({
               <Link href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
                 Desbloquear Pro
               </Link>
-              <button type="button" onClick={() => setGeneratorMode("catalog")} className="focus-ring btn-secondary px-5 py-3 text-sm">
+              <button
+                type="button"
+                onClick={() => {
+                  setGeneratorMode("catalog");
+                  setSelectedDocumentConfirmed(false);
+                }}
+                className="focus-ring btn-secondary px-5 py-3 text-sm"
+              >
                 Volver a tipos
               </button>
             </div>
@@ -1085,8 +1126,96 @@ function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
   }));
 }
 
+function DocumentChoicePanel({
+  groupedDocuments,
+  selectedIntent,
+  documentQuery,
+  onQueryChange,
+  onSelectDocument,
+}: {
+  groupedDocuments: Array<{ category: string; documents: typeof documentTypes[number][] }>;
+  selectedIntent: GeneratorIntent;
+  documentQuery: string;
+  onQueryChange: (value: string) => void;
+  onSelectDocument: (type: DocumentType) => void;
+}) {
+  const visibleDocuments = groupedDocuments.flatMap((group) => group.documents);
+
+  return (
+    <div className="grid gap-5">
+      <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Paso 1 completado</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">{selectedIntent.label}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{selectedIntent.description}</p>
+          </div>
+          <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+            {visibleDocuments.length} tipos
+          </span>
+        </div>
+        <label className="mt-5 block">
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar dentro de esta intención</span>
+          <input
+            value={documentQuery}
+            onChange={(event) => onQueryChange(event.target.value)}
+            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+            placeholder="Reclamación, carta, contrato, privacidad..."
+          />
+        </label>
+      </div>
+
+      {groupedDocuments.length > 0 ? (
+        <div className="grid gap-4">
+          {groupedDocuments.map((group) => (
+            <section key={group.category} className="rounded-md border border-[#d8f3dc] bg-white/70 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="font-bold">{group.category}</h3>
+                <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-xs font-bold text-[#2d6a4f]">
+                  {group.documents.length}
+                </span>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {group.documents.map((doc) => (
+                  <button
+                    key={doc.type}
+                    type="button"
+                    onClick={() => onSelectDocument(doc.type)}
+                    className="focus-ring rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#2d6a4f] hover:bg-white"
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="font-bold text-[#1f2933]">{doc.label}</span>
+                      {requiresPro(doc) && (
+                        <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
+                      )}
+                    </span>
+                    <span className="mt-2 block text-sm leading-6 text-slate-600">{doc.summary}</span>
+                    <span className="mt-3 inline-flex text-sm font-bold text-[#2d6a4f]">Usar este documento</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          eyebrow="Sin coincidencias"
+          title="No encontramos ese documento"
+          description="Prueba con una palabra mas general o usa el modo a medida si tu plan lo permite."
+          variant="flat"
+          secondaryAction={{ href: "/catalogo", label: "Ver todos los tipos" }}
+        />
+      )}
+    </div>
+  );
+}
+
 function getDocumentsForIntent(intentId: GeneratorIntentId) {
   return documentTypes.filter((doc) => documentMatchesIntent(doc, intentId));
+}
+
+function getValidIntentId(value: string | null): GeneratorIntentId | null {
+  return generatorIntents.some((intent) => intent.id === value) ? (value as GeneratorIntentId) : null;
 }
 
 function documentMatchesIntent(doc: typeof documentTypes[number], intentId: GeneratorIntentId) {
