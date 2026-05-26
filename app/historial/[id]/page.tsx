@@ -43,7 +43,7 @@ export default async function HistoryDetailPage({ params }: Props) {
     <section className="container-page py-10">
       <div className="mb-6">
         <Link href="/historial" className="text-sm font-semibold text-[#2d6a4f]">
-          Volver al historial
+          Volver a Documentos
         </Link>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
           <div>
@@ -51,10 +51,10 @@ export default async function HistoryDetailPage({ params }: Props) {
             <h1 className="font-serif-display mt-3 text-4xl font-bold">{document.doc_label}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
               {isCustom
-                ? "Documento personalizado guardado en tu historial. Puedes exportarlo, copiarlo o regenerarlo desde la lista."
+                ? "Documento personalizado guardado en Documentos. Puedes exportarlo, copiarlo o regenerarlo desde la lista."
                 : isCommunity
                   ? "Documento generado desde un tipo comunitario aprobado. Puedes exportarlo o crear otro desde el generador."
-                : "Documento guardado en tu historial. Puedes exportarlo, copiarlo o reutilizar sus datos como plantilla."}
+                : "Documento guardado en Documentos. Puedes exportarlo, copiarlo o reutilizar sus datos como plantilla."}
             </p>
           </div>
 

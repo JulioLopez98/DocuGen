@@ -41,7 +41,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
   const workspaceById = useMemo(() => new Map(workspaces.map((workspace) => [workspace.id, workspace])), [workspaces]);
 
   async function deleteDocument(id: string) {
-    if (!window.confirm("Borrar este documento del historial?")) {
+    if (!window.confirm("Borrar este documento?")) {
       return;
     }
 
@@ -66,7 +66,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
   }
 
   async function clearHistory() {
-    if (!window.confirm("Borrar todo tu historial? Esta accion no se puede deshacer.")) {
+    if (!window.confirm("Borrar todos tus documentos? Esta accion no se puede deshacer.")) {
       return;
     }
 
@@ -78,7 +78,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
       const payload = (await response.json()) as { message?: string };
 
       if (!response.ok) {
-        setError(payload.message || "No se pudo borrar el historial.");
+        setError(payload.message || "No se pudieron borrar los documentos.");
         return;
       }
 
@@ -127,11 +127,11 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
   if (documents.length === 0) {
     return (
       <EmptyState
-        eyebrow="Historial vacio"
-        title="Tu historial empezara aqui"
+        eyebrow="Documentos vacios"
+        title="Tus documentos empezaran aqui"
         description="Cuando generes tu primer borrador, podras abrirlo, descargarlo, reutilizarlo como plantilla o borrarlo desde esta pantalla."
         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
-        secondaryAction={{ href: "/catalogo", label: "Explorar catalogo" }}
+        secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
       >
         <div className="grid gap-3 sm:grid-cols-3">
           {["Contrato freelance", "Presupuesto comercial", "Carta de presentacion"].map((item) => (
@@ -228,7 +228,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
         <EmptyState
           eyebrow="Sin resultados"
           title="No hay documentos con esos filtros"
-          description="Prueba con otro texto, cambia el tipo de documento o vuelve a la vista completa del historial."
+          description="Prueba con otro texto, cambia el tipo de documento o vuelve a la vista completa."
         >
           <button
             type="button"
@@ -272,7 +272,7 @@ export function HistoryClient({ documents, canExportDocx, brandSettings, workspa
                         )}
                         {doc.workspace_id && (
                           <span className="rounded-full bg-[#1f2933] px-2 py-1 text-xs font-semibold text-white">
-                            {workspaceById.get(doc.workspace_id)?.name || "Workspace"}
+                            {workspaceById.get(doc.workspace_id)?.name || "Equipo"}
                           </span>
                         )}
                       </div>

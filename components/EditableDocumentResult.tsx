@@ -312,7 +312,7 @@ export function EditableDocumentResult({
             <p className="text-sm font-semibold text-[#2d6a4f]">Documento editable</p>
             <h2 className="mt-1 text-xl font-bold">{title}</h2>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Puedes ajustar el texto, guardarlo en tu historial y exportar la version final.
+              Puedes ajustar el texto, guardarlo en Documentos y exportar la version final.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -508,7 +508,7 @@ export function EditableDocumentResult({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-[#2d6a4f]">Versiones</p>
-            <h3 className="mt-1 text-lg font-bold">Historial de cambios</h3>
+            <h3 className="mt-1 text-lg font-bold">Versiones</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Abre una version para revisarla, copiarla o cargarla en el editor antes de restaurarla.
             </p>

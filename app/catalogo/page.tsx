@@ -7,21 +7,21 @@ import { documentTypes, requiresPro } from "@/lib/document-types";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Catalogo de documentos profesionales con IA",
+  title: "Tipos de documento profesionales con IA",
   description:
-    "Explora el catalogo de documentos de DocuGen: contratos, presupuestos, propuestas, documentos web, laborales, legales, comerciales e inmobiliarios para Espana.",
+    "Explora los tipos de documento de DocuGen: contratos, presupuestos, propuestas, documentos web, laborales, legales, comerciales e inmobiliarios para Espana.",
   alternates: {
     canonical: "/catalogo",
   },
   openGraph: {
-    title: "Catalogo de documentos profesionales con IA | DocuGen",
+    title: "Tipos de documento profesionales con IA | DocuGen",
     description:
       "Todos los tipos de documentos disponibles en DocuGen, organizados por categoria y preparados para generar borradores con IA.",
     url: "/catalogo",
     type: "website",
   },
   keywords: [
-    "catalogo documentos IA",
+    "tipos documentos IA",
     "plantillas documentos profesionales",
     "generador contratos",
     "generador presupuestos",
@@ -41,7 +41,7 @@ export default async function CatalogPage() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Catalogo de documentos DocuGen",
+    name: "Tipos de documento DocuGen",
     description: metadata.description,
     url: `${baseUrl}/catalogo`,
     hasPart: [
@@ -66,7 +66,7 @@ export default async function CatalogPage() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
         <div>
-          <p className="eyebrow">Catalogo</p>
+          <p className="eyebrow">Tipos de documento</p>
           <h1 className="font-serif-display mt-3 max-w-4xl text-5xl font-bold leading-tight md:text-6xl">
             Todos los documentos que puedes crear con DocuGen
           </h1>
@@ -85,7 +85,7 @@ export default async function CatalogPage() {
         </div>
 
         <aside className="surface rounded-md p-5">
-          <p className="text-sm font-bold text-[#2d6a4f]">Resumen del catalogo</p>
+          <p className="text-sm font-bold text-[#2d6a4f]">Resumen de tipos</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Stat value={documentTypes.length.toString()} label="documentos" />
             <Stat value={categories.length.toString()} label="categorias" />

@@ -91,7 +91,7 @@ export default function DocumentSeoPage({ params }: Props) {
               Crear {config.label.toLowerCase()}
             </Link>
             <Link href="/catalogo" className="focus-ring btn-secondary px-6 py-3 text-sm">
-              Ver catalogo
+              Ver tipos
             </Link>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function DocumentSeoPage({ params }: Props) {
         {[
           ["Formulario especifico", "Cada documento pide solo los datos necesarios para ese tipo de borrador."],
           ["Marcadores pendientes", "Si falta informacion, el texto mantiene referencias claras para completar despues."],
-          ["Historial y reutilizacion", "Puedes guardar el resultado y regenerarlo usando los mismos datos."],
+          ["Documentos y reutilizacion", "Puedes guardar el resultado y regenerarlo usando los mismos datos."],
         ].map(([title, text]) => (
           <article key={title} className="surface-flat rounded-md p-5">
             <h3 className="font-bold">{title}</h3>

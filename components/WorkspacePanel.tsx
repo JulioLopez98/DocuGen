@@ -84,9 +84,9 @@ export function WorkspacePanel({
       <section className="surface rounded-md p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="eyebrow">Workspace</p>
+            <p className="eyebrow">Equipo</p>
             <h1 className="font-serif-display mt-3 text-4xl font-bold">
-              {selectedWorkspace?.name || "Workspace personal"}
+              {selectedWorkspace?.name || "Espacio personal"}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               Organiza documentos, miembros, avisos y actividad compartida desde una vista pensada para equipos.
@@ -99,7 +99,7 @@ export function WorkspacePanel({
           <div className="mt-6 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-bold text-[#2d6a4f]">Cambiar workspace</p>
+                <p className="text-sm font-bold text-[#2d6a4f]">Cambiar espacio</p>
                 <p className="mt-1 text-xs text-slate-500">Filtra miembros, documentos, avisos y auditoria.</p>
               </div>
               <select
@@ -118,11 +118,11 @@ export function WorkspacePanel({
         )}
 
         <div className="mt-6 grid gap-3 md:grid-cols-5">
-          <WorkspaceMetric label="Workspaces" value={workspaces.length.toString()} helper="Accesibles para ti" />
-          <WorkspaceMetric label="Miembros" value={workspaceMembers.length.toString()} helper="En este workspace" />
+          <WorkspaceMetric label="Espacios" value={workspaces.length.toString()} helper="Accesibles para ti" />
+          <WorkspaceMetric label="Miembros" value={workspaceMembers.length.toString()} helper="En este espacio" />
           <WorkspaceMetric label="Documentos" value={workspaceDocuments.length.toString()} helper="Compartidos aqui" />
           <WorkspaceMetric label="Avisos" value={unreadNotifications.toString()} helper="Sin leer" />
-          <WorkspaceMetric label="Personales" value={personalDocuments.length.toString()} helper="Sin workspace" />
+          <WorkspaceMetric label="Personales" value={personalDocuments.length.toString()} helper="Sin equipo" />
         </div>
 
         {selectedWorkspace && (
@@ -138,7 +138,7 @@ export function WorkspacePanel({
           <div className="mt-6 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
             <p className="font-semibold text-[#2d6a4f]">Preparado para Empresa</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              El plan Empresa permitira miembros, biblioteca compartida y marca por workspace. Tu base ya esta creada
+              El plan Empresa permitira miembros, biblioteca compartida y marca por equipo. Tu base ya esta creada
               para migrar cuando actives ese plan.
             </p>
             <Link href="/precios" className="focus-ring btn-primary mt-4 inline-flex px-4 py-3 text-sm">
@@ -163,7 +163,7 @@ export function WorkspacePanel({
               <p className="eyebrow">Documentos</p>
               <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos compartidos</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Ultimos documentos vinculados a este workspace.
+                Ultimos documentos vinculados a este espacio de equipo.
               </p>
             </div>
             <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
@@ -172,7 +172,7 @@ export function WorkspacePanel({
           </div>
           <div className="mt-5 grid gap-3">
             {workspaceDocuments.length === 0 ? (
-              <EmptyWorkspaceBlock text="Aun no hay documentos compartidos en este workspace. Por ahora tus generaciones siguen siendo personales." />
+              <EmptyWorkspaceBlock text="Aun no hay documentos compartidos en este equipo. Por ahora tus generaciones siguen siendo personales." />
             ) : (
               workspaceDocuments.slice(0, 8).map((document) => (
                 <article

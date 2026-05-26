@@ -69,7 +69,7 @@ export default async function CatalogCategoryPage({ params }: Props) {
     url: `${baseUrl}/catalogo/${category.slug}`,
     isPartOf: {
       "@type": "CollectionPage",
-      name: "Catalogo de documentos DocuGen",
+      name: "Tipos de documento DocuGen",
       url: `${baseUrl}/catalogo`,
     },
     hasPart: docs.map((doc) => ({
@@ -86,13 +86,13 @@ export default async function CatalogCategoryPage({ params }: Props) {
 
       <div className="mb-8">
         <Link href="/catalogo" className="focus-ring btn-ghost px-0 py-2 text-sm">
-          Volver al catalogo
+          Volver a tipos
         </Link>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
         <div>
-          <p className="eyebrow">Catalogo / {category.name}</p>
+          <p className="eyebrow">Tipos de documento / {category.name}</p>
           <h1 className="font-serif-display mt-3 max-w-4xl text-5xl font-bold leading-tight md:text-6xl">
             {category.title} generados con IA
           </h1>

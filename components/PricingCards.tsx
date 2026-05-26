@@ -48,7 +48,7 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
       features: [
         "3 documentos gratis al mes",
         "Plantillas esenciales incluidas",
-        "Historial basico",
+        "Documentos basicos",
         "Exportacion PDF y TXT",
         "Avisos de revision profesional incluidos",
       ],
@@ -63,7 +63,7 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
       description: "Para autonomos, agencias y pequenos negocios que quieren generar documentos sin friccion.",
       features: [
         "Documentos ilimitados",
-        "Catalogo Pro laboral, legal, digital e inmobiliario",
+        "Tipos Pro laborales, legales, digitales e inmobiliarios",
         "Exportacion Word incluida",
         "Marca personalizada en PDF y Word",
         "Biblioteca de plantillas preparada",
@@ -81,10 +81,10 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
       name: "Empresa",
       price: "39 EUR",
       cadence: "al mes",
-      description: "Para equipos que necesitan roles, workspace compartido y biblioteca documental de empresa.",
+      description: "Para equipos que necesitan roles, documentos compartidos y biblioteca documental de empresa.",
       features: [
         "Todo lo incluido en Pro",
-        "Workspaces de equipo",
+        "Espacios de equipo",
         "Roles avanzados: Admin, Editor, Miembro y Solo lectura",
         "Biblioteca documental de empresa",
         "Actividad, auditoria y notificaciones internas",

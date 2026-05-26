@@ -162,7 +162,7 @@ export function WorkspaceMembersManager({
   }
 
   async function removeMember(member: WorkspaceMemberRow) {
-    if (!workspace || !confirm("Quieres quitar este miembro del workspace?")) {
+    if (!workspace || !confirm("Quieres quitar este miembro del equipo?")) {
       return;
     }
 
@@ -184,7 +184,7 @@ export function WorkspaceMembersManager({
     }
 
     setMembers((current) => current.filter((currentMember) => currentMember.id !== member.id));
-    setFeedback("Miembro quitado del workspace.");
+    setFeedback("Miembro quitado del equipo.");
     setPendingAction(null);
     router.refresh();
   }
@@ -234,7 +234,7 @@ export function WorkspaceMembersManager({
 
       {!workspace && (
         <div className="mt-5 rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
-          Todavia no tienes un workspace activo.
+          Todavia no tienes un equipo activo.
         </div>
       )}
 
@@ -331,7 +331,7 @@ export function WorkspaceMembersManager({
       <div className="mt-5 grid gap-3">
         {members.length === 0 ? (
           <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
-            Todavia no hay miembros asociados a este workspace.
+            Todavia no hay miembros asociados a este equipo.
           </div>
         ) : (
           members.map((member) => {
@@ -466,7 +466,7 @@ function getPermissionItems(member: WorkspaceMemberRow) {
     {
       key: "canCreateDocuments" as const,
       label: "Generar",
-      description: "Crear documentos en el workspace",
+      description: "Crear documentos en el equipo",
       enabled: admin || Boolean(member.can_create_documents),
     },
     {

@@ -140,7 +140,7 @@ const generatorIntents: GeneratorIntent[] = [
   },
   {
     id: "all",
-    label: "Todo el catalogo",
+    label: "Todos los tipos",
     description: "Explora todos los tipos oficiales de DocuGen por categoria.",
     sampleTypes: ["contrato-freelance", "presupuesto-comercial", "politica-privacidad"],
   },
@@ -399,7 +399,7 @@ export function GeneratorClient({
             <p className="eyebrow">Punto de partida</p>
             <h2 className="font-serif-display mt-2 text-2xl font-bold">Que quieres crear?</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Primero elige la intencion. Despues veras solo los documentos que encajan, sin tener que recorrer todo el catalogo.
+              Primero elige la intencion. Despues veras solo los documentos que encajan, sin recorrer todos los tipos.
             </p>
           </div>
           <div className="mt-4 grid gap-2">
@@ -441,7 +441,7 @@ export function GeneratorClient({
                   : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
               }`}
             >
-              <span className="font-bold">Ver todo el catalogo</span>
+              <span className="font-bold">Ver todos los tipos</span>
               <span className="mt-1 block text-xs leading-5 text-slate-500">Todos los tipos oficiales disponibles.</span>
             </button>
             <button
@@ -476,7 +476,7 @@ export function GeneratorClient({
                 Pedir un documento a medida
                 {customProLocked && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] text-white">Pro</span>}
               </span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">Para documentos que no estan en el catalogo.</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Para documentos que no estan en los tipos disponibles.</span>
             </button>
             </div>
           </div>
@@ -486,7 +486,7 @@ export function GeneratorClient({
           <section className="surface-flat rounded-md p-5">
             <p className="text-sm font-bold text-[#2d6a4f]">Espacio de trabajo</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Decide si el documento queda solo en tu historial personal o compartido con un workspace.
+              Decide si el documento queda solo en tus documentos personales o compartido con un equipo.
             </p>
             <label className="mt-4 block">
               <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guardar en</span>
@@ -623,7 +623,7 @@ export function GeneratorClient({
                 title="No encontramos ese documento"
                 description="Prueba con una palabra mas general como contrato, web, carta o presupuesto."
                 variant="flat"
-                secondaryAction={{ href: "/catalogo", label: "Ver catalogo" }}
+                secondaryAction={{ href: "/catalogo", label: "Ver tipos" }}
               />
             )}
           </div>
@@ -693,7 +693,7 @@ export function GeneratorClient({
           )}
           {isTemplateMode && (
             <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">
-              Has cargado datos desde el historial
+              Has cargado datos desde Documentos
               {selectedReferenceTemplate
                 ? ` y se ha recuperado la plantilla "${selectedReferenceTemplate.name}" con el modo ${templateUsageLabels[templateUsageMode]}.`
                 : "."}
@@ -955,7 +955,7 @@ export function GeneratorClient({
               {generatorMode === "catalog" ? config.category : generatorMode === "community" ? selectedCommunityType?.category || "Comunidad" : "Documento a medida"}
             </p>
             <h1 className="font-serif-display mt-1 text-3xl font-bold">
-              {generatorMode === "catalog" ? config.label : generatorMode === "community" ? selectedCommunityType?.label || "Catálogo comunitario" : "No encuentro mi documento"}
+              {generatorMode === "catalog" ? config.label : generatorMode === "community" ? selectedCommunityType?.label || "Tipos de la comunidad" : "No encuentro mi documento"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               {generatorMode === "catalog"
@@ -995,7 +995,7 @@ export function GeneratorClient({
         ) : generatorMode === "custom" && customProLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
             <p className="eyebrow">Funcion Pro</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no estan en el catalogo</h2>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no estan en los tipos disponibles</h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
               El modo a medida permite pedir documentos por escrito, con instrucciones libres, tono especifico y contexto propio.
               Lo reservamos para Pro porque usa prompts mas avanzados y tiene mayor coste de generacion.
@@ -1005,7 +1005,7 @@ export function GeneratorClient({
                 Desbloquear Pro
               </Link>
               <button type="button" onClick={() => setGeneratorMode("catalog")} className="focus-ring btn-secondary px-5 py-3 text-sm">
-                Volver al catalogo
+                Volver a tipos
               </button>
             </div>
           </div>

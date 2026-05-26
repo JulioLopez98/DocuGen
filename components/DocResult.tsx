@@ -57,7 +57,7 @@ export function DocResult({
           <h2 className="mt-1 text-xl font-bold">{title}</h2>
           {documentId && (
             <p className="mt-1 text-xs text-slate-500">
-              Guardado automaticamente en tu historial. Puedes descargarlo, copiarlo o reutilizarlo cuando quieras.
+              Guardado automaticamente en Documentos. Puedes descargarlo, copiarlo o reutilizarlo cuando quieras.
             </p>
           )}
         </div>
@@ -133,7 +133,7 @@ export function DocResult({
             <div>
               <p className="text-sm font-bold text-[#2d6a4f]">Mejorar esta version</p>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Crea una variante guardada en el historial sin perder esta version.
+                Crea una variante guardada en Documentos sin perder esta version.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -171,7 +171,7 @@ export function DocResult({
         <div className="mt-4 flex flex-wrap gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
           {documentId && (
             <Link href={`/historial/${documentId}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
-              Ver en historial
+              Ver en Documentos
             </Link>
           )}
           {documentId && (

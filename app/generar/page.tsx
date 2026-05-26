@@ -132,9 +132,9 @@ export default async function GeneratePage({ searchParams }: Props) {
           title="Si no sabes por donde empezar"
           description="Piensa primero en la intencion: vender, contratar, reclamar, preparar una web o pedir algo a medida. DocuGen te mostrara opciones mas concretas en el panel izquierdo."
           items={[
-            "Catalogo: mejor para documentos frecuentes con campos guiados.",
+            "Tipos de documento: mejor para documentos frecuentes con campos guiados.",
             "Tipos de la comunidad: documentos nuevos revisados a partir de solicitudes reales.",
-            "A medida: para casos que no encajan en el catalogo, disponible en Pro.",
+            "A medida: para casos que no encajan en los tipos disponibles, disponible en Pro.",
           ]}
           secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
         />

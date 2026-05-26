@@ -147,7 +147,7 @@ export function OnboardingChooser({ plan }: OnboardingChooserProps) {
                 : "Tu plan permite generar documentos ilimitados y usar documentos Pro desde el primer momento."}
             </p>
             <Link href="/catalogo" className="focus-ring btn-ghost px-3 py-2 text-sm">
-              Ver catalogo completo
+              Ver tipos de documento
             </Link>
           </div>
         </div>

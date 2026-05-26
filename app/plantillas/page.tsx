@@ -83,7 +83,7 @@ export default async function TemplatesPage() {
                 </a>
               )}
               <Link href="/catalogo" className="focus-ring btn-secondary px-5 py-3 text-sm">
-                Ver catalogo actual
+                Ver tipos disponibles
               </Link>
             </div>
           </div>

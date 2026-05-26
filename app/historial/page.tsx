@@ -6,7 +6,7 @@ import { HistoryClient } from "@/components/HistoryClient";
 import { getCurrentProfile, type BrandSettings, type DocumentRow, type WorkspaceRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Historial",
+  title: "Documentos",
   robots: {
     index: false,
     follow: false,
@@ -38,7 +38,7 @@ export default async function HistoryPage() {
     <section className="container-page py-10">
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="eyebrow">Historial</p>
+          <p className="eyebrow">Documentos</p>
           <h1 className="font-serif-display mt-3 text-4xl font-bold">Documentos generados</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
             Consulta, descarga, reutiliza o borra tus borradores. Los documentos aparecen plegados para mantener la

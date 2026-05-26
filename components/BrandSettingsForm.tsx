@@ -227,7 +227,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           {saving ? "Guardando..." : uploading ? "Subiendo logo..." : "Guardar marca"}
         </button>
         <Link href="/dashboard" className="btn-ghost px-4 py-3 text-sm">
-          Volver al dashboard
+          Volver al panel
         </Link>
       </div>
       {message && <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">{message}</p>}

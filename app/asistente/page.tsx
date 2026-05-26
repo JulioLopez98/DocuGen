@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const metadata: Metadata = {
-  title: "Asistente conversacional",
+  title: "Asistente",
   description: "Chat Pro para definir documentos profesionales a medida en DocuGen.",
   robots: {
     index: false,
@@ -60,7 +60,7 @@ export default async function AssistantPage({ searchParams }: Props) {
           description="Usalo cuando no tengas claro el tipo de documento, cuando quieras explicar un caso con tus palabras o cuando necesites convertir una idea en un borrador guiado."
           items={[
             "No pegues datos sensibles innecesarios.",
-            "Si el documento ya existe en catalogo, el generador estructurado suele ser mas rapido.",
+            "Si el documento ya existe en Tipos de documento, el generador estructurado suele ser mas rapido.",
             "Puedes proponer nuevos tipos documentales para revisarlos y convertirlos en comunidad.",
           ]}
           secondaryAction={{ href: "/generar", label: "Usar generador" }}

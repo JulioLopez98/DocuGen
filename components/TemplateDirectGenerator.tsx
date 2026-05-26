@@ -156,7 +156,7 @@ export function TemplateDirectGenerator({
             <p className="eyebrow">Vista previa</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Documento basado en tu modelo</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Cuando generes, el resultado aparecera aqui y quedara guardado automaticamente en tu historial.
+              Cuando generes, el resultado aparecera aqui y quedara guardado automaticamente en Documentos.
             </p>
             <div className="mt-5 rounded-md bg-[#faf9f6] p-5 text-sm leading-7 text-slate-600">
               La plantilla sera la referencia principal. Los campos que rellenes aqui tendran prioridad sobre cualquier

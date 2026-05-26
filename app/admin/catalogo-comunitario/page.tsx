@@ -10,7 +10,7 @@ import {
 } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Catálogo comunitario privado",
+  title: "Tipos comunitarios privados",
   robots: {
     index: false,
     follow: false,
@@ -49,7 +49,7 @@ export default async function AdminCommunityCatalogPage() {
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-3xl">
           <p className="eyebrow">Admin</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">Catálogo comunitario privado</h1>
+          <h1 className="font-serif-display mt-3 text-4xl font-bold">Tipos comunitarios privados</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Revisa los tipos nacidos de solicitudes a medida antes de aprobarlos, publicarlos o convertirlos en documentos oficiales.
           </p>

@@ -81,7 +81,7 @@ export function WorkspaceNotificationsPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="eyebrow">Notificaciones</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Avisos del workspace</h2>
+          <h2 className="font-serif-display mt-3 text-3xl font-bold">Avisos del equipo</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Lo importante que ha ocurrido en tu equipo, separado del registro completo de auditoria.
           </p>

@@ -377,7 +377,7 @@ export function TemplateLibraryClient({
                 ))}
               </select>
               <span className="mt-2 block text-xs text-slate-500">
-                Las plantillas de workspace podran usarlas otros miembros del equipo como referencia.
+                Las plantillas de equipo podran usarlas otros miembros como referencia.
               </span>
             </label>
           )}

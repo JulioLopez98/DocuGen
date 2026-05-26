@@ -164,10 +164,10 @@ export default async function AdminPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/admin/catalogo-comunitario" className="focus-ring btn-primary px-4 py-3 text-sm">
-            Catálogo comunitario
+            Tipos comunitarios
           </Link>
           <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
-            Volver al dashboard
+            Volver al panel
           </Link>
         </div>
       </div>
@@ -291,7 +291,7 @@ export default async function AdminPage() {
                   title="Aun no hay eventos de seguridad"
                   description="Los rate limits bloqueados y futuras senales de abuso se registraran aqui."
                   variant="flat"
-                  primaryAction={{ href: "/dashboard", label: "Volver al dashboard" }}
+                  primaryAction={{ href: "/dashboard", label: "Volver al panel" }}
                 />
               )}
             </div>
@@ -337,7 +337,7 @@ export default async function AdminPage() {
               <h2 className="font-serif-display mt-3 text-3xl font-bold">Tipos populares</h2>
             </div>
             <Link href="/generar" className="btn-ghost px-3 py-2 text-sm">
-              Ver catalogo
+              Ver tipos
             </Link>
           </div>
           <div className="grid gap-3">
@@ -358,7 +358,7 @@ export default async function AdminPage() {
                 title="Todavia no hay tipos populares"
                 description="Cuando los usuarios generen documentos, aqui veras que categorias y tipos empiezan a traccionar."
                 variant="flat"
-                primaryAction={{ href: "/catalogo", label: "Ver catalogo" }}
+                primaryAction={{ href: "/catalogo", label: "Ver tipos" }}
               />
             )}
           </div>
@@ -385,7 +385,7 @@ export default async function AdminPage() {
                 title="Aun no hay altas registradas"
                 description="Cuando entren los primeros usuarios, apareceran aqui con su plan y fecha de registro."
                 variant="flat"
-                primaryAction={{ href: "/dashboard", label: "Volver al dashboard" }}
+                primaryAction={{ href: "/dashboard", label: "Volver al panel" }}
               />
             )}
           </div>
@@ -399,7 +399,7 @@ export default async function AdminPage() {
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad reciente</h2>
           </div>
           <Link href="/historial" className="btn-ghost px-3 py-2 text-sm">
-            Mi historial
+            Mis documentos
           </Link>
         </div>
         <div className="divide-y divide-[#d8f3dc]">
@@ -439,10 +439,10 @@ export default async function AdminPage() {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="eyebrow">Empresa</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad sensible de workspaces</h2>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad sensible de equipos</h2>
           </div>
           <Link href="/workspace" className="btn-ghost px-3 py-2 text-sm">
-            Ver workspace
+            Ver equipo
           </Link>
         </div>
         <div className="divide-y divide-[#d8f3dc]">
@@ -658,7 +658,7 @@ function formatWorkspaceEventLabel(eventType: WorkspaceAuditEventRow["event_type
   const labels: Record<WorkspaceAuditEventRow["event_type"], string> = {
     document_created: "Documento creado",
     document_deleted: "Documento eliminado",
-    documents_cleared: "Historial limpiado",
+    documents_cleared: "Documentos limpiados",
     template_uploaded: "Plantilla subida",
     template_processed: "Plantilla procesada",
     template_updated: "Plantilla actualizada",

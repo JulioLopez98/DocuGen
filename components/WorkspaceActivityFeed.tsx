@@ -13,7 +13,7 @@ type ActivityFilter = "all" | "documents" | "templates" | "team";
 const eventLabels: Record<WorkspaceAuditEventType, string> = {
   document_created: "Documento creado",
   document_deleted: "Documento borrado",
-  documents_cleared: "Historial borrado",
+  documents_cleared: "Documentos borrados",
   template_uploaded: "Plantilla subida",
   template_processed: "Plantilla procesada",
   template_updated: "Plantilla actualizada",
@@ -48,7 +48,7 @@ export function WorkspaceActivityFeed({ events, actorProfiles }: WorkspaceActivi
           <p className="eyebrow">Auditoria</p>
           <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad reciente</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Registro de acciones relevantes dentro del workspace: documentos, plantillas, miembros e invitaciones.
+            Registro de acciones relevantes dentro del equipo: documentos, plantillas, miembros e invitaciones.
           </p>
         </div>
         <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">

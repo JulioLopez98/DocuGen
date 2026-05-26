@@ -8,7 +8,7 @@ import { createSupabaseServerClient, type Profile } from "@/lib/supabase-server"
 export const metadata: Metadata = {
   title: "Precios de DocuGen",
   description:
-    "Compara DocuGen Free, Pro y Empresa. Empieza gratis y desbloquea documentos ilimitados, Word, marca personalizada y workspaces de equipo.",
+    "Compara DocuGen Free, Pro y Empresa. Empieza gratis y desbloquea documentos ilimitados, Word, marca personalizada y equipo.",
   alternates: {
     canonical: "/precios",
   },
@@ -25,10 +25,10 @@ type DocumentTypeItem = (typeof documentTypes)[number];
 
 const comparisonRows = [
   { label: "Documentos al mes", free: "3", pro: "Ilimitados", empresa: "Ilimitados" },
-  { label: "Plantillas disponibles", free: "Esenciales", pro: "Catalogo completo + Pro", empresa: "Catalogo + biblioteca de equipo" },
+  { label: "Tipos disponibles", free: "Esenciales", pro: "Tipos completos + Pro", empresa: "Tipos + biblioteca de equipo" },
   { label: "Exportacion", free: "PDF y TXT", pro: "PDF, TXT y Word", empresa: "PDF, TXT y Word" },
   { label: "Marca personalizada", free: "No incluida", pro: "Logo y datos de empresa", empresa: "Marca compartida de empresa" },
-  { label: "Workspaces", free: "No incluido", pro: "Personal", empresa: "Equipo y roles" },
+  { label: "Equipo", free: "No incluido", pro: "Personal", empresa: "Equipo y roles" },
   { label: "Roles", free: "No incluido", pro: "Usuario unico", empresa: "Admin, Editor, Miembro y Solo lectura" },
   { label: "Actividad y avisos", free: "No incluido", pro: "Personal", empresa: "Auditoria y notificaciones internas" },
   { label: "Suscripcion", free: "Sin tarjeta", pro: "Gestion desde portal Stripe", empresa: "Gestion desde portal Stripe" },
@@ -43,12 +43,12 @@ const faqs = [
   {
     question: "Puedo cancelar Pro cuando quiera?",
     answer:
-      "Si. Desde el dashboard puedes abrir el portal de cliente de Stripe para gestionar o cancelar la suscripcion.",
+      "Si. Desde el panel puedes abrir el portal de cliente de Stripe para gestionar o cancelar la suscripcion.",
   },
   {
     question: "Que pasa si sigo en Free?",
     answer:
-      "Puedes crear hasta 3 documentos al mes, descargar PDF/TXT y guardar historial basico. Los documentos avanzados y Word quedan bloqueados para Pro.",
+      "Puedes crear hasta 3 documentos al mes, descargar PDF/TXT y guardar documentos basicos. Los documentos avanzados y Word quedan bloqueados para Pro.",
   },
   {
     question: "Word esta incluido en Pro?",
@@ -120,7 +120,7 @@ export default async function PricingPage() {
               ))}
             </div>
             <div className="mt-5 rounded-md bg-[#d8f3dc]/60 p-4 text-sm leading-6">
-              Free es perfecto para probar. Pro esta pensado para uso recurrente. Empresa suma workspaces, roles,
+              Free es perfecto para probar. Pro esta pensado para uso recurrente. Empresa suma equipo, roles,
               auditoria y colaboracion interna.
             </div>
           </div>
@@ -164,14 +164,14 @@ export default async function PricingPage() {
       <div className="container-page py-12">
         <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr]">
           <div>
-            <p className="eyebrow">Catalogo Pro</p>
+            <p className="eyebrow">Tipos Pro</p>
             <h2 className="font-serif-display mt-3 text-4xl font-bold">Documentos que desbloqueas al crecer</h2>
             <p className="mt-4 text-sm leading-6 text-slate-600">
               Pro anade los documentos que suelen ahorrar mas tiempo: laborales, inmobiliarios, digitales y acuerdos con
               mas detalle.
             </p>
             <Link href={user ? "/generar" : "/auth"} className="focus-ring btn-primary mt-6 px-5 py-3 text-sm">
-              {user ? "Ver catalogo completo" : "Probar DocuGen"}
+              {user ? "Ver tipos completos" : "Probar DocuGen"}
             </Link>
           </div>
 

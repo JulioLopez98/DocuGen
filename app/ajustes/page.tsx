@@ -45,7 +45,7 @@ export default async function SettingsPage() {
           </p>
         </div>
         <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
-          Volver al dashboard
+          Volver al panel
         </Link>
       </div>
 
@@ -69,7 +69,7 @@ export default async function SettingsPage() {
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                   <AccountFact label="Plan" value={profile.plan} />
                   <AccountFact label="Documentos este mes" value={profile.docs_this_month.toString()} />
-                  <AccountFact label="Historial" value={`${documentCount || 0}`} />
+                  <AccountFact label="Documentos" value={`${documentCount || 0}`} />
                 </div>
 
                 <div className="mt-6">
@@ -122,7 +122,7 @@ export default async function SettingsPage() {
           {
             id: "datos",
             label: "Datos",
-            description: "Historial y limpieza",
+            description: "Documentos y limpieza",
             content: (
               <div className="grid gap-4">
                 <section className="surface rounded-md p-6">
@@ -131,22 +131,22 @@ export default async function SettingsPage() {
                   {documentCount ? (
                     <>
                       <p className="mt-3 text-sm leading-6 text-slate-600">
-                        Tienes <strong>{documentCount}</strong> documentos en tu historial. Puedes consultarlos,
+                        Tienes <strong>{documentCount}</strong> documentos guardados. Puedes consultarlos,
                         descargarlos o reutilizarlos como plantilla.
                       </p>
                       <Link href="/historial" className="focus-ring btn-secondary mt-6 px-4 py-3 text-sm">
-                        Abrir historial
+                        Abrir documentos
                       </Link>
                     </>
                   ) : (
                     <div className="mt-5">
                       <EmptyState
-                        eyebrow="Historial vacio"
+                        eyebrow="Documentos vacios"
                         title="Aun no hay documentos que gestionar"
-                        description="Cuando generes tu primer borrador, esta seccion te permitira revisar el historial y limpiar tus datos."
+                        description="Cuando generes tu primer borrador, esta seccion te permitira revisar documentos y limpiar tus datos."
                         variant="flat"
                         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
-                        secondaryAction={{ href: "/catalogo", label: "Explorar catalogo" }}
+                        secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
                       />
                     </div>
                   )}

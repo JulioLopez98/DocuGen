@@ -79,11 +79,11 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <QuickIntent href="/generar" label="Crear desde catálogo" text="Contratos, cartas, presupuestos y documentos web." />
+            <QuickIntent href="/generar" label="Crear desde tipos" text="Contratos, cartas, presupuestos y documentos web." />
             <QuickIntent
               href={isPaid ? "/generar?mode=custom" : "/precios"}
               label="Pedir a medida"
-              text={isPaid ? "Describe lo que necesitas si no está en el catálogo." : "Disponible en Pro para casos no catalogados."}
+              text={isPaid ? "Describe lo que necesitas si no esta en los tipos disponibles." : "Disponible en Pro para casos no catalogados."}
             />
             <QuickIntent href="/historial" label="Continuar trabajo" text="Edita, versiona, exporta o reutiliza documentos." />
           </div>
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
 
       <section className="surface mt-4 rounded-md p-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <DashboardStat label="Documentos guardados" value={allDocuments.length.toString()} helper="En tu historial" />
+          <DashboardStat label="Documentos guardados" value={allDocuments.length.toString()} helper="En Documentos" />
           <DashboardStat
             label="Este mes"
             value={profile.docs_this_month.toString()}
@@ -347,7 +347,7 @@ function getOnboardingSteps({
     },
     {
       title: "Revisa y exporta",
-      text: "Abre el historial para editar, exportar PDF/TXT o usar Word si tienes Pro.",
+      text: "Abre Documentos para editar, exportar PDF/TXT o usar Word si tienes Pro.",
       href: hasDocuments ? "/historial" : "/generar",
       action: hasDocuments ? "Abrir documentos" : "Crear primero",
       done: hasDocuments,

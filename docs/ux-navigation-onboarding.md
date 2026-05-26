@@ -116,3 +116,34 @@ Objetivo:
 Siguiente mejora:
 
 Fase 11.10.5: revisar textos, nombres y microcopy de navegacion para que todo use el mismo lenguaje: Crear, Documentos, Plantillas, Equipo y Mas.
+
+## Fase 11.10.5
+
+Se unifica el lenguaje visible de la aplicacion para reducir friccion y evitar que varias palabras nombren la misma zona.
+
+Vocabulario principal:
+
+- `Panel`: centro de trabajo.
+- `Crear`: generador.
+- `Documentos`: documentos guardados, antes mostrado a veces como historial.
+- `Tipos de documento`: catalogo publico y selector de familias.
+- `Plantillas`: documentos propios usados como referencia.
+- `Equipo`: funciones Empresa, antes mostradas a veces como workspace.
+- `Mas`: acceso a funciones avanzadas y secundarias.
+
+Cambios:
+
+- `Historial` se sustituye por `Documentos` en textos visibles principales.
+- `Catalogo` se sustituye por `Tipos de documento` o `tipos` cuando el contexto ya esta claro.
+- `Workspace` se sustituye por `Equipo` o `espacio de equipo` en la experiencia visible.
+- `Dashboard` se sustituye por `Panel` en botones y llamadas a la accion.
+- Se ajustan textos de landing, precios, ajustes, admin, onboarding, detalle de documento y generador.
+
+Notas:
+
+- No se cambian rutas como `/historial`, `/catalogo`, `/workspace` ni nombres internos de tablas/APIs.
+- La consistencia es visual y de producto; la arquitectura se mantiene estable.
+
+Siguiente mejora:
+
+Fase 11.10.6: revisar estados vacios y primeros pasos por rol/plan para que Free, Pro y Empresa vean acciones diferentes y claras.

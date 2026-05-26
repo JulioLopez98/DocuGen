@@ -38,7 +38,7 @@ export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }:
       <div className="surface rounded-md p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
           <label>
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar en el catalogo</span>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar tipos de documento</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -116,8 +116,8 @@ export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }:
         <EmptyState
           eyebrow="Sin coincidencias"
           title="No encontramos documentos con esa busqueda"
-          description="Prueba con una palabra mas general como contrato, web, reclamacion o presupuesto. Tambien puedes volver al catalogo completo."
-          primaryAction={{ href: "/catalogo", label: "Ver todo el catalogo" }}
+          description="Prueba con una palabra mas general como contrato, web, reclamacion o presupuesto. Tambien puedes volver a todos los tipos."
+          primaryAction={{ href: "/catalogo", label: "Ver todos los tipos" }}
           secondaryAction={{ href: signedIn ? "/generar" : "/auth", label: signedIn ? "Abrir generador" : "Empezar gratis" }}
         />
       )}

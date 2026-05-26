@@ -26,7 +26,7 @@ export function DocumentGallery() {
           </p>
         </div>
         <Link href="/catalogo" className="focus-ring btn-secondary px-4 py-3 text-sm">
-          Ver catalogo completo
+          Ver tipos de documento
         </Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -50,7 +50,7 @@ export function DocumentGallery() {
             Hay mas documentos laborales, legales, ecommerce, digitales e inmobiliarios dentro del generador.
           </p>
           <Link href="/catalogo" className="focus-ring btn-primary px-5 py-3 text-sm">
-            Ver catalogo completo
+            Ver tipos de documento
           </Link>
         </div>
       </div>

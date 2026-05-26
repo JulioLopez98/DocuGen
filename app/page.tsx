@@ -32,7 +32,7 @@ const useCases = [
   },
   {
     title: "Equipos que documentan mucho",
-    text: "Historial, regeneracion, exportaciones y base preparada para marca, Word y workspaces.",
+    text: "Documentos guardados, regeneracion, exportaciones y base preparada para marca, Word y equipo.",
   },
 ];
 
@@ -44,16 +44,16 @@ const workflow = [
 
 const productPaths = [
   {
-    title: "Catalogo guiado",
+    title: "Tipos guiados",
     badge: "Free y Pro",
     text: "Elige entre documentos organizados por categoria: laboral, comercial, legal, web, inmobiliario y mas.",
     href: "/catalogo",
-    action: "Explorar catalogo",
+    action: "Ver tipos",
   },
   {
     title: "Documento a medida",
     badge: "Pro",
-    text: "Describe un documento que no existe en el catalogo y DocuGen prepara un borrador personalizado.",
+    text: "Describe un documento que no existe en los tipos disponibles y DocuGen prepara un borrador personalizado.",
     href: "/generar?mode=custom",
     action: "Ir al generador",
   },
@@ -65,11 +65,11 @@ const productPaths = [
     action: "Ver plantillas",
   },
   {
-    title: "Historial editable",
+    title: "Documentos editables",
     badge: "Incluido",
     text: "Guarda, edita, compara versiones, mejora con IA y exporta cada documento cuando lo tengas listo.",
     href: "/historial",
-    action: "Abrir historial",
+    action: "Abrir Documentos",
   },
 ];
 
@@ -144,7 +144,7 @@ export default async function HomePage() {
                 </div>
                 <div className="rounded-md border border-[#d8f3dc] bg-white/78 p-3">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guarda</p>
-                  <p className="mt-1">Historial y regeneracion</p>
+                  <p className="mt-1">Documentos y regeneracion</p>
                 </div>
               </div>
               <p className="text-xs text-slate-500">Documento generado con IA. Revisar antes de su uso legal.</p>
@@ -159,7 +159,7 @@ export default async function HomePage() {
             <p className="eyebrow">Que puedes hacer</p>
             <h2 className="font-serif-display mt-3 text-4xl font-bold">Cuatro caminos claros, segun lo que necesites</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Si sabes el documento exacto, usa el catalogo. Si tienes tus propios modelos, usa plantillas. Si no existe
+              Si sabes el documento exacto, usa Tipos de documento. Si tienes tus propios modelos, usa plantillas. Si no existe
               en DocuGen, el modo a medida permite pedirlo por escrito.
             </p>
           </div>

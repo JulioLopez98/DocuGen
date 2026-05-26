@@ -15,7 +15,7 @@ import {
 } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Workspace",
+  title: "Equipo",
   description: "Espacio de trabajo para documentos de empresa en DocuGen.",
   robots: {
     index: false,
@@ -127,7 +127,7 @@ export default async function WorkspacePage() {
       <div className="mb-6 grid gap-4 lg:grid-cols-3">
         <ContextualHelp
           title="Que es Equipo"
-          description="El workspace agrupa documentos, miembros, invitaciones y actividad cuando trabajas con mas personas."
+          description="Equipo agrupa documentos, miembros, invitaciones y actividad cuando trabajas con mas personas."
           items={["Comparte documentos con el equipo.", "Gestiona invitaciones.", "Revisa actividad reciente."]}
           tone="empresa"
         />
@@ -139,7 +139,7 @@ export default async function WorkspacePage() {
         />
         <ContextualHelp
           title="Primer paso recomendado"
-          description="Si estas empezando, crea un workspace pequeno, invita una persona de prueba y genera un documento compartido."
+          description="Si estas empezando, crea un espacio de equipo pequeno, invita una persona de prueba y genera un documento compartido."
           primaryAction={{ href: "/generar", label: "Crear documento" }}
           tone="empresa"
         />

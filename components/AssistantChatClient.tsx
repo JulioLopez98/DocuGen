@@ -171,7 +171,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               <h1 className="font-serif-display mt-2 text-3xl font-bold">Describe el documento que necesitas</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                 El asistente te ayuda a aclarar tipo de documento, datos necesarios y siguiente paso. Cuando tengas la
-                informacion suficiente, puedes generar el borrador y guardarlo en historial.
+                informacion suficiente, puedes generar el borrador y guardarlo en Documentos.
               </p>
             </div>
             <button
@@ -246,7 +246,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               <div className="mb-4 rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4">
                 <p className="text-sm font-bold text-[#2d6a4f]">Propuesta enviada al admin</p>
                 <p className="mt-1 text-xs leading-5 text-slate-600">
-                  Hemos creado una propuesta revisable para valorar si este tipo documental debe entrar en el catalogo:
+                  Hemos creado una propuesta revisable para valorar si este tipo documental debe entrar en Tipos de documento:
                   {" "}
                   <strong>{generatedDocument.proposal.title}</strong>
                   {generatedDocument.proposal.category ? ` · ${generatedDocument.proposal.category}` : ""}.
