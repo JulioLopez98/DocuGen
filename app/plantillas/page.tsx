@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { ContextualHelp } from "@/components/ContextualHelp";
 import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
 import { TemplateLibraryClient } from "@/components/TemplateLibraryClient";
@@ -116,6 +117,22 @@ export default async function TemplatesPage() {
             <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
           </article>
         ))}
+      </section>
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-2">
+        <ContextualHelp
+          title="Cuando usar plantillas"
+          description="Usalas si ya tienes documentos buenos y quieres que los nuevos respeten estructura, tono o criterios internos."
+          items={["No sustituyen los datos del formulario.", "No copian informacion sensible.", "Sirven como referencia controlada."]}
+          primaryAction={isFree ? { href: "/precios", label: "Ver Pro" } : { href: "#subir-plantilla", label: "Subir plantilla" }}
+          tone="pro"
+        />
+        <ContextualHelp
+          title="Como preparar un archivo"
+          description="Sube ejemplos limpios: sin versiones mezcladas, con apartados claros y sin datos que no quieras usar como referencia."
+          items={["DOCX suele dar mejores resultados.", "PDF tambien sirve si el texto se puede extraer.", "Marca favoritas para recomendarlas al generar."]}
+          secondaryAction={{ href: "/generar", label: "Ir al generador" }}
+        />
       </section>
 
       <div id="subir-plantilla" className="mt-6 scroll-mt-24">

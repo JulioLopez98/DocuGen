@@ -92,3 +92,27 @@ Objetivo:
 Siguiente mejora:
 
 Fase 11.10.4: onboarding contextual dentro de las pantallas clave con pequenos mensajes de ayuda y estados vacios mas claros.
+
+## Fase 11.10.4
+
+Se incorpora ayuda contextual ligera en pantallas clave para explicar que hacer sin saturar la interfaz.
+
+Cambios:
+
+- Nuevo componente `ContextualHelp` reutilizable.
+- Ayuda en `/dashboard` para crear, usar plantillas y colaborar.
+- Ayuda en `/generar` para elegir entre catalogo, comunidad y documento a medida.
+- Ayuda en `/historial` para entender revision, versiones, exportacion y borrado.
+- Ayuda en `/plantillas` para explicar cuando usar referencias y como preparar archivos.
+- Ayuda en `/asistente` para orientar el uso del chat Pro.
+- Ayuda en `/workspace` para explicar equipo, roles y primer paso.
+
+Objetivo:
+
+- Reducir dudas de usuarios nuevos.
+- Separar funciones basicas, Pro y Empresa sin esconderlas.
+- Mantener la interfaz limpia con bloques breves y accionables.
+
+Siguiente mejora:
+
+Fase 11.10.5: revisar textos, nombres y microcopy de navegacion para que todo use el mismo lenguaje: Crear, Documentos, Plantillas, Equipo y Mas.

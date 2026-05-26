@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { ContextualHelp } from "@/components/ContextualHelp";
 import { PlanBadge } from "@/components/PlanBadge";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
 import { UsageBar } from "@/components/UsageBar";
@@ -133,6 +134,29 @@ export default async function DashboardPage() {
             <OnboardingStepCard key={step.title} index={index + 1} {...step} />
           ))}
         </div>
+      </section>
+
+      <section className="mt-4 grid gap-4 lg:grid-cols-3">
+        <ContextualHelp
+          title="Para crear rapido"
+          description="Usa Crear si tienes claro el tipo de documento o quieres buscar por intencion."
+          items={["Elige una intencion.", "Rellena los campos.", "Revisa y exporta."]}
+          primaryAction={{ href: "/generar", label: "Crear ahora" }}
+        />
+        <ContextualHelp
+          title="Para trabajar con ejemplos"
+          description="Las plantillas sirven para que DocuGen respete estructura y tono de documentos propios."
+          items={isPaid ? ["Sube DOCX/PDF.", "Procesa la plantilla.", "Usala al generar."] : ["Disponible en Pro.", "Ideal para mantener estilo propio."]}
+          primaryAction={{ href: isPaid ? "/plantillas" : "/precios", label: isPaid ? "Abrir plantillas" : "Ver Pro" }}
+          tone="pro"
+        />
+        <ContextualHelp
+          title="Para colaborar"
+          description="Empresa agrupa miembros, documentos compartidos, invitaciones y actividad de equipo."
+          items={isEmpresa ? ["Invita miembros.", "Comparte documentos.", "Revisa actividad."] : ["Disponible en Empresa.", "Pensado para equipos y clientes internos."]}
+          primaryAction={{ href: isEmpresa ? "/workspace" : "/precios", label: isEmpresa ? "Abrir equipo" : "Ver Empresa" }}
+          tone="empresa"
+        />
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">

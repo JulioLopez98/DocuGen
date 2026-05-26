@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { ContextualHelp } from "@/components/ContextualHelp";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
@@ -125,6 +126,18 @@ export default async function GeneratePage({ searchParams }: Props) {
           <p className="font-semibold text-[#2d6a4f]">Exportaciones</p>
           <p className="mt-1 text-slate-600">{profile?.plan !== "free" ? "PDF, TXT y Word disponibles" : "PDF y TXT incluidos. Word con Pro"}</p>
         </div>
+      </div>
+      <div className="mb-6">
+        <ContextualHelp
+          title="Si no sabes por donde empezar"
+          description="Piensa primero en la intencion: vender, contratar, reclamar, preparar una web o pedir algo a medida. DocuGen te mostrara opciones mas concretas en el panel izquierdo."
+          items={[
+            "Catalogo: mejor para documentos frecuentes con campos guiados.",
+            "Tipos de la comunidad: documentos nuevos revisados a partir de solicitudes reales.",
+            "A medida: para casos que no encajan en el catalogo, disponible en Pro.",
+          ]}
+          secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
+        />
       </div>
       <Suspense>
         <GeneratorClient

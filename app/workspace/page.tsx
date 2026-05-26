@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { ContextualHelp } from "@/components/ContextualHelp";
 import { WorkspacePanel } from "@/components/WorkspacePanel";
 import {
   createSupabaseServiceClient,
@@ -123,6 +124,26 @@ export default async function WorkspacePage() {
 
   return (
     <section className="container-page py-10">
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <ContextualHelp
+          title="Que es Equipo"
+          description="El workspace agrupa documentos, miembros, invitaciones y actividad cuando trabajas con mas personas."
+          items={["Comparte documentos con el equipo.", "Gestiona invitaciones.", "Revisa actividad reciente."]}
+          tone="empresa"
+        />
+        <ContextualHelp
+          title="Roles y permisos"
+          description="Los permisos avanzados ayudan a separar quien puede invitar, gestionar miembros o ver informacion sensible."
+          items={["Admin: gestiona el espacio.", "Member: trabaja dentro del equipo.", "Permisos finos: control adicional."]}
+          tone="empresa"
+        />
+        <ContextualHelp
+          title="Primer paso recomendado"
+          description="Si estas empezando, crea un workspace pequeno, invita una persona de prueba y genera un documento compartido."
+          primaryAction={{ href: "/generar", label: "Crear documento" }}
+          tone="empresa"
+        />
+      </div>
       <WorkspacePanel
         profile={profile}
         workspaces={workspaces || []}

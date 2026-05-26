@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AssistantChatClient } from "@/components/AssistantChatClient";
+import { ContextualHelp } from "@/components/ContextualHelp";
 import { getCurrentProfile, type ChatMessageRow, type ChatSessionRow } from "@/lib/supabase-server";
 
 type Props = {
@@ -53,6 +54,19 @@ export default async function AssistantPage({ searchParams }: Props) {
 
   return (
     <section className="container-page py-10">
+      <div className="mb-6">
+        <ContextualHelp
+          title="Para que sirve el asistente"
+          description="Usalo cuando no tengas claro el tipo de documento, cuando quieras explicar un caso con tus palabras o cuando necesites convertir una idea en un borrador guiado."
+          items={[
+            "No pegues datos sensibles innecesarios.",
+            "Si el documento ya existe en catalogo, el generador estructurado suele ser mas rapido.",
+            "Puedes proponer nuevos tipos documentales para revisarlos y convertirlos en comunidad.",
+          ]}
+          secondaryAction={{ href: "/generar", label: "Usar generador" }}
+          tone="pro"
+        />
+      </div>
       <AssistantChatClient
         initialSessionId={activeSession?.id || null}
         initialMessages={messages || []}

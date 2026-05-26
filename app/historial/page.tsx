@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { ContextualHelp } from "@/components/ContextualHelp";
 import { HistoryClient } from "@/components/HistoryClient";
 import { getCurrentProfile, type BrandSettings, type DocumentRow, type WorkspaceRow } from "@/lib/supabase-server";
 
@@ -47,6 +48,25 @@ export default async function HistoryPage() {
         <Link href="/generar" className="focus-ring btn-primary px-4 py-2 text-sm">
           Nuevo documento
         </Link>
+      </div>
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <ContextualHelp
+          title="Que puedes hacer aqui"
+          description="Esta pantalla no es solo un archivo: es tu zona de revision y reutilizacion."
+          items={["Abre un documento para editarlo.", "Usalo como base para regenerar.", "Exporta PDF, TXT o Word si tu plan lo permite."]}
+        />
+        <ContextualHelp
+          title="Versiones y mejoras"
+          description="Cuando edites o mejores con IA, DocuGen conserva versiones para comparar y restaurar."
+          items={["Guarda cambios manuales.", "Compara antes/despues.", "Restaura una version anterior."]}
+          secondaryAction={{ href: "/generar", label: "Crear nuevo" }}
+        />
+        <ContextualHelp
+          title="Orden mental"
+          description="Los documentos aparecen plegados para que no satures la pantalla."
+          items={["Filtra por tipo o fecha.", "Despliega solo lo que quieras revisar.", "Borra elementos cuando ya no los necesites."]}
+        />
       </div>
 
       <HistoryClient
