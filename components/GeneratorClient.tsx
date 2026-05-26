@@ -397,14 +397,22 @@ export function GeneratorClient({
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[390px_1fr]">
-      <aside className="space-y-4">
+    <div className="grid gap-6">
+      <GeneratorFlowSummary
+        mode={generatorMode}
+        selectedIntent={selectedIntent}
+        selectedDocumentLabel={selectedDocumentConfirmed ? config.label : null}
+        selectedReferenceTemplateName={selectedReferenceTemplate?.name || null}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-2">
         <section className="surface rounded-md p-5">
           <div>
             <p className="eyebrow">Punto de partida</p>
             <h2 className="font-serif-display mt-2 text-2xl font-bold">Que quieres crear?</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Primero elige la intencion. Despues veras solo los documentos que encajan, sin recorrer todos los tipos.
+              Elige una intencion. El formulario aparecera solo cuando selecciones un documento concreto.
             </p>
           </div>
           <div className="mt-4 grid gap-2">
@@ -423,7 +431,9 @@ export function GeneratorClient({
                   <span className="font-bold">{intent.label}</span>
                   <span className="text-xs font-semibold text-[#2d6a4f]">{getDocumentsForIntent(intent.id).length}</span>
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-slate-500">{intent.description}</span>
+                {generatorMode === "catalog" && selectedIntentId === intent.id && (
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">{intent.description}</span>
+                )}
               </button>
             ))}
           </div>
@@ -451,7 +461,6 @@ export function GeneratorClient({
               }`}
             >
               <span className="font-bold">Ver todos los tipos</span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">Todos los tipos oficiales disponibles.</span>
             </button>
             <button
               type="button"
@@ -468,7 +477,6 @@ export function GeneratorClient({
               }`}
             >
               <span className="font-bold">Tipos de la comunidad</span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">Documentos aprobados a partir de solicitudes reales.</span>
             </button>
             <button
               type="button"
@@ -487,14 +495,25 @@ export function GeneratorClient({
                 Pedir un documento a medida
                 {customProLocked && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] text-white">Pro</span>}
               </span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">Para documentos que no estan en los tipos disponibles.</span>
             </button>
             </div>
           </div>
         </section>
 
-        {workspaces.length > 0 && (
-          <section className="surface-flat rounded-md p-5">
+        <details className="surface-flat rounded-md p-5">
+          <summary className="cursor-pointer list-none">
+            <span className="flex items-center justify-between gap-3">
+              <span>
+                <span className="block text-sm font-bold text-[#2d6a4f]">Opciones</span>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">Plan, equipo y ajustes de guardado.</span>
+              </span>
+              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase text-[#2d6a4f]">{plan}</span>
+            </span>
+          </summary>
+
+          <div className="mt-4 grid gap-4 border-t border-[#d8f3dc] pt-4">
+          {workspaces.length > 0 && (
+          <div>
             <p className="text-sm font-bold text-[#2d6a4f]">Espacio de trabajo</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Decide si el documento queda solo en tus documentos personales o compartido con un equipo.
@@ -522,10 +541,10 @@ export function GeneratorClient({
                 El documento sera visible para miembros de {selectedWorkspace.name}.
               </p>
             )}
-          </section>
+          </div>
         )}
 
-        <section className="surface-flat rounded-md p-5">
+        <div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-bold text-[#2d6a4f]">Tu plan</p>
             <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase text-[#2d6a4f]">{plan}</span>
@@ -541,7 +560,9 @@ export function GeneratorClient({
               Ver que desbloquea Pro
             </Link>
           )}
-        </section>
+        </div>
+          </div>
+        </details>
 
         {generatorMode === "catalog" && (
         <section className="surface rounded-md p-5">
@@ -687,7 +708,17 @@ export function GeneratorClient({
         )}
 
         {generatorMode === "catalog" && selectedDocumentConfirmed && (
-        <section className="surface-flat rounded-md p-5">
+        <details className="surface-flat rounded-md p-5">
+          <summary className="cursor-pointer list-none">
+            <span className="flex items-center justify-between gap-3">
+              <span>
+                <span className="block text-sm font-bold text-[#2d6a4f]">Documento seleccionado</span>
+                <span className="mt-1 block text-xs text-slate-500">{config.label}</span>
+              </span>
+              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{config.fields.length} datos</span>
+            </span>
+          </summary>
+          <div className="mt-4 border-t border-[#d8f3dc] pt-4">
           <p className="text-sm font-bold text-[#2d6a4f]">Seleccionado</p>
           <h3 className="font-serif-display mt-2 text-2xl font-bold">{config.label}</h3>
           <p className="mt-3 text-sm leading-6 text-slate-600">{config.summary}</p>
@@ -710,11 +741,26 @@ export function GeneratorClient({
                 : "."}
             </p>
           )}
-        </section>
+          </div>
+        </details>
         )}
 
         {generatorMode === "catalog" && plan !== "free" && (
-          <section className="surface-flat rounded-md p-5">
+          <details className="surface-flat rounded-md p-5" open={Boolean(selectedReferenceTemplate)}>
+            <summary className="cursor-pointer list-none">
+              <span className="flex items-center justify-between gap-3">
+                <span>
+                  <span className="block text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Opcional. Usa un ejemplo propio para orientar tono y estructura.
+                  </span>
+                </span>
+                <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+                  {referenceTemplates.length}
+                </span>
+              </span>
+            </summary>
+            <div className="mt-4 border-t border-[#d8f3dc] pt-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</p>
@@ -937,7 +983,8 @@ export function GeneratorClient({
                 </p>
               </div>
             )}
-          </section>
+            </div>
+          </details>
         )}
 
         <section className="surface-flat rounded-md p-5">
@@ -960,7 +1007,7 @@ export function GeneratorClient({
         </section>
       </aside>
 
-      <section className="surface rounded-md p-6">
+      <section className="surface min-h-[520px] rounded-md p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-5">
           <div>
             <p className="text-sm font-semibold text-[#2d6a4f]">
@@ -1098,6 +1145,7 @@ export function GeneratorClient({
           />
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -1124,6 +1172,59 @@ function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
     category,
     documents,
   }));
+}
+
+function GeneratorFlowSummary({
+  mode,
+  selectedIntent,
+  selectedDocumentLabel,
+  selectedReferenceTemplateName,
+}: {
+  mode: "catalog" | "community" | "custom";
+  selectedIntent: GeneratorIntent;
+  selectedDocumentLabel: string | null;
+  selectedReferenceTemplateName: string | null;
+}) {
+  const steps = [
+    {
+      label: "1. Punto de partida",
+      value: mode === "catalog" ? selectedIntent.label : mode === "community" ? "Tipos de la comunidad" : "Documento a medida",
+      done: true,
+    },
+    {
+      label: "2. Documento",
+      value: mode === "catalog" ? selectedDocumentLabel || "Pendiente de elegir" : "Definido por el flujo",
+      done: mode !== "catalog" || Boolean(selectedDocumentLabel),
+    },
+    {
+      label: "3. Datos",
+      value: mode === "catalog" && !selectedDocumentLabel ? "Aparece despues" : "Completa el formulario",
+      done: false,
+    },
+    {
+      label: "Opcional",
+      value: selectedReferenceTemplateName ? `Plantilla: ${selectedReferenceTemplateName}` : "Sin plantilla",
+      done: Boolean(selectedReferenceTemplateName),
+    },
+  ];
+
+  return (
+    <section className="surface-flat rounded-md p-4" aria-label="Progreso de creacion">
+      <div className="grid gap-3 md:grid-cols-4">
+        {steps.map((step) => (
+          <div
+            key={step.label}
+            className={`rounded-md border px-4 py-3 ${
+              step.done ? "border-[#2d6a4f] bg-[#d8f3dc]/45" : "border-[#d8f3dc] bg-white/70"
+            }`}
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">{step.label}</p>
+            <p className="mt-1 text-sm font-semibold text-[#1f2933]">{step.value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function DocumentChoicePanel({
