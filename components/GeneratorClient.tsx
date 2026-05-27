@@ -163,8 +163,9 @@ export function GeneratorClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialSelectedType = initialDocType || getDefaultDocumentType(searchParams.get("type"));
-  const initialIntentId = getValidIntentId(searchParams.get("intent")) || getIntentForDocument(initialSelectedType);
   const startsWithExplicitDocument = Boolean(initialDocType || initialFormData || searchParams.get("type"));
+  const initialIntentId =
+    getValidIntentId(searchParams.get("intent")) || (startsWithExplicitDocument ? getIntentForDocument(initialSelectedType) : "all");
   const [selected, setSelected] = useState<DocumentType>(initialSelectedType);
   const [selectedDocumentConfirmed, setSelectedDocumentConfirmed] = useState(startsWithExplicitDocument);
   const [generated, setGenerated] = useState<GeneratedDocument | null>(null);
@@ -403,59 +404,67 @@ export function GeneratorClient({
       <aside className="space-y-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-2">
         <section className="surface rounded-md p-5">
           <div>
-            <p className="eyebrow">Punto de partida</p>
-            <h2 className="font-serif-display mt-2 text-2xl font-bold">Que quieres crear?</h2>
+            <p className="eyebrow">Crear documento</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Empieza por el catalogo</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Elige una intencion. El formulario aparecera solo cuando selecciones un documento concreto.
+              Primero elige el tipo de documento. Puedes ver todo por categorias o filtrar por lo que necesitas hacer.
             </p>
           </div>
           <div className="mt-4 grid gap-2">
-            {generatorIntents.filter((intent) => intent.id !== "all").map((intent) => (
-              <button
-                key={intent.id}
-                type="button"
-                onClick={() => selectCatalogIntent(intent.id)}
-                className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                  generatorMode === "catalog" && selectedIntentId === intent.id
-                    ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                    : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
-                }`}
-              >
-                <span className="flex items-center justify-between gap-3">
-                  <span className="font-bold">{intent.label}</span>
-                  <span className="text-xs font-semibold text-[#2d6a4f]">{getDocumentsForIntent(intent.id).length}</span>
-                </span>
-                {generatorMode === "catalog" && selectedIntentId === intent.id && (
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">{intent.description}</span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-4 border-t border-[#d8f3dc] pt-4">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Tambien puedes</p>
-            <div className="mt-3 grid gap-2">
             <button
               type="button"
-              onClick={() => {
-                setGeneratorMode("catalog");
-                setSelectedIntentId("all");
-                setSelectedDocumentConfirmed(false);
-                setGenerated(null);
-                setError(null);
-                setLastPayload(null);
-                setLastCustomPayload(null);
-                setLastCommunityPayload(null);
-                router.replace("/generar?mode=catalog&intent=all", { scroll: false });
-              }}
+              onClick={() => selectCatalogIntent("all")}
               className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                 generatorMode === "catalog" && selectedIntentId === "all"
                   ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
                   : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
               }`}
             >
-              <span className="font-bold">Ver todos los tipos</span>
+              <span className="flex items-center justify-between gap-3">
+                <span className="font-bold">Ver todo el catalogo</span>
+                <span className="text-xs font-semibold text-[#2d6a4f]">{documentTypes.length}</span>
+              </span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">La vista mas clara para explorar por categorias.</span>
             </button>
+          </div>
+
+          <details className="mt-4 rounded-md border border-[#d8f3dc] bg-white/60 p-3" open={selectedIntentId !== "all"}>
+            <summary className="focus-ring cursor-pointer list-none rounded-md">
+              <span className="flex items-center justify-between gap-3">
+                <span>
+                  <span className="block text-sm font-bold text-[#1f2933]">Filtrar por objetivo</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">Atajos para acotar el catalogo.</span>
+                </span>
+                <span className="text-sm font-bold text-[#2d6a4f]">⌄</span>
+              </span>
+            </summary>
+            <div className="mt-3 grid gap-2">
+              {generatorIntents.filter((intent) => intent.id !== "all").map((intent) => (
+                <button
+                  key={intent.id}
+                  type="button"
+                  onClick={() => selectCatalogIntent(intent.id)}
+                  className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
+                    generatorMode === "catalog" && selectedIntentId === intent.id
+                      ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
+                      : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                  }`}
+                >
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="font-bold">{intent.label}</span>
+                    <span className="text-xs font-semibold text-[#2d6a4f]">{getDocumentsForIntent(intent.id).length}</span>
+                  </span>
+                  {generatorMode === "catalog" && selectedIntentId === intent.id && (
+                    <span className="mt-1 block text-xs leading-5 text-slate-500">{intent.description}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </details>
+
+          <div className="mt-4 border-t border-[#d8f3dc] pt-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Otras formas de crear</p>
+            <div className="mt-3 grid gap-2">
             <button
               type="button"
               onClick={() => {
@@ -471,6 +480,7 @@ export function GeneratorClient({
               }`}
             >
               <span className="font-bold">Tipos de la comunidad</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Documentos propuestos y revisados internamente.</span>
             </button>
             <button
               type="button"
@@ -489,6 +499,7 @@ export function GeneratorClient({
                 Pedir un documento a medida
                 {customProLocked && <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] text-white">Pro</span>}
               </span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">Describe lo que necesitas si no existe en el catalogo.</span>
             </button>
             </div>
           </div>
@@ -603,7 +614,7 @@ export function GeneratorClient({
           </section>
         )}
 
-        {generatorMode === "catalog" && plan !== "free" && (
+        {generatorMode === "catalog" && plan !== "free" && selectedDocumentConfirmed && (
           <details className="surface-flat rounded-md p-5" open={Boolean(selectedReferenceTemplate)}>
             <summary className="cursor-pointer list-none">
               <span className="flex items-center justify-between gap-3">
@@ -863,14 +874,16 @@ export function GeneratorClient({
               {generatorMode === "catalog"
                 ? selectedDocumentConfirmed
                   ? config.label
-                  : `Elige documento para ${selectedIntent.label.toLowerCase()}`
+                  : selectedIntent.id === "all"
+                    ? "Elige el documento que necesitas"
+                    : `Elige documento para ${selectedIntent.label.toLowerCase()}`
                 : generatorMode === "community"
                   ? selectedCommunityType?.label || "Tipos de la comunidad"
                   : "No encuentro mi documento"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               {generatorMode === "catalog" && !selectedDocumentConfirmed
-                ? "Ahora selecciona el tipo exacto. Hasta que elijas uno, no mostramos ningun formulario para evitar confusiones."
+                ? "Abre una categoria o usa el buscador. Cuando elijas un documento, cargaremos solo su formulario."
                 : generatorMode === "catalog"
                 ? "Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo."
                 : generatorMode === "community"
@@ -898,6 +911,7 @@ export function GeneratorClient({
             documentQuery={documentQuery}
             onQueryChange={setDocumentQuery}
             onSelectDocument={selectDocument}
+            onShowAll={() => selectCatalogIntent("all")}
           />
         ) : generatorMode === "community" && selectedCommunityType && communityLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
@@ -1084,85 +1098,117 @@ function DocumentChoicePanel({
   documentQuery,
   onQueryChange,
   onSelectDocument,
+  onShowAll,
 }: {
   groupedDocuments: Array<{ category: string; documents: typeof documentTypes[number][] }>;
   selectedIntent: GeneratorIntent;
   documentQuery: string;
   onQueryChange: (value: string) => void;
   onSelectDocument: (type: DocumentType) => void;
+  onShowAll: () => void;
 }) {
-  const [showAll, setShowAll] = useState(false);
+  const hasSearch = documentQuery.trim().length > 0;
+  const isFiltered = selectedIntent.id !== "all";
   const visibleDocuments = groupedDocuments.flatMap((group) => group.documents);
-  const listedDocuments = showAll || documentQuery.trim().length > 0 ? visibleDocuments : visibleDocuments.slice(0, 8);
-  const hiddenCount = Math.max(visibleDocuments.length - listedDocuments.length, 0);
+  const categoryCount = groupedDocuments.length;
 
   return (
     <div className="grid gap-5">
       <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Paso 1 completado</p>
-            <h2 className="font-serif-display mt-2 text-2xl font-bold">{selectedIntent.label}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{selectedIntent.description}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Catalogo de documentos</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">
+              {isFiltered ? selectedIntent.label : "Elige por categoria"}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              {isFiltered
+                ? selectedIntent.description
+                : "Todas las opciones estan agrupadas para que puedas explorar sin bajar por una lista interminable. Abre una categoria y elige el documento exacto."}
+            </p>
           </div>
           <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
             {visibleDocuments.length} tipos
           </span>
         </div>
-        <label className="mt-5 block">
-          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar dentro de esta intención</span>
-          <input
-            value={documentQuery}
-            onChange={(event) => onQueryChange(event.target.value)}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-            placeholder="Reclamación, carta, contrato, privacidad..."
-          />
-        </label>
+        <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar documento</span>
+            <input
+              value={documentQuery}
+              onChange={(event) => onQueryChange(event.target.value)}
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              placeholder="Reclamacion, carta, contrato, privacidad..."
+            />
+          </label>
+          {isFiltered && (
+            <button type="button" onClick={onShowAll} className="focus-ring btn-secondary px-4 py-3 text-sm">
+              Ver todo el catalogo
+            </button>
+          )}
+        </div>
+        {categoryCount > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {groupedDocuments.map((group) => (
+              <span key={group.category} className="rounded-full border border-[#d8f3dc] bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600">
+                {group.category}: {group.documents.length}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {visibleDocuments.length > 0 ? (
-        <div className="rounded-md border border-[#d8f3dc] bg-white/70">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d8f3dc] px-4 py-3">
-            <div>
-              <h3 className="font-bold">Documentos recomendados</h3>
-              <p className="mt-1 text-xs text-slate-500">Lista compacta para elegir sin bajar por una galería enorme.</p>
-            </div>
-            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-              {visibleDocuments.length} resultados
-            </span>
-          </div>
-          <div className="divide-y divide-[#d8f3dc]">
-            {listedDocuments.map((doc) => (
-              <button
-                key={doc.type}
-                type="button"
-                onClick={() => onSelectDocument(doc.type)}
-                className="focus-ring block w-full px-4 py-4 text-left transition hover:bg-[#faf9f6]"
-              >
-                <span className="flex flex-wrap items-start justify-between gap-3">
-                  <span>
-                    <span className="font-bold text-[#1f2933]">{doc.label}</span>
-                    <span className="mt-1 block text-sm leading-6 text-slate-600">{doc.summary}</span>
-                  </span>
-                  <span className="flex shrink-0 flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold uppercase text-[#2d6a4f]">
-                      {doc.category}
-                    </span>
-                    {requiresPro(doc) && (
-                      <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
-                    )}
+        <div className="grid gap-3">
+          {groupedDocuments.map((group, index) => (
+            <details
+              key={group.category}
+              open={hasSearch || isFiltered || index === 0}
+              className="group rounded-md border border-[#d8f3dc] bg-white/75"
+            >
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-4 py-4 transition hover:bg-[#faf9f6]">
+                <span>
+                  <span className="block font-bold text-[#1f2933]">{group.category}</span>
+                  <span className="mt-1 block text-xs text-slate-500">
+                    {group.documents.length} documentos disponibles
                   </span>
                 </span>
-              </button>
-            ))}
-          </div>
-          {hiddenCount > 0 && (
-            <div className="border-t border-[#d8f3dc] p-4">
-              <button type="button" onClick={() => setShowAll(true)} className="focus-ring btn-secondary px-4 py-2 text-sm">
-                Ver {hiddenCount} documentos más
-              </button>
-            </div>
-          )}
+                <span className="flex items-center gap-3">
+                  <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+                    {group.documents.length}
+                  </span>
+                  <span className="text-sm font-bold text-[#2d6a4f] group-open:rotate-180">⌄</span>
+                </span>
+              </summary>
+              <div className="divide-y divide-[#d8f3dc] border-t border-[#d8f3dc]">
+                {group.documents.map((doc) => (
+                  <button
+                    key={doc.type}
+                    type="button"
+                    onClick={() => onSelectDocument(doc.type)}
+                    className="focus-ring block w-full px-4 py-4 text-left transition hover:bg-[#faf9f6]"
+                  >
+                    <span className="flex flex-wrap items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="font-bold text-[#1f2933]">{doc.label}</span>
+                        <span className="mt-1 block text-sm leading-6 text-slate-600">{doc.summary}</span>
+                      </span>
+                      <span className="flex shrink-0 flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-[#faf9f6] px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">
+                          {doc.fields.length} datos
+                        </span>
+                        {requiresPro(doc) ? (
+                          <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
+                        ) : (
+                          <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">Free</span>
+                        )}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </details>
+          ))}
         </div>
       ) : (
         <EmptyState
