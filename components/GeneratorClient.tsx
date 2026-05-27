@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -191,12 +191,7 @@ export function GeneratorClient({
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
   const customProLocked = plan === "free";
-  const freeTypes = useMemo(() => documentTypes.filter((doc) => !requiresPro(doc)).length, []);
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery, selectedIntentId), [documentQuery, selectedIntentId]);
-  const visibleDocumentCount = useMemo(
-    () => groupedDocuments.reduce((total, group) => total + group.documents.length, 0),
-    [groupedDocuments],
-  );
   const selectedIntent = generatorIntents.find((intent) => intent.id === selectedIntentId) || generatorIntents[0];
   const visibleReferenceTemplates = useMemo(
     () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId || null),
@@ -213,7 +208,6 @@ export function GeneratorClient({
       ),
     [referenceTemplates, referenceTemplateMetrics, config.category, workspaceId],
   );
-  const isTemplateMode = Boolean(initialFormData && initialDocType);
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
   const selectedWorkspace = workspaces.find((workspace) => workspace.id === workspaceId);
   const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
@@ -564,104 +558,6 @@ export function GeneratorClient({
           </div>
         </details>
 
-        {generatorMode === "catalog" && (
-        <section className="surface rounded-md p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="eyebrow">Documento</p>
-              <h2 className="font-serif-display mt-2 text-2xl font-bold">{selectedIntent.label}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{selectedIntent.description}</p>
-            </div>
-            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{visibleDocumentCount} tipos</span>
-          </div>
-
-          <label className="mt-5 block">
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar documento</span>
-            <input
-              value={documentQuery}
-              onChange={(event) => setDocumentQuery(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-              placeholder="Contrato, cookies, reclamacion..."
-            />
-          </label>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-slate-500">Sugerencia:</span>
-            {selectedIntent.sampleTypes.map((type) => {
-              const sampleConfig = getDocumentConfig(type);
-
-              if (!sampleConfig) {
-                return null;
-              }
-
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => selectDocument(type)}
-                  className="focus-ring rounded-full border border-[#d8f3dc] bg-white/75 px-3 py-1 font-semibold text-[#2d6a4f] transition hover:border-[#2d6a4f]"
-                >
-                  {sampleConfig.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-5 grid gap-2">
-            {groupedDocuments.map((group) => (
-              <details
-                key={group.category}
-                open={documentQuery.trim().length > 0 || !selectedDocumentConfirmed || group.category === config.category}
-                className="rounded-md border border-[#d8f3dc] bg-white/58"
-              >
-                <summary className="cursor-pointer list-none px-3 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-bold text-[#1f2933]">{group.category}</span>
-                    <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-xs font-bold text-[#2d6a4f]">
-                      {group.documents.length}
-                    </span>
-                  </div>
-                </summary>
-                <div className="grid gap-2 border-t border-[#d8f3dc] p-2">
-                  {group.documents.map((doc) => {
-                    const active = selectedDocumentConfirmed && doc.type === selected;
-
-                    return (
-                      <button
-                        key={doc.type}
-                        type="button"
-                        onClick={() => selectDocument(doc.type)}
-                        className={`focus-ring rounded-md border px-3 py-3 text-left transition ${
-                          active
-                            ? "border-[#2d6a4f] bg-[#d8f3dc]/70 shadow-sm"
-                            : "border-transparent bg-white/70 hover:border-[#2d6a4f] hover:bg-white"
-                        }`}
-                      >
-                        <span className="flex items-center justify-between gap-3 text-sm font-semibold">
-                          {doc.label}
-                          {requiresPro(doc) && (
-                            <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
-                          )}
-                        </span>
-                        <span className="mt-1 block text-xs leading-5 text-slate-500">{doc.summary}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </details>
-            ))}
-            {groupedDocuments.length === 0 && (
-              <EmptyState
-                eyebrow="Sin coincidencias"
-                title="No encontramos ese documento"
-                description="Prueba con una palabra mas general como contrato, web, carta o presupuesto."
-                variant="flat"
-                secondaryAction={{ href: "/catalogo", label: "Ver tipos" }}
-              />
-            )}
-          </div>
-        </section>
-        )}
-
         {generatorMode === "community" && (
           <section className="surface rounded-md p-5">
             <div className="flex items-start justify-between gap-3">
@@ -705,44 +601,6 @@ export function GeneratorClient({
               })}
             </div>
           </section>
-        )}
-
-        {generatorMode === "catalog" && selectedDocumentConfirmed && (
-        <details className="surface-flat rounded-md p-5">
-          <summary className="cursor-pointer list-none">
-            <span className="flex items-center justify-between gap-3">
-              <span>
-                <span className="block text-sm font-bold text-[#2d6a4f]">Documento seleccionado</span>
-                <span className="mt-1 block text-xs text-slate-500">{config.label}</span>
-              </span>
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{config.fields.length} datos</span>
-            </span>
-          </summary>
-          <div className="mt-4 border-t border-[#d8f3dc] pt-4">
-          <p className="text-sm font-bold text-[#2d6a4f]">Seleccionado</p>
-          <h3 className="font-serif-display mt-2 text-2xl font-bold">{config.label}</h3>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{config.summary}</p>
-          <div className="mt-5 grid gap-2 text-sm">
-            <InfoPill label="Campos" value={`${config.fields.length} datos`} />
-            <InfoPill label="Firmas" value={config.includesSignatures ? "Incluidas si aplica" : "No necesarias"} />
-            <InfoPill label="Acceso" value={requiresPro(config) ? "Solo Pro" : "Free"} />
-            <InfoPill label="Word" value={canExportDocx ? "Disponible" : "Solo Pro"} />
-          </div>
-          {plan === "free" && (
-            <p className="mt-4 text-xs leading-5 text-slate-500">
-              Free incluye {freeTypes} tipos. Pro desbloquea documentos laborales y legales avanzados.
-            </p>
-          )}
-          {isTemplateMode && (
-            <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">
-              Has cargado datos desde Documentos
-              {selectedReferenceTemplate
-                ? ` y se ha recuperado la plantilla "${selectedReferenceTemplate.name}" con el modo ${templateUsageLabels[templateUsageMode]}.`
-                : "."}
-            </p>
-          )}
-          </div>
-        </details>
         )}
 
         {generatorMode === "catalog" && plan !== "free" && (
@@ -987,24 +845,6 @@ export function GeneratorClient({
           </details>
         )}
 
-        <section className="surface-flat rounded-md p-5">
-          <p className="text-sm font-bold text-[#2d6a4f]">No encuentras tu documento?</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Describe lo que necesitas y DocuGen generara un borrador personalizado. Disponible en Pro por su coste y complejidad.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setGeneratorMode("custom");
-              setSelectedDocumentConfirmed(false);
-              setGenerated(null);
-              setError(null);
-            }}
-            className="focus-ring btn-ghost mt-4 px-3 py-2 text-sm"
-          >
-            Crear a medida
-          </button>
-        </section>
       </aside>
 
       <section className="surface min-h-[520px] rounded-md p-6">
@@ -1037,6 +877,17 @@ export function GeneratorClient({
                   ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
                   : "Explica que documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos utiles."}
             </p>
+            {generatorMode === "catalog" && selectedDocumentConfirmed && (
+              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-[#d8f3dc] px-3 py-1 font-bold text-[#2d6a4f]">{config.fields.length} datos</span>
+                <span className="rounded-full bg-[#faf9f6] px-3 py-1 font-semibold text-slate-600">
+                  {config.includesSignatures ? "Con firmas si aplica" : "Sin firmas"}
+                </span>
+                <span className="rounded-full bg-[#faf9f6] px-3 py-1 font-semibold text-slate-600">
+                  {requiresPro(config) ? "Solo Pro" : "Incluido"}
+                </span>
+              </div>
+            )}
           </div>
           {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
         </div>
@@ -1240,7 +1091,10 @@ function DocumentChoicePanel({
   onQueryChange: (value: string) => void;
   onSelectDocument: (type: DocumentType) => void;
 }) {
+  const [showAll, setShowAll] = useState(false);
   const visibleDocuments = groupedDocuments.flatMap((group) => group.documents);
+  const listedDocuments = showAll || documentQuery.trim().length > 0 ? visibleDocuments : visibleDocuments.slice(0, 8);
+  const hiddenCount = Math.max(visibleDocuments.length - listedDocuments.length, 0);
 
   return (
     <div className="grid gap-5">
@@ -1266,43 +1120,55 @@ function DocumentChoicePanel({
         </label>
       </div>
 
-      {groupedDocuments.length > 0 ? (
-        <div className="grid gap-4">
-          {groupedDocuments.map((group) => (
-            <section key={group.category} className="rounded-md border border-[#d8f3dc] bg-white/70 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="font-bold">{group.category}</h3>
-                <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-xs font-bold text-[#2d6a4f]">
-                  {group.documents.length}
-                </span>
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                {group.documents.map((doc) => (
-                  <button
-                    key={doc.type}
-                    type="button"
-                    onClick={() => onSelectDocument(doc.type)}
-                    className="focus-ring rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#2d6a4f] hover:bg-white"
-                  >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="font-bold text-[#1f2933]">{doc.label}</span>
-                      {requiresPro(doc) && (
-                        <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
-                      )}
+      {visibleDocuments.length > 0 ? (
+        <div className="rounded-md border border-[#d8f3dc] bg-white/70">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d8f3dc] px-4 py-3">
+            <div>
+              <h3 className="font-bold">Documentos recomendados</h3>
+              <p className="mt-1 text-xs text-slate-500">Lista compacta para elegir sin bajar por una galería enorme.</p>
+            </div>
+            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+              {visibleDocuments.length} resultados
+            </span>
+          </div>
+          <div className="divide-y divide-[#d8f3dc]">
+            {listedDocuments.map((doc) => (
+              <button
+                key={doc.type}
+                type="button"
+                onClick={() => onSelectDocument(doc.type)}
+                className="focus-ring block w-full px-4 py-4 text-left transition hover:bg-[#faf9f6]"
+              >
+                <span className="flex flex-wrap items-start justify-between gap-3">
+                  <span>
+                    <span className="font-bold text-[#1f2933]">{doc.label}</span>
+                    <span className="mt-1 block text-sm leading-6 text-slate-600">{doc.summary}</span>
+                  </span>
+                  <span className="flex shrink-0 flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold uppercase text-[#2d6a4f]">
+                      {doc.category}
                     </span>
-                    <span className="mt-2 block text-sm leading-6 text-slate-600">{doc.summary}</span>
-                    <span className="mt-3 inline-flex text-sm font-bold text-[#2d6a4f]">Usar este documento</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          ))}
+                    {requiresPro(doc) && (
+                      <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white">Pro</span>
+                    )}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          {hiddenCount > 0 && (
+            <div className="border-t border-[#d8f3dc] p-4">
+              <button type="button" onClick={() => setShowAll(true)} className="focus-ring btn-secondary px-4 py-2 text-sm">
+                Ver {hiddenCount} documentos más
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <EmptyState
           eyebrow="Sin coincidencias"
           title="No encontramos ese documento"
-          description="Prueba con una palabra mas general o usa el modo a medida si tu plan lo permite."
+          description="Prueba con una palabra más general o usa el modo a medida si tu plan lo permite."
           variant="flat"
           secondaryAction={{ href: "/catalogo", label: "Ver todos los tipos" }}
         />
@@ -1310,7 +1176,6 @@ function DocumentChoicePanel({
     </div>
   );
 }
-
 function getDocumentsForIntent(intentId: GeneratorIntentId) {
   return documentTypes.filter((doc) => documentMatchesIntent(doc, intentId));
 }
