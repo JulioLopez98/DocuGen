@@ -25,14 +25,14 @@ export function ContextualHelp({
   tone = "default",
 }: ContextualHelpProps) {
   return (
-    <aside className={`rounded-md border p-5 ${getToneClassName(tone)}`} aria-label={title}>
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{eyebrow}</p>
+    <aside className={`rounded-md border p-5 shadow-[0_10px_28px_rgba(31,41,51,0.04)] ${getToneClassName(tone)}`} aria-label={title}>
+      <p className="eyebrow">{eyebrow}</p>
       <h2 className="mt-2 font-serif-display text-2xl font-bold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+      <p className="body-muted mt-2">{description}</p>
       {items.length > 0 && (
         <ul className="mt-4 grid gap-2">
           {items.map((item) => (
-            <li key={item} className="rounded-md bg-white/72 px-3 py-2 text-xs leading-5 text-slate-600">
+            <li key={item} className="interactive-subtle rounded-md border border-[#d8f3dc]/70 bg-white/72 px-3 py-2 text-xs leading-5 text-slate-600">
               {item}
             </li>
           ))}

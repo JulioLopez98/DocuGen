@@ -57,7 +57,7 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
           id={menuId}
           role="menu"
           aria-label="Más opciones de navegación"
-          className="absolute right-0 top-11 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-md border border-[#d8f3dc] bg-white shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
+          className="absolute right-0 top-11 z-50 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#d8f3dc] bg-white shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
         >
           <div className="grid p-2">
             {links.map((link) => {
@@ -69,15 +69,11 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
                   href={link.href}
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className={`rounded-md px-3 py-3 transition hover:bg-[#d8f3dc]/45 ${active ? "bg-[#d8f3dc]/55" : ""}`}
+                  className={`interactive-subtle rounded-lg px-3 py-3 transition ${active ? "border-[#2d6a4f] bg-[#d8f3dc]/55" : "border-transparent"}`}
                 >
                   <span className="flex items-center justify-between gap-3">
                     <span className="text-sm font-bold text-[#1f2933]">{link.label}</span>
-                    {link.badge && (
-                      <span className="rounded-full bg-[#faf9f6] px-2 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2d6a4f]">
-                        {link.badge}
-                      </span>
-                    )}
+                    {link.badge && <span className="badge badge-free">{link.badge}</span>}
                   </span>
                   <span className="mt-1 block text-xs leading-5 text-slate-500">{link.description}</span>
                 </Link>

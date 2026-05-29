@@ -120,12 +120,12 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
         {cards.map((card) => (
           <div
             key={card.name}
-            className={`interactive relative flex h-full flex-col rounded-md p-6 ${
+            className={`interactive relative flex h-full flex-col p-6 ${
               card.highlighted ? "surface border-[#2d6a4f]" : "surface-flat"
             }`}
           >
             {card.badge && (
-              <span className="absolute right-4 top-4 rounded-full bg-[#2d6a4f] px-3 py-1 text-xs font-bold text-white">
+              <span className="badge badge-pro absolute right-4 top-4">
                 {card.badge}
               </span>
             )}
@@ -138,7 +138,9 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
             <ul className="mt-5 flex-1 space-y-3 text-sm">
               {card.features.map((feature) => (
                 <li key={feature} className="flex gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#2d6a4f]" aria-hidden="true" />
+                  <span className="mt-1.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#d8f3dc] text-[10px] font-bold text-[#2d6a4f]" aria-hidden="true">
+                    ✓
+                  </span>
                   <span>{feature}</span>
                 </li>
               ))}
@@ -160,11 +162,11 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
                 {card.action}
               </Link>
             ) : (
-              <span className="mt-6 block w-full rounded-md bg-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-500">
+              <span className="mt-6 block w-full rounded-xl bg-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-500">
                 {card.action}
               </span>
             )}
-            {card.helper && <p className="mt-3 text-xs leading-5 text-slate-500">{card.helper}</p>}
+            {card.helper && <p className="status-note mt-3 text-xs">{card.helper}</p>}
           </div>
         ))}
       </div>

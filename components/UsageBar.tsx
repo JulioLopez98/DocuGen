@@ -11,11 +11,11 @@ export function UsageBar({ used, limit = 3, plan = "free" }: UsageBarProps) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span>Uso mensual</span>
+        <span className="font-semibold text-[#1f2933]">Uso mensual</span>
         <span className="font-semibold">{unlimited ? `${used} documentos` : `${used}/${limit}`}</span>
       </div>
-      <div className="h-3 overflow-hidden rounded-full bg-[#d8f3dc]">
-        <div className="h-full rounded-full bg-[#2d6a4f]" style={{ width: `${percent}%` }} />
+      <div className="h-3 overflow-hidden rounded-full border border-[#d8f3dc] bg-white/80 shadow-inner">
+        <div className="h-full rounded-full bg-[#2d6a4f] transition-all duration-300" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

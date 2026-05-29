@@ -56,10 +56,10 @@ export function AuthForm() {
   }
 
   return (
-    <div className="surface mx-auto max-w-md rounded-md p-6">
+    <div className="surface mx-auto max-w-md p-6">
       <p className="eyebrow">Acceso</p>
-      <h1 className="font-serif-display mt-3 text-3xl font-bold">Accede a DocuGen</h1>
-      <p className="mt-3 text-sm leading-6 text-slate-600">Entra con magic link o Google OAuth para generar documentos.</p>
+      <h1 className="panel-title mt-3">Accede a DocuGen</h1>
+      <p className="body-muted mt-3">Entra con magic link o Google OAuth para generar documentos.</p>
       <form onSubmit={signInWithMagicLink} className="mt-6 grid gap-4">
         <label>
           <span className="text-sm font-semibold">Email</span>
@@ -68,7 +68,7 @@ export function AuthForm() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 transition focus:border-[#2d6a4f]"
+            className="field-control mt-2"
             placeholder="tu@email.com"
           />
         </label>
@@ -79,8 +79,8 @@ export function AuthForm() {
       <button type="button" onClick={signInWithGoogle} className="focus-ring btn-secondary mt-3 w-full px-4 py-3 text-sm">
         Continuar con Google
       </button>
-      {message && <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">{message}</p>}
-      {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {message && <p className="status-success mt-4">{message}</p>}
+      {error && <p className="status-error mt-4">{error}</p>}
     </div>
   );
 }

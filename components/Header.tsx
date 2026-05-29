@@ -32,7 +32,7 @@ export async function Header() {
   const moreLinks = user ? buildUserMoreLinks({ isPaid, isEmpresa, role }) : [];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#d8f3dc]/80 bg-[#faf9f6]/86 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[#d8f3dc]/80 bg-[#faf9f6]/88 shadow-[0_6px_24px_rgba(31,41,51,0.04)] backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" className="font-serif-display text-2xl font-bold tracking-tight text-[#2d6a4f]">
           DocuGen
@@ -45,7 +45,7 @@ export async function Header() {
 
         {user ? (
           <div className="flex min-w-0 items-center gap-3">
-            <span className="hidden rounded-full bg-[#d8f3dc]/70 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#2d6a4f] xl:inline">
+            <span className={`hidden xl:inline ${plan === "empresa" ? "badge badge-empresa" : plan === "pro" ? "badge badge-pro" : "badge badge-free"}`}>
               {plan}
             </span>
             <span className="hidden max-w-44 truncate text-sm text-slate-600 xl:inline">{user.email}</span>

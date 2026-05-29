@@ -3,13 +3,18 @@
 :root {
   --cream: #faf9f6;
   --green: #2d6a4f;
+  --green-dark: #24583f;
   --green-light: #d8f3dc;
   --ink: #1f2933;
   --muted: #64748b;
   --line: rgba(45, 106, 79, 0.16);
   --paper: #ffffff;
+  --success-soft: #ecfdf3;
+  --warning-soft: #fff8e6;
+  --danger-soft: #fef2f2;
   --shadow-soft: 0 18px 50px rgba(31, 41, 51, 0.08);
   --shadow-lift: 0 22px 60px rgba(45, 106, 79, 0.16);
+  --shadow-tight: 0 8px 24px rgba(31, 41, 51, 0.06);
 }
 
 * {
@@ -82,11 +87,41 @@ select {
   background: rgba(255, 255, 255, 0.82);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(14px);
+  border-radius: 12px;
 }
 
 .surface-flat {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.72);
+  border-radius: 12px;
+}
+
+.surface-muted {
+  border: 1px solid var(--line);
+  background: rgba(250, 249, 246, 0.82);
+  border-radius: 12px;
+}
+
+.panel-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.55rem, 2.8vw, 2.35rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.section-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.body-muted {
+  color: var(--muted);
+  font-size: 0.925rem;
+  line-height: 1.7;
 }
 
 .interactive {
@@ -102,6 +137,19 @@ select {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lift);
   border-color: rgba(45, 106, 79, 0.34);
+}
+
+.interactive-subtle {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.interactive-subtle:hover {
+  border-color: rgba(45, 106, 79, 0.34);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-tight);
 }
 
 .btn-primary,
@@ -120,7 +168,7 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #2d6a4f;
   color: white;
   font-weight: 700;
@@ -129,7 +177,7 @@ select {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  background: #24583f;
+  background: var(--green-dark);
   box-shadow: 0 14px 30px rgba(45, 106, 79, 0.26);
 }
 
@@ -137,7 +185,7 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(45, 106, 79, 0.42);
   background: rgba(255, 255, 255, 0.7);
   color: #2d6a4f;
@@ -154,7 +202,7 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid transparent;
   color: #2d6a4f;
   font-weight: 700;
@@ -208,4 +256,92 @@ select {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+.field-control {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.925rem;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.field-control:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+  outline: none;
+}
+
+.field-control::placeholder {
+  color: #94a3b8;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badge-free {
+  border: 1px solid rgba(45, 106, 79, 0.16);
+  background: rgba(216, 243, 220, 0.72);
+  color: var(--ink);
+}
+
+.badge-pro {
+  background: var(--green);
+  color: white;
+}
+
+.badge-empresa {
+  border: 1px solid rgba(45, 106, 79, 0.22);
+  background: #f4fbf5;
+  color: var(--green);
+}
+
+.status-note,
+.status-success,
+.status-warning,
+.status-error {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.status-note {
+  border: 1px solid var(--line);
+  background: rgba(250, 249, 246, 0.86);
+  color: var(--muted);
+}
+
+.status-success {
+  border: 1px solid rgba(45, 106, 79, 0.18);
+  background: var(--success-soft);
+  color: var(--ink);
+}
+
+.status-warning {
+  border: 1px solid rgba(180, 83, 9, 0.18);
+  background: var(--warning-soft);
+  color: #7c2d12;
+}
+
+.status-error {
+  border: 1px solid rgba(185, 28, 28, 0.14);
+  background: var(--danger-soft);
+  color: #b91c1c;
 }
