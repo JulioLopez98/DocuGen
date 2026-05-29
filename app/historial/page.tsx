@@ -35,37 +35,42 @@ export default async function HistoryPage() {
     : { data: [] as WorkspaceRow[] };
 
   return (
-    <section className="container-page py-10">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="eyebrow">Documentos</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">Documentos generados</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Consulta, descarga, reutiliza o borra tus borradores. Los documentos aparecen plegados para mantener la
-            pantalla ligera.
-          </p>
+    <section className="container-page py-8 lg:py-10">
+      <div className="surface mb-5 p-6 lg:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div>
+            <p className="eyebrow">Biblioteca</p>
+            <h1 className="section-title mt-3">Tus documentos, ordenados para revisar y reutilizar</h1>
+            <p className="body-muted mt-4 max-w-3xl">
+              Consulta borradores, abre versiones editables, exporta archivos y usa documentos anteriores como punto de partida.
+              Todo aparece plegado para mantener la pantalla ligera.
+            </p>
+          </div>
+          <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
+            Nuevo documento
+          </Link>
         </div>
-        <Link href="/generar" className="focus-ring btn-primary px-4 py-2 text-sm">
-          Nuevo documento
-        </Link>
       </div>
 
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+      <div className="mb-5 grid gap-4 lg:grid-cols-3">
         <ContextualHelp
-          title="Que puedes hacer aqui"
-          description="Esta pantalla no es solo un archivo: es tu zona de revision y reutilizacion."
-          items={["Abre un documento para editarlo.", "Usalo como base para regenerar.", "Exporta PDF, TXT o Word si tu plan lo permite."]}
+          eyebrow="Uso diario"
+          title="Revisar"
+          description="Abre un documento para editarlo, mejorar con IA, comparar versiones o restaurar cambios."
+          items={["Detalle editable.", "Historial de versiones.", "Exportación PDF/TXT/Word."]}
         />
         <ContextualHelp
-          title="Versiones y mejoras"
-          description="Cuando edites o mejores con IA, DocuGen conserva versiones para comparar y restaurar."
-          items={["Guarda cambios manuales.", "Compara antes/despues.", "Restaura una version anterior."]}
+          eyebrow="Productividad"
+          title="Reutilizar"
+          description="Convierte documentos anteriores en base para nuevos borradores sin volver a rellenar todo."
+          items={["Reutiliza datos.", "Regenera variantes.", "Mantén plantilla si aplica."]}
           secondaryAction={{ href: "/generar", label: "Crear nuevo" }}
         />
         <ContextualHelp
-          title="Orden mental"
-          description="Los documentos aparecen plegados para que no satures la pantalla."
-          items={["Filtra por tipo o fecha.", "Despliega solo lo que quieras revisar.", "Borra elementos cuando ya no los necesites."]}
+          eyebrow="Orden"
+          title="Limpiar"
+          description="Filtra por tipo, busca contenido y borra documentos que ya no necesites."
+          items={["Búsqueda por texto.", "Agrupación por mes.", "Borrado individual o completo."]}
         />
       </div>
 

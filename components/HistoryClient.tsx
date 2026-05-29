@@ -68,7 +68,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   }
 
   async function clearHistory() {
-    if (!window.confirm("Borrar todos tus documentos? Esta accion no se puede deshacer.")) {
+    if (!window.confirm("¿Borrar todos tus documentos? Esta acción no se puede deshacer.")) {
       return;
     }
 
@@ -129,22 +129,22 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   if (documents.length === 0) {
     return (
       <EmptyState
-        eyebrow="Documentos vacios"
-        title="Tus documentos empezaran aqui"
-        description="Cuando generes tu primer borrador, podras abrirlo, descargarlo, reutilizarlo como plantilla o borrarlo desde esta pantalla."
+        eyebrow="Biblioteca vacía"
+        title="Tus documentos empezarán aquí"
+        description="Cuando generes tu primer borrador, podrás abrirlo, descargarlo, reutilizarlo como base o borrarlo desde esta pantalla."
         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
         steps={
           plan === "free"
             ? ["Crea uno de los tipos incluidos en Free.", "Revisa el aviso de IA y completa datos pendientes.", "Descarga PDF/TXT o mejora a Pro cuando necesites Word."]
-            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando este listo."]
+            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando esté listo."]
         }
       >
         <div className="grid gap-4">
           <PlanFirstSteps plan={plan} context="documents" />
           <div className="grid gap-3 sm:grid-cols-3">
-          {["Contrato freelance", "Presupuesto comercial", "Carta de presentacion"].map((item) => (
-            <div key={item} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4 text-sm font-semibold">
+          {["Contrato freelance", "Presupuesto comercial", "Carta de presentación"].map((item) => (
+            <div key={item} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4 text-sm font-semibold">
               {item}
             </div>
           ))}
@@ -156,19 +156,20 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
   return (
     <div className="grid gap-5">
-      <section className="surface rounded-md p-5">
+      <section className="surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold">{documents.length} documentos guardados</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Busca por titulo, contenido o tipo. Abre cada documento solo cuando quieras verlo.
+            <p className="eyebrow">Buscar y filtrar</p>
+            <h2 className="mt-2 text-xl font-bold">{documents.length} documentos guardados</h2>
+            <p className="body-muted mt-1 text-xs">
+              Busca por título, contenido o tipo. Abre cada documento solo cuando quieras verlo.
             </p>
           </div>
           <button
             type="button"
             onClick={clearHistory}
             disabled={busyId === "all"}
-            className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+            className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
           >
             {busyId === "all" ? "Borrando..." : "Borrar todo"}
           </button>
@@ -180,8 +181,8 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-              placeholder="Titulo, texto o tipo..."
+              className="field-control mt-2"
+              placeholder="Título, texto o tipo..."
             />
           </label>
 
@@ -190,7 +191,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
             <select
               value={typeFilter}
               onChange={(event) => setTypeFilter(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="field-control mt-2"
             >
               <option value="all">Todos</option>
               <option value="custom">A medida</option>
@@ -207,10 +208,10 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
             <select
               value={sortMode}
               onChange={(event) => setSortMode(event.target.value as SortMode)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="field-control mt-2"
             >
-              <option value="newest">Mas recientes</option>
-              <option value="oldest">Mas antiguos</option>
+              <option value="newest">Más recientes</option>
+              <option value="oldest">Más antiguos</option>
               <option value="type">Por tipo</option>
             </select>
           </label>
@@ -232,7 +233,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
         </div>
       </section>
 
-      {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="status-error">{error}</p>}
 
       {filteredDocuments.length === 0 ? (
         <EmptyState
@@ -255,7 +256,10 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
       ) : (
         groupedByMonth.map((group) => (
           <section key={group.label} className="grid gap-3">
-            <h2 className="eyebrow">{group.label}</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="eyebrow">{group.label}</h2>
+              <span className="badge badge-free">{group.documents.length} documentos</span>
+            </div>
             {group.documents.map((doc) => {
               const config = getDocumentConfig(doc.doc_type);
               const custom = isCustomDocument(doc);
@@ -265,23 +269,23 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               const isBusy = busyId === doc.id;
 
               return (
-                <details key={doc.id} className="surface-flat interactive group rounded-md">
-                  <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-4 p-4">
-                    <div>
+                <details key={doc.id} className="surface-flat interactive-subtle group">
+                  <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-4 p-5">
+                    <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold">{doc.doc_label}</h3>
-                        <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-semibold text-[#1f2933]">
+                        <h3 className="text-lg font-bold">{doc.doc_label}</h3>
+                        <span className="badge badge-free">
                           {custom ? "A medida" : config?.category || "Documento"}
                         </span>
-                        {custom && <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">Personalizado</span>}
-                        {community && <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">Comunidad</span>}
+                        {custom && <span className="badge badge-pro">Personalizado</span>}
+                        {community && <span className="badge badge-pro">Comunidad</span>}
                         {doc.reference_template_id && (
-                          <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-xs font-semibold text-white">
+                          <span className="badge badge-pro">
                             Con plantilla
                           </span>
                         )}
                         {doc.workspace_id && (
-                          <span className="rounded-full bg-[#1f2933] px-2 py-1 text-xs font-semibold text-white">
+                          <span className="badge bg-[#1f2933] text-white">
                             {workspaceById.get(doc.workspace_id)?.name || "Equipo"}
                           </span>
                         )}
@@ -297,15 +301,16 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         </p>
                       )}
                     </div>
-                    <span className="text-sm font-semibold text-[#2d6a4f] group-open:hidden">Desplegar</span>
-                    <span className="hidden text-sm font-semibold text-[#2d6a4f] group-open:inline">Plegar</span>
+                    <span className="badge badge-free group-open:hidden">Desplegar</span>
+                    <span className="badge badge-free hidden group-open:inline">Plegar</span>
                   </summary>
 
                   <div className="border-t border-[#d8f3dc] p-4">
-                    <article className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md bg-[#faf9f6] p-4 text-sm leading-7">
+                    <article className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm leading-7">
                       {preview}
                     </article>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+                      <div className="flex flex-wrap gap-2">
                       <Link href={`/historial/${doc.id}`} className="focus-ring btn-primary px-3 py-2 text-sm">
                         Ver detalle
                       </Link>
@@ -331,10 +336,12 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         type="button"
                         onClick={() => regenerate(doc)}
                         disabled={isBusy}
-                        className="focus-ring btn-ghost px-3 py-2 text-sm disabled:opacity-60"
+                        className="focus-ring btn-secondary px-3 py-2 text-sm disabled:opacity-60"
                       >
                         {isBusy ? "Regenerando..." : "Regenerar"}
                       </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 lg:justify-end">
                       <button
                         type="button"
                         onClick={() =>
@@ -369,9 +376,9 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         className={
                           canExportDocx
                             ? "focus-ring btn-ghost px-3 py-2 text-sm"
-                            : "focus-ring rounded-md border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
+                            : "focus-ring rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
                         }
-                        title={canExportDocx ? "Descargar Word" : "Word solo esta disponible en el plan Pro"}
+                        title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
                       >
                         {canExportDocx ? "Word" : "Word Pro"}
                       </button>
@@ -379,10 +386,11 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         type="button"
                         onClick={() => deleteDocument(doc.id)}
                         disabled={isBusy}
-                        className="focus-ring rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                        className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
                       >
                         {isBusy ? "Borrando..." : "Borrar"}
                       </button>
+                      </div>
                     </div>
                   </div>
                 </details>
