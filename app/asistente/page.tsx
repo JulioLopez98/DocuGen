@@ -53,17 +53,37 @@ export default async function AssistantPage({ searchParams }: Props) {
     : { data: [] as ChatMessageRow[] };
 
   return (
-    <section className="container-page py-10">
+    <section className="container-page py-8 lg:py-10">
+      <div className="surface mb-6 overflow-hidden">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_360px] lg:items-end">
+          <div>
+            <p className="eyebrow">Asistente Pro</p>
+            <h1 className="section-title mt-3 max-w-4xl">Convierte una explicación en un borrador profesional</h1>
+            <p className="body-muted mt-4 max-w-3xl">
+              Úsalo cuando no sepas qué tipo elegir, cuando el caso sea demasiado específico o cuando quieras crear un
+              primer documento a partir de una conversación guiada.
+            </p>
+          </div>
+          <div className="surface-muted p-5">
+            <p className="text-sm font-bold text-[#2d6a4f]">Mejor uso</p>
+            <p className="body-muted mt-3">
+              Describe objetivo, partes implicadas, contexto, fechas, importes y cualquier condición importante. Evita
+              datos sensibles que no sean necesarios para el borrador.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6">
         <ContextualHelp
-          title="Para que sirve el asistente"
-          description="Usalo cuando no tengas claro el tipo de documento, cuando quieras explicar un caso con tus palabras o cuando necesites convertir una idea en un borrador guiado."
+          title="Cómo sacarle partido"
+          description="El asistente aclara el caso, propone estructura y puede generar un borrador. Si ya sabes el tipo documental, Crear suele ser más rápido."
           items={[
-            "No pegues datos sensibles innecesarios.",
-            "Si el documento ya existe en Tipos de documento, el generador estructurado suele ser mas rapido.",
-            "Puedes proponer nuevos tipos documentales para revisarlos y convertirlos en comunidad.",
+            "Empieza con una frase natural: qué necesitas y para qué.",
+            "Añade solo los datos necesarios para redactar el borrador.",
+            "Si el caso se repite, podrá convertirse en tipo documental comunitario.",
           ]}
-          secondaryAction={{ href: "/generar", label: "Usar generador" }}
+          secondaryAction={{ href: "/generar", label: "Usar Crear" }}
           tone="pro"
         />
       </div>
