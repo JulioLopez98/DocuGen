@@ -60,17 +60,17 @@ export default async function TemplatesPage() {
     : { data: [] as WorkspaceRow[] };
 
   return (
-    <section className="container-page py-10">
-      <div className="surface overflow-hidden rounded-md">
+    <section className="container-page py-8 lg:py-10">
+      <div className="surface overflow-hidden">
         <div className="grid gap-8 p-6 lg:grid-cols-[1fr_360px] lg:items-center">
           <div>
             <p className="eyebrow">Plantillas</p>
-            <h1 className="font-serif-display mt-3 max-w-4xl text-5xl font-bold leading-tight">
-              Tu biblioteca de documentos propios
+            <h1 className="section-title mt-3 max-w-4xl">
+              Convierte tus documentos buenos en referencias reutilizables
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              Sube documentos Word/PDF de tu empresa para construir una biblioteca privada. En esta primera version
-              puedes guardar, descargar y borrar plantillas; despues las usaremos como referencia de generacion.
+            <p className="body-muted mt-4 max-w-2xl">
+              Sube Word/PDF propios para que DocuGen respete estructura, tono y criterios internos al crear nuevos
+              borradores. Las plantillas orientan: no sustituyen los datos del formulario.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {isFree ? (
@@ -88,15 +88,15 @@ export default async function TemplatesPage() {
             </div>
           </div>
 
-          <aside className="rounded-md border border-[#d8f3dc] bg-white/78 p-5">
+          <aside className="surface-muted p-5">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-[#2d6a4f]">Estado</p>
               <PlanBadge plan={profile.plan} />
             </div>
             <p className="mt-4 font-serif-display text-3xl font-bold">{isFree ? "Solo Pro" : `${templates?.length || 0} guardadas`}</p>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+            <p className="body-muted mt-3">
               {isFree
-                ? "La biblioteca de plantillas esta orientada a usuarios Pro y Empresa."
+                ? "La biblioteca de plantillas está orientada a usuarios Pro y Empresa."
                 : "Tu biblioteca ya acepta archivos PDF, DOC y DOCX de hasta 10 MB."}
             </p>
           </aside>
@@ -105,16 +105,16 @@ export default async function TemplatesPage() {
 
       <section className="mt-6 grid gap-4 md:grid-cols-3">
         {[
-          ["1", "Sube documentos", "Word/PDF con plantillas, ejemplos, clausulas o documentos anteriores."],
-          ["2", "Guarda tu biblioteca", "Cada archivo queda asociado a tu cuenta y protegido con RLS."],
-          ["3", "Prepara el siguiente salto", "Despues extraeremos texto y lo conectaremos con la generacion."],
+          ["1", "Sube documentos", "Word/PDF con plantillas, ejemplos, cláusulas o documentos anteriores."],
+          ["2", "Procesa y revisa", "Extrae texto, secciones, variables y calidad para usar la referencia con control."],
+          ["3", "Úsala al generar", "Desde Crear podrás orientar estructura y tono sin copiar datos concretos."],
         ].map(([step, title, text]) => (
-          <article key={step} className="surface-flat rounded-md p-5">
+          <article key={step} className="surface-flat interactive-subtle p-5">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2d6a4f] text-sm font-bold text-white">
               {step}
             </span>
             <h2 className="mt-4 font-bold">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
+            <p className="body-muted mt-2">{text}</p>
           </article>
         ))}
       </section>
@@ -122,15 +122,15 @@ export default async function TemplatesPage() {
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
         <ContextualHelp
           title="Cuando usar plantillas"
-          description="Usalas si ya tienes documentos buenos y quieres que los nuevos respeten estructura, tono o criterios internos."
-          items={["No sustituyen los datos del formulario.", "No copian informacion sensible.", "Sirven como referencia controlada."]}
+          description="Úsalas si ya tienes documentos buenos y quieres que los nuevos respeten estructura, tono o criterios internos."
+          items={["No sustituyen los datos del formulario.", "No copian información sensible.", "Sirven como referencia controlada."]}
           primaryAction={isFree ? { href: "/precios", label: "Ver Pro" } : { href: "#subir-plantilla", label: "Subir plantilla" }}
           tone="pro"
         />
         <ContextualHelp
           title="Como preparar un archivo"
           description="Sube ejemplos limpios: sin versiones mezcladas, con apartados claros y sin datos que no quieras usar como referencia."
-          items={["DOCX suele dar mejores resultados.", "PDF tambien sirve si el texto se puede extraer.", "Marca favoritas para recomendarlas al generar."]}
+          items={["DOCX suele dar mejores resultados.", "PDF también sirve si el texto se puede extraer.", "Marca favoritas para recomendarlas al generar."]}
           secondaryAction={{ href: "/generar", label: "Ir al generador" }}
         />
       </section>
@@ -140,7 +140,7 @@ export default async function TemplatesPage() {
           <EmptyState
             eyebrow="Funcion Pro"
             title="Desbloquea la biblioteca de plantillas"
-            description="Con Pro podras subir documentos propios, conservarlos en una biblioteca privada y prepararlos para generar nuevos borradores con tu estilo."
+            description="Con Pro podrás subir documentos propios, conservarlos en una biblioteca privada y prepararlos para generar nuevos borradores con tu estilo."
             primaryAction={{ href: "/precios", label: "Ver planes Pro" }}
             secondaryAction={{ href: "/generar", label: "Seguir generando" }}
             steps={["Crea primero con los tipos esenciales.", "Prepara archivos DOCX/PDF limpios.", "Activa Pro cuando quieras usar tu estilo propio."]}
