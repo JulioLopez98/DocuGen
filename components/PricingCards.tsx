@@ -43,15 +43,16 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
   const cards = [
     {
       name: "Free",
+      segment: "Para probar",
       price: "0 EUR",
-      cadence: "para empezar",
-      description: "Ideal para validar DocuGen, crear borradores puntuales y probar el flujo sin tarjeta.",
+      cadence: "sin tarjeta",
+      description: "Ideal para validar DocuGen, crear borradores puntuales y probar el flujo completo.",
       features: [
         "3 documentos gratis al mes",
-        "Plantillas esenciales incluidas",
-        "Documentos basicos",
-        "Exportacion PDF y TXT",
-        "Avisos de revision profesional incluidos",
+        "Tipos esenciales incluidos",
+        "Historial básico",
+        "Exportación PDF y TXT",
+        "Avisos de revisión profesional incluidos",
       ],
       action: currentPlan ? "Plan inicial" : "Empezar gratis",
       href: currentPlan ? "/dashboard" : "/auth",
@@ -59,37 +60,39 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
     },
     {
       name: "Pro",
+      segment: "Para uso recurrente",
       price: "9 EUR",
       cadence: "al mes",
-      description: "Para autonomos, agencias y pequenos negocios que quieren generar documentos sin friccion.",
+      description: "Para autónomos, agencias y pequeños negocios que generan documentos con frecuencia.",
       features: [
         "Documentos ilimitados",
-        "Tipos Pro laborales, legales, digitales e inmobiliarios",
-        "Exportacion Word incluida",
+        "Catálogo completo + tipos Pro",
+        "Exportación Word incluida",
         "Marca personalizada en PDF y Word",
-        "Biblioteca de plantillas preparada",
-        "Modelo premium configurado para planes de pago",
-        "Gestion de suscripcion desde Stripe",
+        "Biblioteca de plantillas",
+        "Documentos a medida",
+        "Gestión de suscripción desde Stripe",
       ],
       action: isPro ? "Plan actual" : loading === "pro" ? "Conectando..." : isEmpresa ? "Incluido en Empresa" : "Actualizar a Pro",
       onClick: isPro || isEmpresa ? undefined : () => startCheckout("pro"),
       href: isPro || isEmpresa ? "/dashboard" : undefined,
       highlighted: true,
       disabled: isPro || isEmpresa,
-      badge: "Mas recomendable",
+      badge: "Más recomendable",
     },
     {
       name: "Empresa",
+      segment: "Para equipos",
       price: "39 EUR",
       cadence: "al mes",
-      description: "Para equipos que necesitan roles, documentos compartidos y biblioteca documental de empresa.",
+      description: "Para equipos que necesitan roles, documentos compartidos y biblioteca documental interna.",
       features: [
         "Todo lo incluido en Pro",
         "Espacios de equipo",
-        "Roles avanzados: Admin, Editor, Miembro y Solo lectura",
+        "Roles avanzados",
         "Biblioteca documental de empresa",
-        "Actividad, auditoria y notificaciones internas",
-        "Preparado para colaboracion multiusuario",
+        "Actividad, auditoría y notificaciones",
+        "Colaboración multiusuario",
       ],
       action: isEmpresa
         ? "Plan actual"
@@ -110,31 +113,28 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
       {!compact && (
         <div className="mb-8 max-w-2xl">
           <p className="eyebrow">Precios</p>
-          <h2 className="font-serif-display mt-3 text-4xl font-bold">Empieza gratis y crece cuando lo necesites</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="panel-title mt-3">Empieza gratis y crece cuando lo necesites</h2>
+          <p className="body-muted mt-3">
             Free sirve para probar el flujo completo. Pro desbloquea uso intensivo, Word, marca y documentos avanzados.
           </p>
         </div>
       )}
-      <div className="grid items-stretch gap-4 md:grid-cols-3">
+      <div className="grid items-stretch gap-5 md:grid-cols-3">
         {cards.map((card) => (
           <div
             key={card.name}
             className={`interactive relative flex h-full flex-col p-6 ${
-              card.highlighted ? "surface border-[#2d6a4f]" : "surface-flat"
+              card.highlighted ? "surface border-[#2d6a4f] md:-translate-y-2" : "surface-flat"
             }`}
           >
-            {card.badge && (
-              <span className="badge badge-pro absolute right-4 top-4">
-                {card.badge}
-              </span>
-            )}
-            <h3 className="text-xl font-bold">{card.name}</h3>
+            {card.badge && <span className="badge badge-pro absolute right-4 top-4">{card.badge}</span>}
+            <p className="eyebrow">{card.segment}</p>
+            <h3 className="mt-3 text-2xl font-bold">{card.name}</h3>
             <div className="mt-4 flex items-end gap-2">
               <p className="font-serif-display text-4xl font-bold text-[#2d6a4f]">{card.price}</p>
               <p className="pb-1 text-sm text-slate-500">{card.cadence}</p>
             </div>
-            <p className="mt-4 min-h-14 text-sm leading-6 text-slate-600">{card.description}</p>
+            <p className="body-muted mt-4 min-h-16">{card.description}</p>
             <ul className="mt-5 flex-1 space-y-3 text-sm">
               {card.features.map((feature) => (
                 <li key={feature} className="flex gap-3">
@@ -170,7 +170,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
           </div>
         ))}
       </div>
-      {error && <p className="mt-4 text-sm text-red-700">{error}</p>}
+      {error && <p className="status-error mt-4">{error}</p>}
     </section>
   );
 }
