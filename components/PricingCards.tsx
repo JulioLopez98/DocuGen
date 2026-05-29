@@ -6,9 +6,10 @@ import { useState } from "react";
 type PricingCardsProps = {
   compact?: boolean;
   currentPlan?: "free" | "pro" | "empresa" | null;
+  empresaCheckoutEnabled?: boolean;
 };
 
-export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
+export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = false }: PricingCardsProps) {
   const [loading, setLoading] = useState<"pro" | "empresa" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isPro = currentPlan === "pro";
@@ -90,10 +91,17 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
         "Actividad, auditoria y notificaciones internas",
         "Preparado para colaboracion multiusuario",
       ],
-      action: isEmpresa ? "Plan actual" : loading === "empresa" ? "Conectando..." : "Actualizar a Empresa",
-      onClick: isEmpresa ? undefined : () => startCheckout("empresa"),
+      action: isEmpresa
+        ? "Plan actual"
+        : !empresaCheckoutEnabled
+          ? "Empresa pronto"
+          : loading === "empresa"
+            ? "Conectando..."
+            : "Actualizar a Empresa",
+      onClick: isEmpresa || !empresaCheckoutEnabled ? undefined : () => startCheckout("empresa"),
       href: isEmpresa ? "/workspace" : undefined,
-      disabled: isEmpresa,
+      disabled: isEmpresa || !empresaCheckoutEnabled,
+      helper: !isEmpresa && !empresaCheckoutEnabled ? "Checkout Empresa pendiente de activar." : undefined,
     },
   ];
 
@@ -156,6 +164,7 @@ export function PricingCards({ compact, currentPlan }: PricingCardsProps) {
                 {card.action}
               </span>
             )}
+            {card.helper && <p className="mt-3 text-xs leading-5 text-slate-500">{card.helper}</p>}
           </div>
         ))}
       </div>

@@ -74,6 +74,7 @@ export default async function PricingPage() {
   const proDocuments = documentTypes.filter(requiresPro);
   const groupedProDocuments = groupByCategory(proDocuments);
   const planLabel = profile?.plan ? profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1) : null;
+  const empresaCheckoutEnabled = Boolean(process.env.STRIPE_PRICE_ID_EMPRESA);
 
   return (
     <section>
@@ -128,7 +129,7 @@ export default async function PricingPage() {
       </div>
 
       <div className="container-page pb-10">
-        <PricingCards compact currentPlan={profile?.plan} />
+        <PricingCards compact currentPlan={profile?.plan} empresaCheckoutEnabled={empresaCheckoutEnabled} />
       </div>
 
       <div id="comparativa" className="border-y border-[#d8f3dc] bg-white/46 py-12 scroll-mt-24">
