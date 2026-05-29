@@ -183,6 +183,7 @@ export function GeneratorClient({
   const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
   const [selectedCommunityId, setSelectedCommunityId] = useState(communityTypes[0]?.id || "");
+  const [communityTypeConfirmed, setCommunityTypeConfirmed] = useState(false);
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
@@ -220,6 +221,7 @@ export function GeneratorClient({
     const nextSelected = matchingDocuments.some((doc) => doc.type === selected) ? selected : matchingDocuments[0]?.type || selected;
 
     setGeneratorMode("catalog");
+    setCommunityTypeConfirmed(false);
     setSelectedIntentId(intentId);
     setSelectedDocumentConfirmed(false);
     setGenerated(null);
@@ -237,6 +239,7 @@ export function GeneratorClient({
 
   function selectDocument(type: DocumentType) {
     setSelected(type);
+    setCommunityTypeConfirmed(false);
     setSelectedIntentId(getIntentForDocument(type));
     setSelectedDocumentConfirmed(true);
     setGenerated(null);
@@ -396,7 +399,15 @@ export function GeneratorClient({
       <GeneratorFlowSummary
         mode={generatorMode}
         selectedIntent={selectedIntent}
-        selectedDocumentLabel={selectedDocumentConfirmed ? config.label : null}
+        selectedDocumentLabel={
+          generatorMode === "community"
+            ? communityTypeConfirmed
+              ? selectedCommunityType?.label || null
+              : null
+            : selectedDocumentConfirmed
+              ? config.label
+              : null
+        }
         selectedReferenceTemplateName={selectedReferenceTemplate?.name || null}
       />
 
@@ -469,6 +480,7 @@ export function GeneratorClient({
               type="button"
               onClick={() => {
                 setGeneratorMode("community");
+                setCommunityTypeConfirmed(false);
                 setSelectedDocumentConfirmed(false);
                 setGenerated(null);
                 setError(null);
@@ -486,6 +498,7 @@ export function GeneratorClient({
               type="button"
               onClick={() => {
                 setGeneratorMode("custom");
+                setCommunityTypeConfirmed(false);
                 setSelectedDocumentConfirmed(false);
                 setGenerated(null);
                 setError(null);
@@ -568,51 +581,6 @@ export function GeneratorClient({
         </div>
           </div>
         </details>
-
-        {generatorMode === "community" && (
-          <section className="surface rounded-md p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="eyebrow">Comunidad</p>
-                <h2 className="font-serif-display mt-2 text-2xl font-bold">Tipos aprobados</h2>
-              </div>
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-                {communityTypes.length}
-              </span>
-            </div>
-            <div className="mt-5 grid gap-2">
-              {communityTypes.map((type) => {
-                const active = type.id === selectedCommunityId;
-                const locked = !canUseCommunityType(plan, type.required_plan);
-
-                return (
-                  <button
-                    key={type.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCommunityId(type.id);
-                      setGenerated(null);
-                      setError(null);
-                    }}
-                    className={`focus-ring rounded-md border px-3 py-3 text-left transition ${
-                      active
-                        ? "border-[#2d6a4f] bg-[#d8f3dc]/70 shadow-sm"
-                        : "border-transparent bg-white/70 hover:border-[#2d6a4f] hover:bg-white"
-                    }`}
-                  >
-                    <span className="flex items-center justify-between gap-3 text-sm font-semibold">
-                      {type.label}
-                      <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                        {locked ? type.required_plan : type.status}
-                      </span>
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-slate-500">{type.description}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
 
         {generatorMode === "catalog" && plan !== "free" && selectedDocumentConfirmed && (
           <details className="surface-flat rounded-md p-5" open={Boolean(selectedReferenceTemplate)}>
@@ -878,7 +846,9 @@ export function GeneratorClient({
                     ? "Elige el documento que necesitas"
                     : `Elige documento para ${selectedIntent.label.toLowerCase()}`
                 : generatorMode === "community"
-                  ? selectedCommunityType?.label || "Tipos de la comunidad"
+                  ? communityTypeConfirmed
+                    ? selectedCommunityType?.label || "Tipos de la comunidad"
+                    : "Elige un tipo de la comunidad"
                   : "No encuentro mi documento"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
@@ -887,7 +857,9 @@ export function GeneratorClient({
                 : generatorMode === "catalog"
                 ? "Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo."
                 : generatorMode === "community"
-                  ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
+                  ? communityTypeConfirmed
+                    ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
+                    : "Estos tipos nacen de solicitudes reales y pasan una revisión antes de poder usarse."
                   : "Explica que documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos utiles."}
             </p>
             {generatorMode === "catalog" && selectedDocumentConfirmed && (
@@ -912,6 +884,17 @@ export function GeneratorClient({
             onQueryChange={setDocumentQuery}
             onSelectDocument={selectDocument}
             onShowAll={() => selectCatalogIntent("all")}
+          />
+        ) : generatorMode === "community" && !communityTypeConfirmed ? (
+          <CommunityChoicePanel
+            communityTypes={communityTypes}
+            plan={plan}
+            onSelect={(typeId) => {
+              setSelectedCommunityId(typeId);
+              setCommunityTypeConfirmed(true);
+              setGenerated(null);
+              setError(null);
+            }}
           />
         ) : generatorMode === "community" && selectedCommunityType && communityLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
@@ -1058,12 +1041,12 @@ function GeneratorFlowSummary({
     },
     {
       label: "2. Documento",
-      value: mode === "catalog" ? selectedDocumentLabel || "Pendiente de elegir" : "Definido por el flujo",
-      done: mode !== "catalog" || Boolean(selectedDocumentLabel),
+      value: mode === "custom" ? "Definido por tu descripcion" : selectedDocumentLabel || "Pendiente de elegir",
+      done: mode === "custom" || Boolean(selectedDocumentLabel),
     },
     {
       label: "3. Datos",
-      value: mode === "catalog" && !selectedDocumentLabel ? "Aparece despues" : "Completa el formulario",
+      value: mode !== "custom" && !selectedDocumentLabel ? "Aparece despues" : "Completa el formulario",
       done: false,
     },
     {
@@ -1596,6 +1579,79 @@ function getTemplateInfluencePreview(mode: TemplateUsageMode) {
       "Mantiene el valor de referencia sin arrastrar formulas demasiado especificas.",
     ],
   };
+}
+
+function CommunityChoicePanel({
+  communityTypes,
+  plan,
+  onSelect,
+}: {
+  communityTypes: CommunityTypeOption[];
+  plan: "free" | "pro" | "empresa";
+  onSelect: (typeId: string) => void;
+}) {
+  if (communityTypes.length === 0) {
+    return (
+      <EmptyState
+        eyebrow="Sin documentos comunitarios"
+        title="Aún no hay tipos comunitarios disponibles"
+        description="Cuando el equipo publique candidatos aprobados, aparecerán aquí para generar documentos."
+        variant="flat"
+      />
+    );
+  }
+
+  return (
+    <div className="grid gap-5">
+      <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Catalogo comunitario</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Documentos creados desde solicitudes reales</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Elige primero el tipo comunitario. Despues cargaremos solo los campos necesarios para ese documento.
+            </p>
+          </div>
+          <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+            {communityTypes.length} aprobados
+          </span>
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        {communityTypes.map((type) => {
+          const locked = !canUseCommunityType(plan, type.required_plan);
+
+          return (
+            <button
+              key={type.id}
+              type="button"
+              onClick={() => onSelect(type.id)}
+              className="focus-ring rounded-md border border-[#d8f3dc] bg-white/75 p-5 text-left transition hover:border-[#2d6a4f] hover:bg-[#faf9f6]"
+            >
+              <span className="flex flex-wrap items-start justify-between gap-3">
+                <span>
+                  <span className="font-serif-display block text-xl font-bold text-[#1f2933]">{type.label}</span>
+                  <span className="mt-2 block text-sm leading-6 text-slate-600">{type.description}</span>
+                </span>
+                <span className="flex shrink-0 flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#faf9f6] px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">
+                    {type.category || "Comunidad"}
+                  </span>
+                  <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                    {locked ? type.required_plan : "Aprobado"}
+                  </span>
+                </span>
+              </span>
+              <span className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">
+                {locked ? "Ver plan requerido" : "Usar este documento"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function CommunityForm({
