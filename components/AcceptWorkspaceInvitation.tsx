@@ -43,7 +43,7 @@ export function AcceptWorkspaceInvitation({
     setLoading(false);
 
     if (!response.ok) {
-      setError(data.message || "No se pudo aceptar la invitacion.");
+      setError(data.message || "No se pudo aceptar la invitación.");
       return;
     }
 
@@ -58,16 +58,16 @@ export function AcceptWorkspaceInvitation({
         className="focus-ring btn-primary mt-6 inline-flex px-5 py-3 text-sm"
         href={`/auth?next=${encodeURIComponent(`/workspace/invitaciones/${token}`)}`}
       >
-        Iniciar sesion para aceptar
+        Iniciar sesión para aceptar
       </Link>
     );
   }
 
   if (!emailMatches) {
     return (
-      <div className="mt-6 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-        Has iniciado sesion como <strong>{userEmail}</strong>, pero la invitacion es para{" "}
-        <strong>{invitedEmail}</strong>. Cierra sesion y entra con el email invitado.
+      <div className="status-warning mt-6">
+        Has iniciado sesión como <strong>{userEmail}</strong>, pero la invitación es para{" "}
+        <strong>{invitedEmail}</strong>. Cierra sesión y entra con el email invitado.
       </div>
     );
   }
@@ -75,9 +75,9 @@ export function AcceptWorkspaceInvitation({
   return (
     <div className="mt-6">
       <button className="focus-ring btn-primary px-5 py-3 text-sm" type="button" onClick={acceptInvitation} disabled={loading || success}>
-        {loading ? "Aceptando..." : success ? "Invitacion aceptada" : "Aceptar invitacion"}
+        {loading ? "Aceptando..." : success ? "Invitación aceptada" : "Aceptar invitación"}
       </button>
-      {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="status-error mt-4">{error}</p>}
     </div>
   );
 }

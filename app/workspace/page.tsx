@@ -123,23 +123,43 @@ export default async function WorkspacePage() {
       : { data: [] as WorkspaceMemberProfile[] };
 
   return (
-    <section className="container-page py-10">
+    <section className="container-page py-8 lg:py-10">
+      <div className="surface mb-6 overflow-hidden">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_360px] lg:items-end">
+          <div>
+            <p className="eyebrow">Empresa</p>
+            <h1 className="section-title mt-3 max-w-4xl">Un espacio claro para trabajar documentos en equipo</h1>
+            <p className="body-muted mt-4 max-w-3xl">
+              Coordina miembros, documentos compartidos, invitaciones, avisos y actividad sin perder de vista quién
+              puede hacer qué dentro del equipo.
+            </p>
+          </div>
+          <div className="surface-muted p-5">
+            <p className="text-sm font-bold text-[#2d6a4f]">Centro de control</p>
+            <p className="body-muted mt-3">
+              Empieza invitando a una persona, genera un documento dentro del equipo y revisa los avisos recientes para
+              validar el flujo completo.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6 grid gap-4 lg:grid-cols-3">
         <ContextualHelp
-          title="Que es Equipo"
-          description="Equipo agrupa documentos, miembros, invitaciones y actividad cuando trabajas con mas personas."
+          title="Qué es Equipo"
+          description="Equipo agrupa documentos, miembros, invitaciones y actividad cuando trabajas con más personas."
           items={["Comparte documentos con el equipo.", "Gestiona invitaciones.", "Revisa actividad reciente."]}
           tone="empresa"
         />
         <ContextualHelp
           title="Roles y permisos"
-          description="Los permisos avanzados ayudan a separar quien puede invitar, gestionar miembros o ver informacion sensible."
-          items={["Admin: gestiona el espacio.", "Member: trabaja dentro del equipo.", "Permisos finos: control adicional."]}
+          description="Los permisos avanzados ayudan a separar quién puede invitar, gestionar miembros o ver información sensible."
+          items={["Admin: gestiona el espacio.", "Miembro: trabaja dentro del equipo.", "Permisos finos: control adicional."]}
           tone="empresa"
         />
         <ContextualHelp
           title="Primer paso recomendado"
-          description="Si estas empezando, crea un espacio de equipo pequeno, invita una persona de prueba y genera un documento compartido."
+          description="Si estás empezando, crea un espacio de equipo pequeño, invita una persona de prueba y genera un documento compartido."
           primaryAction={{ href: "/generar", label: "Crear documento" }}
           tone="empresa"
         />

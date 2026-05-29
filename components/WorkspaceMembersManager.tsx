@@ -85,7 +85,7 @@ export function WorkspaceMembersManager({
     const data = (await response.json()) as InvitationApiResponse;
 
     if (!response.ok || !data.invitation) {
-      setError(data.message || "No se pudo enviar la invitacion.");
+      setError(data.message || "No se pudo enviar la invitación.");
       setPendingAction(null);
       return;
     }
@@ -96,7 +96,7 @@ export function WorkspaceMembersManager({
     ]);
     setEmail("");
     setRolePreset("contributor");
-    setFeedback("Invitacion enviada por email.");
+    setFeedback("Invitación enviada por email.");
     setPendingAction(null);
     router.refresh();
   }
@@ -162,7 +162,7 @@ export function WorkspaceMembersManager({
   }
 
   async function removeMember(member: WorkspaceMemberRow) {
-    if (!workspace || !confirm("Quieres quitar este miembro del equipo?")) {
+    if (!workspace || !confirm("¿Quieres quitar este miembro del equipo?")) {
       return;
     }
 
@@ -190,7 +190,7 @@ export function WorkspaceMembersManager({
   }
 
   async function revokeInvitation(invitation: WorkspaceInvitationRow) {
-    if (!workspace || !confirm("Quieres revocar esta invitacion?")) {
+    if (!workspace || !confirm("¿Quieres revocar esta invitación?")) {
       return;
     }
 
@@ -206,42 +206,42 @@ export function WorkspaceMembersManager({
     const data = (await response.json()) as InvitationApiResponse;
 
     if (!response.ok) {
-      setError(data.message || "No se pudo revocar la invitacion.");
+      setError(data.message || "No se pudo revocar la invitación.");
       setPendingAction(null);
       return;
     }
 
     setInvitations((current) => current.filter((currentInvitation) => currentInvitation.id !== invitation.id));
-    setFeedback("Invitacion revocada.");
+    setFeedback("Invitación revocada.");
     setPendingAction(null);
     router.refresh();
   }
 
   return (
-    <section className="surface rounded-md p-6">
+    <section className="surface p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="eyebrow">Miembros</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Equipo</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <h2 className="panel-title mt-3">Personas y permisos</h2>
+          <p className="body-muted mt-2">
             Invita personas por email y asigna roles claros: Admin, Editor, Miembro o Solo lectura.
           </p>
         </div>
-        <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+        <span className="badge badge-empresa">
           {members.length} {members.length === 1 ? "miembro" : "miembros"}
         </span>
       </div>
 
       {!workspace && (
-        <div className="mt-5 rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
-          Todavia no tienes un equipo activo.
+        <div className="status-note mt-5">
+          Todavía no tienes un equipo activo.
         </div>
       )}
 
       {workspace && !canManageMembers && (
-        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
-          <p className="font-semibold text-[#2d6a4f]">Gestion de roles disponible en Empresa</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+        <div className="status-note mt-5">
+          <p className="font-semibold text-[#2d6a4f]">Gestión de roles disponible en Empresa</p>
+          <p className="body-muted mt-2">
             Puedes ver el equipo, pero invitar miembros, cambiar roles o quitarlos queda reservado para plan Empresa o
             administradores.
           </p>
@@ -249,11 +249,11 @@ export function WorkspaceMembersManager({
       )}
 
       {workspace && canManageMembers && (
-        <form onSubmit={sendInvitation} className="mt-5 grid gap-3 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4">
+        <form onSubmit={sendInvitation} className="surface-muted mt-5 grid gap-3 p-4">
           <label className="grid gap-2 text-sm font-semibold">
             Email del invitado
             <input
-              className="focus-ring rounded-md border border-[#c7ded0] bg-white px-3 py-3 font-normal"
+              className="field-control font-normal"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -265,7 +265,7 @@ export function WorkspaceMembersManager({
             <label className="grid gap-2 text-sm font-semibold">
               Rol inicial
               <select
-                className="focus-ring rounded-md border border-[#c7ded0] bg-white px-3 py-3 font-normal"
+                className="field-control font-normal"
                 value={rolePreset}
                 onChange={(event) => setRolePreset(event.target.value as WorkspaceRolePreset)}
               >
@@ -277,21 +277,19 @@ export function WorkspaceMembersManager({
               </select>
             </label>
             <button className="focus-ring btn-primary px-4 py-3 text-sm" type="submit" disabled={pendingAction === "invite"}>
-              {pendingAction === "invite" ? "Enviando..." : "Enviar invitacion"}
+              {pendingAction === "invite" ? "Enviando..." : "Enviar invitación"}
             </button>
           </div>
           <p className="text-xs leading-5 text-slate-500">
-            {workspaceRolePresets[rolePreset].description} La invitacion caduca en 7 dias y debe aceptarse iniciando
-            sesion con el mismo email.
+            {workspaceRolePresets[rolePreset].description} La invitación caduca en 7 días y debe aceptarse iniciando
+            sesión con el mismo email.
           </p>
         </form>
       )}
 
       {(feedback || error) && (
         <p
-          className={`mt-4 rounded-md border px-4 py-3 text-sm ${
-            error ? "border-red-200 bg-red-50 text-red-700" : "border-[#d8f3dc] bg-white text-[#2d6a4f]"
-          }`}
+          className={error ? "status-error mt-4" : "status-success mt-4"}
         >
           {error || feedback}
         </p>
@@ -302,12 +300,12 @@ export function WorkspaceMembersManager({
           <p className="text-sm font-bold text-[#2d6a4f]">Invitaciones pendientes</p>
           <div className="mt-3 grid gap-3">
             {invitations.map((invitation) => (
-              <article key={invitation.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <article key={invitation.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
                 <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
                   <div>
                     <p className="font-semibold">{invitation.email}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Rol {getRoleLabel(getInvitationPreset(invitation))} - caduca el{" "}
+                      Rol {getRoleLabel(getInvitationPreset(invitation))} · caduca el{" "}
                       {new Date(invitation.expires_at).toLocaleDateString("es-ES")}
                     </p>
                   </div>
@@ -331,7 +329,7 @@ export function WorkspaceMembersManager({
       <div className="mt-5 grid gap-3">
         {members.length === 0 ? (
           <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
-            Todavia no hay miembros asociados a este equipo.
+            Todavía no hay miembros asociados a este equipo.
           </div>
         ) : (
           members.map((member) => {
@@ -344,7 +342,7 @@ export function WorkspaceMembersManager({
             const inferredRole = inferWorkspaceRolePreset(member);
 
             return (
-              <article key={member.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <article key={member.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
                 <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -356,7 +354,7 @@ export function WorkspaceMembersManager({
                       )}
                       {isCurrentUser && (
                         <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-[11px] font-bold text-[#2d6a4f]">
-                          Tu
+                          Tú
                         </span>
                       )}
                     </div>
@@ -421,7 +419,7 @@ export function WorkspaceMembersManager({
                   <div className="mt-4 grid gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 sm:grid-cols-2">
                     <p className="text-xs leading-5 text-slate-500 sm:col-span-2">
                       Puedes partir de un rol predefinido y ajustar permisos concretos. Si cambias un permiso, el rol
-                      pasara a Personalizado.
+                      pasará a Personalizado.
                     </p>
                     {permissionItems.map((item) => (
                       <label
@@ -472,7 +470,7 @@ function getPermissionItems(member: WorkspaceMemberRow) {
     {
       key: "canUploadTemplates" as const,
       label: "Subir plantillas",
-      description: "Anadir referencias compartidas",
+      description: "Añadir referencias compartidas",
       enabled: admin || Boolean(member.can_upload_templates),
     },
     {

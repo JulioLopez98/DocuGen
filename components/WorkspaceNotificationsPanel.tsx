@@ -77,17 +77,17 @@ export function WorkspaceNotificationsPanel({
   }
 
   return (
-    <section className="surface rounded-md p-6">
+    <section className="surface p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="eyebrow">Notificaciones</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Avisos del equipo</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Lo importante que ha ocurrido en tu equipo, separado del registro completo de auditoria.
+          <h2 className="panel-title mt-3">Avisos del equipo</h2>
+          <p className="body-muted mt-2">
+            Lo importante que ha ocurrido en tu equipo, separado del registro completo de auditoría.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+          <span className="badge badge-empresa">
             {unreadCount} sin leer
           </span>
           {unreadCount > 0 && (
@@ -97,14 +97,14 @@ export function WorkspaceNotificationsPanel({
               onClick={() => markAsRead()}
               disabled={pendingAction === "all"}
             >
-              {pendingAction === "all" ? "Marcando..." : "Marcar todo leido"}
+              {pendingAction === "all" ? "Marcando..." : "Marcar todo leído"}
             </button>
           )}
         </div>
       </div>
 
       {error && (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        <p className="status-error mt-4">{error}</p>
       )}
 
       <div className="mt-5 flex flex-wrap gap-2">
@@ -124,7 +124,7 @@ export function WorkspaceNotificationsPanel({
 
       <div className="mt-5 grid gap-3">
         {filteredNotifications.length === 0 ? (
-          <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#faf9f6] p-5 text-sm leading-6 text-slate-600">
+          <div className="status-note">
             No hay notificaciones para este filtro.
           </div>
         ) : (
@@ -139,7 +139,7 @@ export function WorkspaceNotificationsPanel({
                 </div>
                 <p className="mt-1 text-sm leading-6 text-slate-600">{notification.body}</p>
                 <p className="mt-2 text-xs text-slate-500">
-                  {actor || "Sistema"} -{" "}
+                  {actor || "Sistema"} ·{" "}
                   {new Date(notification.created_at).toLocaleString("es-ES", {
                     day: "2-digit",
                     month: "2-digit",
@@ -154,7 +154,7 @@ export function WorkspaceNotificationsPanel({
             return (
               <article
                 key={notification.id}
-                className={`rounded-md border p-4 transition ${
+                className={`interactive-subtle rounded-md border p-4 transition ${
                   unread ? "border-[#2d6a4f] bg-[#f4fbf6]" : "border-[#d8f3dc] bg-white/72"
                 }`}
               >
@@ -173,7 +173,7 @@ export function WorkspaceNotificationsPanel({
                       onClick={() => markAsRead(notification.id)}
                       disabled={pendingAction === notification.id}
                     >
-                      {pendingAction === notification.id ? "Marcando..." : "Marcar leida"}
+                      {pendingAction === notification.id ? "Marcando..." : "Marcar leída"}
                     </button>
                   )}
                 </div>

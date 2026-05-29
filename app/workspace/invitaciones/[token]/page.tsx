@@ -16,7 +16,7 @@ type PageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "Invitacion al equipo",
+  title: "Invitación al equipo",
   robots: {
     index: false,
     follow: false,
@@ -31,7 +31,7 @@ export default async function WorkspaceInvitationPage({ params }: PageProps) {
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
 
   if (!serviceClient) {
-    return <InvitationShell title="Configuracion incompleta" message="Falta configurar SUPABASE_SERVICE_ROLE_KEY." />;
+    return <InvitationShell title="Configuración incompleta" message="Falta configurar SUPABASE_SERVICE_ROLE_KEY." />;
   }
 
   const tokenHash = hashInvitationToken(params.token);
@@ -44,14 +44,14 @@ export default async function WorkspaceInvitationPage({ params }: PageProps) {
   if (!invitation || invitation.status !== "pending") {
     return (
       <InvitationShell
-        title="Invitacion no disponible"
-        message="Esta invitacion no existe, ya fue usada o fue revocada."
+        title="Invitación no disponible"
+        message="Esta invitación no existe, ya fue usada o fue revocada."
       />
     );
   }
 
   if (new Date(invitation.expires_at).getTime() < Date.now()) {
-    return <InvitationShell title="Invitacion caducada" message="Pide al administrador que te envie una nueva invitacion." />;
+    return <InvitationShell title="Invitación caducada" message="Pide al administrador que te envíe una nueva invitación." />;
   }
 
   const { data: workspace } = await serviceClient
@@ -62,14 +62,14 @@ export default async function WorkspaceInvitationPage({ params }: PageProps) {
 
   return (
     <section className="container-page py-12">
-      <div className="surface mx-auto max-w-2xl rounded-md p-8">
+      <div className="surface mx-auto max-w-2xl p-8">
         <p className="eyebrow">Equipo</p>
-        <h1 className="font-serif-display mt-3 text-4xl font-bold">Te han invitado a DocuGen</h1>
-        <p className="mt-4 text-sm leading-6 text-slate-600">
-          La invitacion es para colaborar en <strong>{workspace?.name || "un equipo"}</strong> como{" "}
+        <h1 className="section-title mt-3">Te han invitado a DocuGen</h1>
+        <p className="body-muted mt-4">
+          La invitación es para colaborar en <strong>{workspace?.name || "un equipo"}</strong> como{" "}
           <strong>{invitation.role === "admin" ? "admin" : "miembro"}</strong>.
         </p>
-        <div className="mt-6 grid gap-3 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm">
+        <div className="surface-muted mt-6 grid gap-3 p-4 text-sm">
           <p>
             <span className="font-semibold">Email invitado:</span> {invitation.email}
           </p>
@@ -95,10 +95,10 @@ export default async function WorkspaceInvitationPage({ params }: PageProps) {
 function InvitationShell({ title, message }: { title: string; message: string }) {
   return (
     <section className="container-page py-12">
-      <div className="surface mx-auto max-w-2xl rounded-md p-8">
+      <div className="surface mx-auto max-w-2xl p-8">
         <p className="eyebrow">Equipo</p>
-        <h1 className="font-serif-display mt-3 text-4xl font-bold">{title}</h1>
-        <p className="mt-4 text-sm leading-6 text-slate-600">{message}</p>
+        <h1 className="section-title mt-3">{title}</h1>
+        <p className="body-muted mt-4">{message}</p>
         <Link href="/" className="focus-ring btn-primary mt-6 inline-flex px-5 py-3 text-sm">
           Volver a DocuGen
         </Link>
