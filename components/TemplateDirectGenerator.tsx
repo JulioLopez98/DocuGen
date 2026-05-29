@@ -84,18 +84,24 @@ export function TemplateDirectGenerator({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <section className="surface rounded-md p-6">
-        <p className="eyebrow">Generar desde plantilla</p>
-        <h1 className="font-serif-display mt-3 text-4xl font-bold">{templateName}</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
-          Rellena los campos detectados en tu plantilla. DocuGen generara un documento nuevo siguiendo su estructura y
+      <section className="surface p-6">
+        <p className="eyebrow">Datos del nuevo documento</p>
+        <h2 className="panel-title mt-3">Completa lo que debe cambiar</h2>
+        <p className="body-muted mt-3">
+          Rellena los campos detectados en tu plantilla. DocuGen generará un documento nuevo siguiendo su estructura y
           estilo, sin copiar datos concretos del archivo original.
         </p>
 
-        <div className="mt-5 grid gap-3 text-sm">
-          <InfoPill label="Categoria" value={templateCategory || "Sin categoria"} />
-          <InfoPill label="Resumen" value={templateSummary || "Sin resumen extraido"} />
+        <div className="mt-5 grid gap-3 text-sm md:grid-cols-4">
+          <InfoPill label="Modelo" value={templateName} />
+          <InfoPill label="Categoría" value={templateCategory || "Sin categoría"} />
+          <InfoPill label="Resumen" value={templateSummary || "Sin resumen extraído"} />
           <InfoPill label="Variables" value={`${fields.length} campos`} />
+        </div>
+
+        <div className="status-note mt-5">
+          La plantilla marca el formato. Tus respuestas mandan sobre el contenido. Si un dato no aplica, puedes dejarlo
+          vacío y DocuGen usará [PENDIENTE DE COMPLETAR].
         </div>
 
         <div className="mt-6 grid gap-4">
@@ -105,7 +111,7 @@ export function TemplateDirectGenerator({
               <textarea
                 value={values[field.key] || ""}
                 onChange={(event) => updateValue(field.key, event.target.value)}
-                className="focus-ring mt-2 min-h-20 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm"
+                className="field-control mt-2 min-h-20"
                 placeholder={`Valor para ${field.label}`}
               />
             </label>
@@ -116,8 +122,8 @@ export function TemplateDirectGenerator({
             <textarea
               value={extraInstructions}
               onChange={(event) => setExtraInstructions(event.target.value)}
-              className="focus-ring mt-2 min-h-24 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm"
-              placeholder="Ej.: hacerlo mas breve, mantener tratamiento de usted, adaptar a cliente pyme..."
+              className="field-control mt-2 min-h-24"
+              placeholder="Ej.: hacerlo más breve, mantener tratamiento de usted, adaptar a cliente pyme..."
             />
           </label>
 
@@ -135,7 +141,7 @@ export function TemplateDirectGenerator({
             </Link>
           </div>
 
-          {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="status-error">{error}</p>}
         </div>
       </section>
 
@@ -152,14 +158,19 @@ export function TemplateDirectGenerator({
             onRegenerate={generateDocument}
           />
         ) : (
-          <section className="surface rounded-md p-6">
-            <p className="eyebrow">Vista previa</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Documento basado en tu modelo</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Cuando generes, el resultado aparecera aqui y quedara guardado automaticamente en Documentos.
+          <section className="surface p-6">
+            <p className="eyebrow">Resultado</p>
+            <h2 className="panel-title mt-3">Documento basado en tu modelo</h2>
+            <p className="body-muted mt-3">
+              Cuando generes, el resultado aparecerá aquí y quedará guardado automáticamente en Documentos.
             </p>
-            <div className="mt-5 rounded-md bg-[#faf9f6] p-5 text-sm leading-7 text-slate-600">
-              La plantilla sera la referencia principal. Los campos que rellenes aqui tendran prioridad sobre cualquier
+            <div className="mt-5 grid gap-3">
+              <PreviewStep title="1. Respeta la plantilla" text="Se conserva la estructura útil, el orden y el tono general." />
+              <PreviewStep title="2. Sustituye los datos" text="Tus campos reemplazan la información concreta del archivo original." />
+              <PreviewStep title="3. Guarda el borrador" text="El documento final se añade al historial con trazabilidad de plantilla." />
+            </div>
+            <div className="status-note mt-5">
+              La plantilla será la referencia principal. Los campos que rellenes aquí tendrán prioridad sobre cualquier
               dato del documento original.
             </div>
           </section>
@@ -198,5 +209,14 @@ function InfoPill({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
       <p className="mt-1 text-sm leading-6 text-slate-600">{value}</p>
     </div>
+  );
+}
+
+function PreviewStep({ title, text }: { title: string; text: string }) {
+  return (
+    <article className="surface-flat interactive-subtle p-4">
+      <h3 className="text-sm font-bold">{title}</h3>
+      <p className="body-muted mt-2 text-xs">{text}</p>
+    </article>
   );
 }

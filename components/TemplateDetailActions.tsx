@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
@@ -22,7 +24,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
     const supabase = createSupabaseBrowserClient();
 
     if (!supabase) {
-      setError("Supabase no esta configurado.");
+      setError("Supabase no está configurado.");
       return;
     }
 
@@ -51,7 +53,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
   }
 
   async function deleteTemplate() {
-    if (!window.confirm(`Borrar la plantilla "${template.name}"? Esta accion no se puede deshacer.`)) {
+    if (!window.confirm(`¿Borrar la plantilla "${template.name}"? Esta acción no se puede deshacer.`)) {
       return;
     }
 
@@ -128,7 +130,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
         type="button"
         onClick={toggleFavorite}
         disabled={loading !== null}
-        className={`focus-ring rounded-md border px-4 py-3 text-sm font-semibold transition disabled:opacity-60 ${
+        className={`focus-ring rounded-xl border px-4 py-3 text-sm font-semibold transition disabled:opacity-60 ${
           template.is_favorite
             ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
             : "border-[#d8f3dc] bg-white text-[#2d6a4f] hover:border-[#2d6a4f]"
@@ -156,11 +158,11 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
         type="button"
         onClick={deleteTemplate}
         disabled={loading !== null}
-        className="focus-ring rounded-md border border-red-300 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+        className="focus-ring rounded-xl border border-red-300 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
       >
         {loading === "delete" ? "Borrando..." : "Borrar plantilla"}
       </button>
-      {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="status-error">{error}</p>}
     </div>
   );
 }
