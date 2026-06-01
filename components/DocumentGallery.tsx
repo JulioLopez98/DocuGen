@@ -20,9 +20,9 @@ export function DocumentGallery() {
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-3xl">
           <p className="eyebrow">Documentos</p>
-          <h2 className="font-serif-display mt-3 text-4xl font-bold">Una galeria pensada para trabajo real</h2>
+          <h2 className="font-serif-display mt-3 text-4xl font-bold">Una galería pensada para trabajo real</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Una seleccion de documentos habituales. El generador completo incluye {documentTypes.length} tipos organizados por categoria.
+            Una selección de documentos habituales. El generador completo incluye {documentTypes.length} tipos organizados por categoría.
           </p>
         </div>
         <Link href="/catalogo" className="focus-ring btn-secondary px-4 py-3 text-sm">
@@ -47,7 +47,7 @@ export function DocumentGallery() {
       <div className="mt-8 rounded-md border border-[#d8f3dc] bg-white/64 p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm leading-6 text-slate-600">
-            Hay mas documentos laborales, legales, ecommerce, digitales e inmobiliarios dentro del generador.
+            Hay más documentos laborales, legales, ecommerce, digitales e inmobiliarios dentro del generador.
           </p>
           <Link href="/catalogo" className="focus-ring btn-primary px-5 py-3 text-sm">
             Ver tipos de documento

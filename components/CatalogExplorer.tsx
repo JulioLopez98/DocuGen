@@ -43,7 +43,7 @@ export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }:
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-4 py-3 text-sm transition focus:border-[#2d6a4f]"
-              placeholder="Contrato, privacidad, teletrabajo, reclamacion..."
+              placeholder="Contrato, privacidad, teletrabajo, reclamación..."
             />
           </label>
           <div className="flex flex-wrap gap-2 lg:max-w-xl lg:justify-end">
@@ -115,8 +115,8 @@ export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }:
       {filteredDocuments.length === 0 && (
         <EmptyState
           eyebrow="Sin coincidencias"
-          title="No encontramos documentos con esa busqueda"
-          description="Prueba con una palabra mas general como contrato, web, reclamacion o presupuesto. Tambien puedes volver a todos los tipos."
+          title="No encontramos documentos con esa búsqueda"
+          description="Prueba con una palabra más general como contrato, web, reclamación o presupuesto. También puedes volver a todos los tipos."
           primaryAction={{ href: "/catalogo", label: "Ver todos los tipos" }}
           secondaryAction={{ href: signedIn ? "/generar" : "/auth", label: signedIn ? "Abrir generador" : "Empezar gratis" }}
         />

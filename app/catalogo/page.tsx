@@ -9,14 +9,14 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 export const metadata: Metadata = {
   title: "Tipos de documento profesionales con IA",
   description:
-    "Explora los tipos de documento de DocuGen: contratos, presupuestos, propuestas, documentos web, laborales, legales, comerciales e inmobiliarios para Espana.",
+    "Explora los tipos de documento de DocuGen: contratos, presupuestos, propuestas, documentos web, laborales, legales, comerciales e inmobiliarios para España.",
   alternates: {
     canonical: "/catalogo",
   },
   openGraph: {
     title: "Tipos de documento profesionales con IA | DocuGen",
     description:
-      "Todos los tipos de documentos disponibles en DocuGen, organizados por categoria y preparados para generar borradores con IA.",
+      "Todos los tipos de documentos disponibles en DocuGen, organizados por categoría y preparados para generar borradores con IA.",
     url: "/catalogo",
     type: "website",
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "plantillas documentos profesionales",
     "generador contratos",
     "generador presupuestos",
-    "documentos web Espana",
+    "documentos web España",
   ],
 };
 

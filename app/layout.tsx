@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | DocuGen",
   },
   description:
-    "Genera borradores profesionales de contratos, presupuestos, propuestas y documentos web adaptados al contexto espanol.",
+    "Genera borradores profesionales de contratos, presupuestos, propuestas y documentos web adaptados al contexto español.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   alternates: {
     canonical: "/",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DocuGen - Generador de documentos profesionales con IA",
     description:
-      "Contratos, presupuestos, propuestas y documentos web adaptados al contexto espanol. Crea borradores claros y editables en minutos.",
+      "Contratos, presupuestos, propuestas y documentos web adaptados al contexto español. Crea borradores claros y editables en minutos.",
     url: "/",
     siteName: "DocuGen",
     locale: "es_ES",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "DocuGen - Generador de documentos profesionales con IA",
     description:
-      "Genera borradores profesionales con IA para el mercado espanol. Exporta PDF, TXT y Word con Pro.",
+      "Genera borradores profesionales con IA para el mercado español. Exporta PDF, TXT y Word con Pro.",
     images: ["/twitter-image"],
   },
   robots: {
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     "generador documentos IA",
     "contratos con IA",
     "presupuestos profesionales",
-    "documentos legales Espana",
+    "documentos legales España",
     "borradores profesionales",
     "DocuGen",
   ],

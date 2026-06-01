@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "DocuGen",
     short_name: "DocuGen",
-    description: "Generador de documentos profesionales con IA para el mercado espanol.",
+    description: "Generador de documentos profesionales con IA para el mercado español.",
     start_url: "/",
     scope: "/",
     display: "standalone",

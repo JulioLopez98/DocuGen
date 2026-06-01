@@ -31,7 +31,7 @@ export function generateMetadata({ params }: Props): Metadata {
       url: `/${config.type}`,
       type: "website",
     },
-    keywords: [config.label, config.category, "generador documentos IA", "documentos profesionales Espana", "borradores IA"],
+    keywords: [config.label, config.category, "generador documentos IA", "documentos profesionales España", "borradores IA"],
   };
 }
 
@@ -81,8 +81,8 @@ export default function DocumentSeoPage({ params }: Props) {
           <h1 className="font-serif-display mt-3 text-5xl font-bold leading-tight">{config.seoTitle}</h1>
           <p className="mt-5 text-lg leading-8 text-slate-700">{config.seoDescription}</p>
           <p className="mt-4 leading-7 text-slate-700">
-            DocuGen te guia con un formulario especifico para preparar un primer borrador claro, editable y adaptado al
-            contexto espanol. El documento se genera con IA y siempre debe revisarse antes de usarlo con efectos legales
+            DocuGen te guía con un formulario específico para preparar un primer borrador claro, editable y adaptado al
+            contexto español. El documento se genera con IA y siempre debe revisarse antes de usarlo con efectos legales
             o profesionales relevantes.
           </p>
 
@@ -97,23 +97,23 @@ export default function DocumentSeoPage({ params }: Props) {
         </div>
 
         <aside className="surface rounded-md p-6">
-          <p className="text-sm font-bold text-[#2d6a4f]">Que prepara</p>
+          <p className="text-sm font-bold text-[#2d6a4f]">Qué prepara</p>
           <h2 className="font-serif-display mt-3 text-2xl font-bold">{config.label}</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">{config.summary}</p>
           <div className="mt-5 space-y-3 text-sm">
             <InfoLine title="Campos guiados" text={`${config.fields.length} datos principales`} />
-            <InfoLine title="Exportacion" text="PDF, TXT y Word para Pro" />
+            <InfoLine title="Exportación" text="PDF, TXT y Word para Pro" />
             <InfoLine title="Plan" text={pro ? "Documento Pro" : "Incluido en Free"} />
-            <InfoLine title="Revision" text="Aviso de uso responsable incluido" />
+            <InfoLine title="Revisión" text="Aviso de uso responsable incluido" />
           </div>
         </aside>
       </div>
 
       <section className="mt-10 grid gap-4 md:grid-cols-3">
         {[
-          ["Formulario especifico", "Cada documento pide solo los datos necesarios para ese tipo de borrador."],
-          ["Marcadores pendientes", "Si falta informacion, el texto mantiene referencias claras para completar despues."],
-          ["Documentos y reutilizacion", "Puedes guardar el resultado y regenerarlo usando los mismos datos."],
+          ["Formulario específico", "Cada documento pide solo los datos necesarios para ese tipo de borrador."],
+          ["Marcadores pendientes", "Si falta información, el texto mantiene referencias claras para completar después."],
+          ["Documentos y reutilización", "Puedes guardar el resultado y regenerarlo usando los mismos datos."],
         ].map(([title, text]) => (
           <article key={title} className="surface-flat rounded-md p-5">
             <h3 className="font-bold">{title}</h3>
@@ -125,9 +125,9 @@ export default function DocumentSeoPage({ params }: Props) {
       <section className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <p className="eyebrow">Contenido</p>
-          <h2 className="font-serif-display mt-3 text-4xl font-bold">Que datos necesitas para generarlo</h2>
+          <h2 className="font-serif-display mt-3 text-4xl font-bold">Qué datos necesitas para generarlo</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            El formulario esta adaptado a este documento para evitar campos genericos y acelerar el primer borrador.
+            El formulario está adaptado a este documento para evitar campos genéricos y acelerar el primer borrador.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">

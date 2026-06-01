@@ -8,14 +8,14 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 export const metadata: Metadata = {
   title: "Generador de documentos profesionales con IA",
   description:
-    "Genera contratos, presupuestos, propuestas, cartas y documentos web adaptados al contexto espanol. Crea borradores claros y editables en minutos.",
+    "Genera contratos, presupuestos, propuestas, cartas y documentos web adaptados al contexto español. Crea borradores claros y editables en minutos.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "DocuGen - Generador de documentos profesionales con IA",
     description:
-      "Contratos, presupuestos, propuestas y documentos web adaptados al contexto espanol. Borradores con IA listos para revisar.",
+      "Contratos, presupuestos, propuestas y documentos web adaptados al contexto español. Borradores con IA listos para revisar.",
     url: "/",
     type: "website",
   },
@@ -24,21 +24,21 @@ export const metadata: Metadata = {
 const useCases = [
   {
     title: "Profesionales independientes",
-    text: "Contratos freelance, propuestas y presupuestos con estructura profesional para clientes en Espana.",
+    text: "Contratos freelance, propuestas y presupuestos con estructura profesional para clientes en España.",
   },
   {
-    title: "Pequenas empresas",
-    text: "Borradores rapidos para operaciones habituales: colaboraciones, NDAs, documentacion web y cartas.",
+    title: "Pequeñas empresas",
+    text: "Borradores rápidos para operaciones habituales: colaboraciones, NDAs, documentación web y cartas.",
   },
   {
     title: "Equipos que documentan mucho",
-    text: "Documentos guardados, regeneracion, exportaciones y base preparada para marca, Word y equipo.",
+    text: "Documentos guardados, regeneración, exportaciones y base preparada para marca, Word y equipo.",
   },
 ];
 
 const workflow = [
   ["1", "Elige el documento", "Selecciona el tipo exacto y DocuGen adapta el formulario a ese caso."],
-  ["2", "Completa los datos", "Rellena campos claros. Si falta informacion, el borrador deja marcadores pendientes."],
+  ["2", "Completa los datos", "Rellena campos claros. Si falta información, el borrador deja marcadores pendientes."],
   ["3", "Revisa y exporta", "Obtienes un texto editable que puedes copiar, descargar en PDF/TXT o exportar a Word con Pro."],
 ];
 
@@ -46,7 +46,7 @@ const productPaths = [
   {
     title: "Tipos guiados",
     badge: "Free y Pro",
-    text: "Elige entre documentos organizados por categoria: laboral, comercial, legal, web, inmobiliario y mas.",
+    text: "Elige entre documentos organizados por categoría: laboral, comercial, legal, web, inmobiliario y más.",
     href: "/catalogo",
     action: "Ver tipos",
   },
@@ -90,7 +90,7 @@ export default async function HomePage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">
               DocuGen ayuda a crear contratos, presupuestos, propuestas, NDAs, cartas y documentos web adaptados al
-              contexto espanol. No sustituye a un profesional: acelera el primer borrador para que empieces con una base
+              contexto español. No sustituye a un profesional: acelera el primer borrador para que empieces con una base
               clara.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -123,7 +123,7 @@ export default async function HomePage() {
           <div className="surface interactive rounded-md p-6">
             <div className="flex items-center justify-between gap-3 border-b border-[#d8f3dc] pb-4">
               <p className="text-sm font-semibold text-[#2d6a4f]">Vista de borrador</p>
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#1f2933]">IA + revision</span>
+              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#1f2933]">IA + revisión</span>
             </div>
             <div className="mt-5 space-y-4 text-sm leading-6">
               <h2 className="font-serif-display text-2xl font-bold">Propuesta de proyecto</h2>
@@ -144,7 +144,7 @@ export default async function HomePage() {
                 </div>
                 <div className="rounded-md border border-[#d8f3dc] bg-white/78 p-3">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guarda</p>
-                  <p className="mt-1">Documentos y regeneracion</p>
+                  <p className="mt-1">Documentos y regeneración</p>
                 </div>
               </div>
               <p className="text-xs text-slate-500">Documento generado con IA. Revisar antes de su uso legal.</p>
@@ -156,8 +156,8 @@ export default async function HomePage() {
       <section className="border-b border-[#d8f3dc]/80 bg-white/58 py-16">
         <div className="container-page">
           <div className="mb-8 max-w-3xl">
-            <p className="eyebrow">Que puedes hacer</p>
-            <h2 className="font-serif-display mt-3 text-4xl font-bold">Cuatro caminos claros, segun lo que necesites</h2>
+            <p className="eyebrow">Qué puedes hacer</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Cuatro caminos claros, según lo que necesites</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Si sabes el documento exacto, usa Tipos de documento. Si tienes tus propios modelos, usa plantillas. Si no existe
               en DocuGen, el modo a medida permite pedirlo por escrito.
@@ -183,8 +183,8 @@ export default async function HomePage() {
       <section className="bg-white/58 py-16">
         <div className="container-page grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="eyebrow">Que resuelve</p>
-            <h2 className="font-serif-display mt-3 text-4xl font-bold">Menos pantalla en blanco, mas documento util</h2>
+            <p className="eyebrow">Qué resuelve</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Menos pantalla en blanco, más documento útil</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {useCases.map((item) => (
@@ -200,8 +200,8 @@ export default async function HomePage() {
       <section className="border-y border-[#d8f3dc]/80 py-16">
         <div className="container-page">
           <div className="mb-8 max-w-2xl">
-            <p className="eyebrow">Como funciona</p>
-            <h2 className="font-serif-display mt-3 text-4xl font-bold">Un flujo sencillo para trabajar rapido</h2>
+            <p className="eyebrow">Cómo funciona</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Un flujo sencillo para trabajar rápido</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {workflow.map(([step, title, text]) => (

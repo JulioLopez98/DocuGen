@@ -71,8 +71,8 @@ export const documentTypes = [
   {
     type: "contrato-freelance",
     label: "Contrato freelance",
-    seoTitle: "Generador de contrato freelance en Espana",
-    seoDescription: "Crea un borrador de contrato freelance profesional adaptado al mercado espanol.",
+    seoTitle: "Generador de contrato freelance en España",
+    seoDescription: "Crea un borrador de contrato freelance profesional adaptado al mercado español.",
     summary: "Borrador para prestacion de servicios profesionales entre freelancer y cliente.",
     category: "Laboral y servicios",
     includesSignatures: true,
@@ -95,7 +95,7 @@ export const documentTypes = [
     type: "presupuesto-comercial",
     label: "Presupuesto comercial",
     seoTitle: "Generador de presupuestos comerciales",
-    seoDescription: "Redacta presupuestos claros, editables y orientados a clientes en Espana.",
+    seoDescription: "Redacta presupuestos claros, editables y orientados a clientes en España.",
     summary: "Documento comercial con alcance, partidas, validez y condiciones de pago.",
     category: "Comercial",
     includesSignatures: false,
@@ -155,12 +155,12 @@ export const documentTypes = [
     type: "aviso-legal",
     label: "Aviso legal web",
     seoTitle: "Generador de aviso legal web",
-    seoDescription: "Genera un borrador de aviso legal para una web espanola.",
+    seoDescription: "Genera un borrador de aviso legal para una web española.",
     summary: "Aviso legal basico para identificar titular, contacto y actividad de una web.",
     category: "Web",
     includesSignatures: false,
     generationGuidance:
-      "Redacta como aviso legal web para Espana. Incluye identificacion del titular, objeto, condiciones de uso, propiedad intelectual, responsabilidad, enlaces a privacidad si procede, legislacion y jurisdiccion. No incluyas firmas.",
+      "Redacta como aviso legal web para España. Incluye identificacion del titular, objeto, condiciones de uso, propiedad intelectual, responsabilidad, enlaces a privacidad si procede, legislacion y jurisdiccion. No incluyas firmas.",
     fields: [
       { name: "titular", label: "Titular" },
       { name: "cif_nif", label: "CIF/NIF" },
@@ -174,7 +174,7 @@ export const documentTypes = [
     type: "politica-privacidad",
     label: "Politica de privacidad",
     seoTitle: "Generador de politica de privacidad",
-    seoDescription: "Crea un borrador de politica de privacidad para webs y negocios en Espana.",
+    seoDescription: "Crea un borrador de politica de privacidad para webs y negocios en España.",
     summary: "Borrador de privacidad con finalidad, base legal y plazo de conservacion.",
     category: "Web",
     includesSignatures: false,
@@ -195,7 +195,7 @@ export const documentTypes = [
     type: "carta-presentacion",
     label: "Carta de presentacion",
     seoTitle: "Generador de cartas de presentacion",
-    seoDescription: "Redacta cartas de presentacion profesionales para candidaturas en Espana.",
+    seoDescription: "Redacta cartas de presentacion profesionales para candidaturas en España.",
     summary: "Carta adaptada a puesto, empresa, experiencia y motivacion del candidato.",
     category: "Profesional",
     includesSignatures: false,
@@ -233,13 +233,13 @@ export const documentTypes = [
     type: "contrato-trabajo-indefinido",
     label: "Contrato de trabajo indefinido",
     seoTitle: "Generador de contrato de trabajo indefinido",
-    seoDescription: "Prepara un borrador de contrato indefinido adaptado al contexto laboral espanol.",
+    seoDescription: "Prepara un borrador de contrato indefinido adaptado al contexto laboral español.",
     summary: "Borrador laboral para relacion indefinida entre empresa y trabajador.",
     category: "Laboral",
     includesSignatures: true,
     requiredPlan: "pro",
     generationGuidance:
-      "Redacta como borrador laboral para Espana. Incluye empresa, trabajador, puesto, centro de trabajo, jornada, salario, periodo de prueba si se indica, convenio si se indica, vacaciones, confidencialidad si procede, proteccion de datos, ley aplicable y firmas. Recalca que debe revisarse por asesor laboral.",
+      "Redacta como borrador laboral para España. Incluye empresa, trabajador, puesto, centro de trabajo, jornada, salario, periodo de prueba si se indica, convenio si se indica, vacaciones, confidencialidad si procede, proteccion de datos, ley aplicable y firmas. Recalca que debe revisarse por asesor laboral.",
     fields: [
       { name: "empresa", label: "Empresa" },
       { name: "cif_empresa", label: "CIF de la empresa" },
@@ -263,7 +263,7 @@ export const documentTypes = [
     includesSignatures: true,
     requiredPlan: "pro",
     generationGuidance:
-      "Redacta como borrador laboral temporal para Espana. Da mucha importancia a la causa temporal, duracion, fechas, puesto, jornada y salario. Usa marcadores pendientes si falta causa o convenio. Incluye advertencia de revision por asesor laboral.",
+      "Redacta como borrador laboral temporal para España. Da mucha importancia a la causa temporal, duracion, fechas, puesto, jornada y salario. Usa marcadores pendientes si falta causa o convenio. Incluye advertencia de revision por asesor laboral.",
     fields: [
       { name: "empresa", label: "Empresa" },
       { name: "cif_empresa", label: "CIF de la empresa" },
@@ -329,7 +329,7 @@ export const documentTypes = [
     includesSignatures: true,
     requiredPlan: "pro",
     generationGuidance:
-      "Redacta como contrato de arrendamiento de local comercial en Espana. Incluye arrendador, arrendatario, local, uso, renta, fianza, duracion, gastos, obras, conservacion, cesion/subarriendo si procede, resolucion, jurisdiccion y firmas.",
+      "Redacta como contrato de arrendamiento de local comercial en España. Incluye arrendador, arrendatario, local, uso, renta, fianza, duracion, gastos, obras, conservacion, cesion/subarriendo si procede, resolucion, jurisdiccion y firmas.",
     fields: [
       { name: "arrendador", label: "Arrendador" },
       { name: "nif_arrendador", label: "NIF/CIF arrendador" },
@@ -434,12 +434,12 @@ export const documentTypes = [
     type: "politica-cookies",
     label: "Politica de cookies",
     seoTitle: "Generador de politica de cookies",
-    seoDescription: "Prepara una politica de cookies para una web espanola.",
+    seoDescription: "Prepara una politica de cookies para una web española.",
     summary: "Borrador web con tipos de cookies, finalidad, titular y gestion del consentimiento.",
     category: "Web",
     includesSignatures: false,
     generationGuidance:
-      "Redacta una politica de cookies para Espana. Incluye titular, que son las cookies, tipos usados, finalidades, terceros si se indican, gestion del consentimiento, revocacion y contacto. Usa pendientes si no hay detalle tecnico.",
+      "Redacta una politica de cookies para España. Incluye titular, que son las cookies, tipos usados, finalidades, terceros si se indican, gestion del consentimiento, revocacion y contacto. Usa pendientes si no hay detalle tecnico.",
     fields: [
       { name: "titular", label: "Titular" },
       { name: "nombre_web", label: "Nombre de la web" },
@@ -610,7 +610,7 @@ export const documentTypes = [
     includesSignatures: true,
     requiredPlan: "pro",
     generationGuidance:
-      "Redacta como acuerdo de teletrabajo para Espana. Incluye empresa, trabajador, modalidad, lugar, jornada, disponibilidad, medios aportados, gastos, prevencion de riesgos, proteccion de datos, duracion, reversibilidad y firmas. Recomienda revision laboral.",
+      "Redacta como acuerdo de teletrabajo para España. Incluye empresa, trabajador, modalidad, lugar, jornada, disponibilidad, medios aportados, gastos, prevencion de riesgos, proteccion de datos, duracion, reversibilidad y firmas. Recomienda revision laboral.",
     fields: [
       { name: "empresa", label: "Empresa" },
       { name: "trabajador", label: "Trabajador" },

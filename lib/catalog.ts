@@ -12,13 +12,13 @@ export const catalogCategories = [
     name: "Laboral y servicios",
     slug: "laboral-servicios",
     title: "Documentos laborales y de servicios",
-    description: "Contratos y acuerdos para freelancers, clientes y prestacion de servicios profesionales en Espana.",
+    description: "Contratos y acuerdos para freelancers, clientes y prestación de servicios profesionales en España.",
   },
   {
     name: "Comercial",
     slug: "comercial",
     title: "Documentos comerciales",
-    description: "Presupuestos, propuestas, ordenes de compra y documentos para vender o comprar con mas claridad.",
+    description: "Presupuestos, propuestas, órdenes de compra y documentos para vender o comprar con más claridad.",
   },
   {
     name: "Legal",

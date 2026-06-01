@@ -26,7 +26,7 @@ export function generateMetadata({ params }: Props): Metadata {
 
   return {
     title: `${category.title} con IA`,
-    description: `${category.description} Explora plantillas de DocuGen y genera borradores profesionales adaptados a Espana.`,
+    description: `${category.description} Explora plantillas de DocuGen y genera borradores profesionales adaptados a España.`,
     alternates: {
       canonical: `/catalogo/${category.slug}`,
     },
@@ -39,7 +39,7 @@ export function generateMetadata({ params }: Props): Metadata {
     keywords: [
       category.title,
       "generador documentos IA",
-      "documentos profesionales Espana",
+      "documentos profesionales España",
       "borradores profesionales",
       "plantillas documentos",
     ],
@@ -97,7 +97,7 @@ export default async function CatalogCategoryPage({ params }: Props) {
             {category.title} generados con IA
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-700">
-            {category.description} Cada documento se crea como borrador editable y mantiene avisos de revision cuando
+            {category.description} Cada documento se crea como borrador editable y mantiene avisos de revisión cuando
             corresponde.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -111,7 +111,7 @@ export default async function CatalogCategoryPage({ params }: Props) {
         </div>
 
         <aside className="surface rounded-md p-5">
-          <p className="text-sm font-bold text-[#2d6a4f]">Resumen de categoria</p>
+          <p className="text-sm font-bold text-[#2d6a4f]">Resumen de categoría</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Stat value={docs.length.toString()} label="documentos" />
             <Stat value={freeCount.toString()} label="incluidos Free" />

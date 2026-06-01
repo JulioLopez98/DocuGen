@@ -90,7 +90,7 @@ export default function OpenGraphImage() {
             Documentos profesionales en minutos con IA
           </h1>
           <p style={{ margin: "32px 0 0", fontSize: 28, lineHeight: 1.35, fontFamily: "Arial, sans-serif", color: "#334155" }}>
-            Contratos, presupuestos, propuestas y documentos web adaptados al contexto espanol.
+            Contratos, presupuestos, propuestas y documentos web adaptados al contexto español.
           </p>
           <div
             style={{

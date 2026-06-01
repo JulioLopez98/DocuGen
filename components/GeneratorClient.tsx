@@ -77,8 +77,8 @@ type GeneratorIntent = {
 const generatorIntents: GeneratorIntent[] = [
   {
     id: "popular",
-    label: "Lo mas habitual",
-    description: "Empieza por los documentos que mas suelen necesitar autonomos, empresas y profesionales.",
+    label: "Lo más habitual",
+    description: "Empieza por los documentos que más suelen necesitar autónomos, empresas y profesionales.",
     types: ["contrato-freelance", "presupuesto-comercial", "propuesta-proyecto", "carta-presentacion", "aviso-legal"],
     sampleTypes: ["contrato-freelance", "presupuesto-comercial", "carta-presentacion"],
   },
@@ -93,14 +93,14 @@ const generatorIntents: GeneratorIntent[] = [
   {
     id: "hire",
     label: "Contratar o colaborar",
-    description: "Contratos, acuerdos de colaboracion y documentos para definir una relacion profesional.",
+    description: "Contratos, acuerdos de colaboración y documentos para definir una relación profesional.",
     categories: ["Laboral", "Laboral y servicios", "Empresa"],
     keywords: ["contrato", "acuerdo", "servicios", "colaboracion", "teletrabajo"],
     sampleTypes: ["contrato-freelance", "acuerdo-colaboracion", "prestacion-servicios-empresa"],
   },
   {
     id: "protect",
-    label: "Proteger informacion o derechos",
+    label: "Proteger información o derechos",
     description: "Confidencialidad, propiedad intelectual, pactos y documentos con mayor sensibilidad legal.",
     categories: ["Legal"],
     keywords: ["nda", "confidencialidad", "derechos", "arras", "compraventa"],
@@ -109,7 +109,7 @@ const generatorIntents: GeneratorIntent[] = [
   {
     id: "web",
     label: "Web, privacidad y ecommerce",
-    description: "Textos para webs, privacidad, cookies, devoluciones, envios y servicios digitales.",
+    description: "Textos para webs, privacidad, cookies, devoluciones, envíos y servicios digitales.",
     categories: ["Web", "Digital"],
     keywords: ["web", "privacidad", "cookies", "devoluciones", "envios"],
     sampleTypes: ["aviso-legal", "politica-privacidad", "politica-cookies"],
@@ -124,8 +124,8 @@ const generatorIntents: GeneratorIntent[] = [
   },
   {
     id: "operations",
-    label: "Gestion interna",
-    description: "Documentos operativos para reuniones, compras, entregas y procesos del dia a dia.",
+    label: "Gestión interna",
+    description: "Documentos operativos para reuniones, compras, entregas y procesos del día a día.",
     categories: ["Profesional", "Comercial", "Empresa"],
     keywords: ["acta", "orden", "albaran", "certificado", "factura"],
     sampleTypes: ["acta-reunion", "orden-compra", "factura-proforma"],
@@ -141,7 +141,7 @@ const generatorIntents: GeneratorIntent[] = [
   {
     id: "all",
     label: "Todos los tipos",
-    description: "Explora todos los tipos oficiales de DocuGen por categoria.",
+    description: "Explora todos los tipos oficiales de DocuGen por categoría.",
     sampleTypes: ["contrato-freelance", "presupuesto-comercial", "politica-privacidad"],
   },
 ];
@@ -488,10 +488,10 @@ export function GeneratorClient({
               }`}
             >
               <span className="flex items-center justify-between gap-3">
-                <span className="font-bold">Ver todo el catalogo</span>
+                <span className="font-bold">Ver todo el catálogo</span>
                 <span className="text-xs font-semibold text-[#2d6a4f]">{documentTypes.length}</span>
               </span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">La vista mas clara para explorar por categorias.</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">La vista más clara para explorar por categorías.</span>
             </button>
           </div>
 
@@ -500,7 +500,7 @@ export function GeneratorClient({
               <span className="flex items-center justify-between gap-3">
                 <span>
                   <span className="block text-sm font-bold text-[#1f2933]">Filtrar por objetivo</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">Atajos para acotar el catalogo.</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">Atajos para acotar el catálogo.</span>
                 </span>
                 <span className="text-sm font-bold text-[#2d6a4f]">⌄</span>
               </span>
@@ -679,7 +679,7 @@ export function GeneratorClient({
                             </span>
                           </span>
                           <span className="mt-1 block text-xs leading-5 text-slate-500">
-                            {recommendation.template.category || "Sin categoria"} | {recommendation.metrics.totalUses} usos |{" "}
+                            {recommendation.template.category || "Sin categoría"} · {recommendation.metrics.totalUses} usos ·{" "}
                             {formatDateOrNever(recommendation.metrics.lastUsedAt)}
                           </span>
                         </button>
@@ -693,7 +693,7 @@ export function GeneratorClient({
                     value={templateQuery}
                     onChange={(event) => setTemplateQuery(event.target.value)}
                     className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-                    placeholder="Nombre, categoria o resumen..."
+                    placeholder="Nombre, categoría o resumen..."
                   />
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -752,7 +752,7 @@ export function GeneratorClient({
                           )}
                         </span>
                         <span className="mt-1 block text-xs leading-5 text-slate-500">
-                          {template.category || "Sin categoria"} · {new Date(template.created_at).toLocaleDateString("es-ES")}
+                          {template.category || "Sin categoría"} · {new Date(template.created_at).toLocaleDateString("es-ES")}
                         </span>
                       </span>
                       <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">Lista</span>
@@ -761,7 +761,7 @@ export function GeneratorClient({
                       <span className="mt-2 block max-h-10 overflow-hidden text-xs leading-5 text-slate-500">{template.summary}</span>
                     )}
                     <span className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
-                      <span className="rounded-md bg-white/75 px-3 py-2">Ultimo uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
+                      <span className="rounded-md bg-white/75 px-3 py-2">Último uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
                       <span className="rounded-md bg-white/75 px-3 py-2">Modo: {formatUsageMode(metrics.mostUsedMode)}</span>
                     </span>
                   </button>
@@ -770,7 +770,7 @@ export function GeneratorClient({
                 {visibleReferenceTemplates.length === 0 && (
                   <div className="rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4">
                     <p className="text-sm font-semibold">No hay plantillas con esos filtros</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Prueba con otra busqueda o cambia la vista.</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Prueba con otra búsqueda o cambia la vista.</p>
                   </div>
                 )}
                 {referenceTemplates.length > 8 && (
@@ -882,14 +882,14 @@ export function GeneratorClient({
             </h1>
             <p className="body-muted mt-2 max-w-2xl">
               {generatorMode === "catalog" && !selectedDocumentConfirmed
-                ? "Abre una categoria o usa el buscador. Cuando elijas un documento, cargaremos solo su formulario."
+                ? "Abre una categoría o usa el buscador. Cuando elijas un documento, cargaremos solo su formulario."
                 : generatorMode === "catalog"
-                ? "Completa los datos principales. DocuGen no inventara informacion no aportada y usara marcadores si falta algo."
+                ? "Completa los datos principales. DocuGen no inventará información no aportada y usará marcadores si falta algo."
                 : generatorMode === "community"
                   ? communityTypeConfirmed
                     ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
                     : "Estos tipos nacen de solicitudes reales y pasan una revisión antes de poder usarse."
-                  : "Explica que documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos utiles."}
+                  : "Explica qué documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos útiles."}
             </p>
             {generatorMode === "catalog" && selectedDocumentConfirmed && (
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
@@ -952,11 +952,11 @@ export function GeneratorClient({
           />
         ) : generatorMode === "custom" && customProLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
-            <p className="eyebrow">Funcion Pro</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no estan en los tipos disponibles</h2>
+            <p className="eyebrow">Función Pro</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no están en los tipos disponibles</h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              El modo a medida permite pedir documentos por escrito, con instrucciones libres, tono especifico y contexto propio.
-              Lo reservamos para Pro porque usa prompts mas avanzados y tiene mayor coste de generacion.
+              El modo a medida permite pedir documentos por escrito, con instrucciones libres, tono específico y contexto propio.
+              Lo reservamos para Pro porque usa prompts más avanzados y tiene mayor coste de generación.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
@@ -981,7 +981,7 @@ export function GeneratorClient({
             <p className="eyebrow">Documento Pro</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Desbloquea {config.label.toLowerCase()}</h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Este documento esta reservado para DocuGen Pro porque requiere instrucciones mas avanzadas y suele tener
+              Este documento está reservado para DocuGen Pro porque requiere instrucciones más avanzadas y suele tener
               mayor impacto laboral, legal o comercial.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -1163,14 +1163,14 @@ function DocumentChoicePanel({
       <div className="surface-muted p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="eyebrow">Catalogo de documentos</p>
+            <p className="eyebrow">Catálogo de documentos</p>
             <h2 className="mt-2 font-serif-display text-2xl font-bold">
-              {isFiltered ? selectedIntent.label : "Elige por categoria"}
+              {isFiltered ? selectedIntent.label : "Elige por categoría"}
             </h2>
             <p className="body-muted mt-2 max-w-2xl">
               {isFiltered
                 ? selectedIntent.description
-                : "Todas las opciones estan agrupadas para que puedas explorar sin bajar por una lista interminable. Abre una categoria y elige el documento exacto."}
+                : "Todas las opciones están agrupadas para que puedas explorar sin bajar por una lista interminable. Abre una categoría y elige el documento exacto."}
             </p>
           </div>
           <span className="badge badge-free">
@@ -1184,12 +1184,12 @@ function DocumentChoicePanel({
               value={documentQuery}
               onChange={(event) => onQueryChange(event.target.value)}
               className="field-control mt-2"
-              placeholder="Reclamacion, carta, contrato, privacidad..."
+              placeholder="Reclamación, carta, contrato, privacidad..."
             />
           </label>
           {isFiltered && (
             <button type="button" onClick={onShowAll} className="focus-ring btn-secondary px-4 py-3 text-sm">
-              Ver todo el catalogo
+              Ver todo el catálogo
             </button>
           )}
         </div>
@@ -1585,9 +1585,9 @@ function getTemplateInfluencePreview(mode: TemplateUsageMode) {
     return {
       title: "Influencia alta, sin copiar datos",
       weight: "Alta",
-      structure: "Se respetara el orden general de apartados, jerarquia y ritmo del documento original.",
-      tone: "Se imitara el estilo profesional, nivel de formalidad y forma de presentar condiciones.",
-      content: "No se reutilizaran nombres, importes, fechas, clientes, clausulas particulares ni datos sensibles.",
+      structure: "Se respetará el orden general de apartados, jerarquía y ritmo del documento original.",
+      tone: "Se imitará el estilo profesional, nivel de formalidad y forma de presentar condiciones.",
+      content: "No se reutilizarán nombres, importes, fechas, clientes, cláusulas particulares ni datos sensibles.",
       structureActive: true,
       toneActive: true,
       rules: [
@@ -1601,14 +1601,14 @@ function getTemplateInfluencePreview(mode: TemplateUsageMode) {
     return {
       title: "Influencia centrada en el esqueleto",
       weight: "Media",
-      structure: "Se usara la plantilla como mapa de secciones y orden de lectura.",
-      tone: "El tono seguira el estilo base de DocuGen, no el de la plantilla.",
-      content: "La plantilla no aportara condiciones concretas salvo como orientacion estructural.",
+      structure: "Se usará la plantilla como mapa de secciones y orden de lectura.",
+      tone: "El tono seguirá el estilo base de DocuGen, no el de la plantilla.",
+      content: "La plantilla no aportará condiciones concretas salvo como orientación estructural.",
       structureActive: true,
       toneActive: false,
       rules: [
-        "Recomendado si te gusta la organizacion del documento, pero no quieres imitar su redaccion.",
-        "Si falta informacion, se marcaran campos como [PENDIENTE DE COMPLETAR].",
+        "Recomendado si te gusta la organización del documento, pero no quieres imitar su redacción.",
+        "Si falta información, se marcarán campos como [PENDIENTE DE COMPLETAR].",
       ],
     };
   }
@@ -1617,9 +1617,9 @@ function getTemplateInfluencePreview(mode: TemplateUsageMode) {
     return {
       title: "Influencia centrada en estilo y voz",
       weight: "Media",
-      structure: "La estructura dependera del tipo documental elegido, no del orden de la plantilla.",
-      tone: "Se tendra en cuenta la formalidad, claridad, longitud de frases y estilo general.",
-      content: "No se copiara el contenido material de la plantilla ni sus datos concretos.",
+      structure: "La estructura dependerá del tipo documental elegido, no del orden de la plantilla.",
+      tone: "Se tendrá en cuenta la formalidad, claridad, longitud de frases y estilo general.",
+      content: "No se copiará el contenido material de la plantilla ni sus datos concretos.",
       structureActive: false,
       toneActive: true,
       rules: [

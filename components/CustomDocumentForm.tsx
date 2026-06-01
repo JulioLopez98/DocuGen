@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const customDocumentFormSchema = z.object({
   title: z.string().trim().min(3, "Indica un nombre para el documento.").max(160),
-  description: z.string().trim().min(20, "Describe un poco mas lo que necesitas.").max(5000),
+  description: z.string().trim().min(20, "Describe un poco más lo que necesitas.").max(5000),
   intendedUse: z.string().trim().max(1000).optional(),
   tone: z.enum(["formal", "comercial", "laboral_prudente", "legal_prudente", "email", "carta", "natural"]),
   sector: z.string().trim().max(160).optional(),
@@ -110,7 +110,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
       </label>
 
       <p className="rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
-        DocuGen generara un borrador orientativo. No sustituye asesoramiento legal, laboral, fiscal ni profesional.
+        DocuGen generará un borrador orientativo. No sustituye asesoramiento legal, laboral, fiscal ni profesional.
       </p>
 
       <button

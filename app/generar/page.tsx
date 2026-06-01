@@ -129,8 +129,8 @@ export default async function GeneratePage({ searchParams }: Props) {
       </div>
       <div className="mb-6">
         <ContextualHelp
-          title="Si no sabes por donde empezar"
-          description="Piensa primero en la intencion: vender, contratar, reclamar, preparar una web o pedir algo a medida. DocuGen te mostrara opciones mas concretas en el panel izquierdo."
+          title="Si no sabes por dónde empezar"
+          description="Piensa primero en la intención: vender, contratar, reclamar, preparar una web o pedir algo a medida. DocuGen te mostrará opciones más concretas en el panel izquierdo."
           items={[
             "Tipos de documento: mejor para documentos frecuentes con campos guiados.",
             "Tipos de la comunidad: documentos nuevos revisados a partir de solicitudes reales.",

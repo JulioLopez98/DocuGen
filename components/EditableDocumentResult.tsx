@@ -61,8 +61,8 @@ type AssistedInstruction = {
 const improveModes: Array<{ value: ImproveMode; label: string; description: string }> = [
   { value: "formal", label: "Mas formal", description: "Pulido profesional, sobrio y preciso." },
   { value: "brief", label: "Mas breve", description: "Reduce repeticiones y deja lo esencial." },
-  { value: "commercial", label: "Mas comercial", description: "Mejora claridad, valor y proximos pasos." },
-  { value: "natural", label: "Mas natural", description: "Suena mas humano sin perder profesionalidad." },
+  { value: "commercial", label: "Más comercial", description: "Mejora claridad, valor y próximos pasos." },
+  { value: "natural", label: "Más natural", description: "Suena más humano sin perder profesionalidad." },
   { value: "legal_review", label: "Mas prudente", description: "Refuerza claridad y cautela en documentos sensibles." },
   { value: "custom", label: "Instruccion propia", description: "Indica exactamente que quieres cambiar." },
 ];
@@ -77,38 +77,38 @@ const assistedInstructions: AssistedInstruction[] = [
   },
   {
     id: "clarity",
-    label: "Hacer mas claro",
-    description: "Ordena ideas, mejora lectura y elimina ambiguedades.",
+    label: "Hacer más claro",
+    description: "Ordena ideas, mejora lectura y elimina ambigüedades.",
     instruction:
-      "Reescribe el documento para que sea mas claro y facil de entender. Ordena ideas, reduce ambiguedades, mejora transiciones y conserva todos los datos importantes.",
+      "Reescribe el documento para que sea más claro y fácil de entender. Ordena ideas, reduce ambigüedades, mejora transiciones y conserva todos los datos importantes.",
   },
   {
     id: "conditions",
-    label: "Anadir condiciones",
+    label: "Añadir condiciones",
     description: "Refuerza condiciones, plazos, pagos o responsabilidades.",
     instruction:
-      "Anade o refuerza un apartado de condiciones cuando encaje: plazos, pagos, responsabilidades, entregables, aceptacion o siguientes pasos. No inventes datos; usa [PENDIENTE DE COMPLETAR] cuando falte informacion.",
+      "Añade o refuerza un apartado de condiciones cuando encaje: plazos, pagos, responsabilidades, entregables, aceptación o siguientes pasos. No inventes datos; usa [PENDIENTE DE COMPLETAR] cuando falte información.",
   },
   {
     id: "executive",
     label: "Resumen ejecutivo",
-    description: "Anade una apertura breve para lectura rapida.",
+    description: "Añade una apertura breve para lectura rápida.",
     instruction:
-      "Anade al inicio un resumen ejecutivo breve y profesional que explique objetivo, partes implicadas y puntos clave. Mantiene el resto del documento coherente.",
+      "Añade al inicio un resumen ejecutivo breve y profesional que explique objetivo, partes implicadas y puntos clave. Mantiene el resto del documento coherente.",
   },
   {
     id: "risk",
     label: "Detectar huecos",
-    description: "Marca informacion pendiente y puntos que conviene revisar.",
+    description: "Marca información pendiente y puntos que conviene revisar.",
     instruction:
-      "Revisa el documento para detectar informacion incompleta o ambigua. Integra marcadores [PENDIENTE DE COMPLETAR] donde falten datos relevantes y refuerza el aviso de revision profesional sin dar asesoramiento legal definitivo.",
+      "Revisa el documento para detectar información incompleta o ambigua. Integra marcadores [PENDIENTE DE COMPLETAR] donde falten datos relevantes y refuerza el aviso de revisión profesional sin dar asesoramiento legal definitivo.",
   },
   {
     id: "client",
     label: "Orientar a cliente",
-    description: "Hace el texto mas comercial sin perder rigor.",
+    description: "Hace el texto más comercial sin perder rigor.",
     instruction:
-      "Mejora el documento para que sea mas orientado a cliente: mas claro, convincente y accionable. No cambies condiciones, importes, fechas ni obligaciones.",
+      "Mejora el documento para que sea más orientado a cliente: más claro, convincente y accionable. No cambies condiciones, importes, fechas ni obligaciones.",
   },
 ];
 
@@ -432,7 +432,7 @@ export function EditableDocumentResult({
               onChange={(event) => setCustomInstruction(event.target.value)}
               disabled={improveMode !== "custom"}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f] disabled:bg-slate-100 disabled:text-slate-400"
-              placeholder="Ej: hazlo mas directo, cambia a tono email, elimina tecnicismos..."
+              placeholder="Ej: hazlo más directo, cambia a tono email, elimina tecnicismos..."
             />
           </label>
 
@@ -520,7 +520,7 @@ export function EditableDocumentResult({
 
         {versions.length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4 text-sm text-slate-600">
-            Aun no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
+            Aún no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
           </p>
         ) : (
           <div className="mt-4 grid gap-3">
