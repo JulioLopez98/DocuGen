@@ -46,7 +46,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
       const supabase = createSupabaseBrowserClient();
 
       if (!supabase) {
-        setError("Supabase no esta configurado.");
+        setError("Supabase no está configurado.");
         return;
       }
 
@@ -102,7 +102,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
       <EmptyState
         eyebrow="Marca Pro"
         title="Identidad de marca para tus exportaciones"
-        description="Anade nombre de empresa, CIF, direccion y logo para preparar documentos con una presencia mas corporativa. Esta funcion esta disponible en DocuGen Pro."
+        description="Añade nombre de empresa, CIF, dirección y logo para preparar documentos con una presencia más corporativa. Esta función está disponible en DocuGen Pro."
         primaryAction={{ href: "/precios", label: "Ver planes Pro" }}
         secondaryAction={{ href: "/generar", label: "Seguir generando" }}
       />
@@ -110,22 +110,22 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
   }
 
   return (
-    <form onSubmit={save} className="surface rounded-md p-6">
+    <form onSubmit={save} className="surface p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Marca Pro</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Identidad de marca</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Estos datos se usaran en exportaciones Word y PDF, y quedan listos para plantillas avanzadas.
+          <h2 className="panel-title mt-3">Identidad de marca</h2>
+          <p className="body-muted mt-3 max-w-2xl">
+            Estos datos se usarán en exportaciones Word y PDF, y quedan listos para plantillas avanzadas.
           </p>
           {!hasBrandData && (
-            <p className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">
-              Aun no tienes marca configurada. Completa al menos el nombre de empresa o sube un logo para que aparezca en
+            <p className="status-note mt-4">
+              Aún no tienes marca configurada. Completa al menos el nombre de empresa o sube un logo para que aparezca en
               tus exportaciones.
             </p>
           )}
         </div>
-        <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
+        <span className="badge badge-pro">
           Pro activo
         </span>
       </div>
@@ -136,7 +136,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           <input
             value={form.company_name}
             onChange={(event) => updateField("company_name", event.target.value)}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 transition focus:border-[#2d6a4f]"
+            className="field-control mt-2"
             placeholder="DocuGen Studio S.L."
           />
         </label>
@@ -145,27 +145,27 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           <input
             value={form.cif}
             onChange={(event) => updateField("cif", event.target.value)}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 transition focus:border-[#2d6a4f]"
+            className="field-control mt-2"
             placeholder="B00000000"
           />
         </label>
         <label className="md:col-span-2">
-          <span className="text-sm font-semibold">Direccion</span>
+          <span className="text-sm font-semibold">Dirección</span>
           <input
             value={form.address}
             onChange={(event) => updateField("address", event.target.value)}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 transition focus:border-[#2d6a4f]"
-            placeholder="Calle, numero, ciudad"
+            className="field-control mt-2"
+            placeholder="Calle, número, ciudad"
           />
         </label>
       </div>
 
-      <section className="surface-flat mt-6 rounded-md p-4">
+      <section className="surface-flat mt-6 p-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h3 className="font-semibold">Logo de marca</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
-              Sube un PNG, JPG, WebP o SVG. Tambien puedes pegar una URL si ya tienes el logo alojado.
+            <p className="body-muted mt-1">
+              Sube un PNG, JPG, WebP o SVG. También puedes pegar una URL si ya tienes el logo alojado.
             </p>
           </div>
           <label className="focus-ring btn-secondary cursor-pointer px-4 py-2 text-sm">
@@ -200,7 +200,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
               <input
                 value={form.logo_url}
                 onChange={(event) => updateField("logo_url", event.target.value)}
-                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                className="field-control mt-2"
                 placeholder="https://..."
               />
             </label>
@@ -215,7 +215,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
                 </button>
               )}
               <p className="text-xs leading-5 text-slate-500">
-                En Word y PDF se anadira como referencia visual de marca cuando el formato lo permita.
+                En Word y PDF se añadirá como referencia visual de marca cuando el formato lo permita.
               </p>
             </div>
           </div>
@@ -230,8 +230,8 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           Volver al panel
         </Link>
       </div>
-      {message && <p className="mt-4 rounded-md bg-[#d8f3dc] p-3 text-sm text-[#1f2933]">{message}</p>}
-      {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {message && <p className="status-success mt-4">{message}</p>}
+      {error && <p className="status-error mt-4">{error}</p>}
     </form>
   );
 }

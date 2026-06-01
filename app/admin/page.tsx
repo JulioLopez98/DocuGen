@@ -153,29 +153,51 @@ export default async function AdminPage() {
   const highSeverityCount = securityEvents.filter((event) => event.severity === "high").length;
 
   return (
-    <section className="container-page py-10">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div className="max-w-3xl">
-          <p className="eyebrow">Admin</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">Panel de administracion</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Vista interna con usuarios, actividad, documentos generados y senales de conversion.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/admin/catalogo-comunitario" className="focus-ring btn-primary px-4 py-3 text-sm">
-            Tipos comunitarios
-          </Link>
-          <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
-            Volver al panel
-          </Link>
+    <section className="container-page py-8 lg:py-10">
+      <div className="surface mb-6 overflow-hidden">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_360px] lg:items-end lg:p-8">
+          <div className="max-w-4xl">
+            <p className="eyebrow">Consola interna</p>
+            <h1 className="section-title mt-3">Estado operativo de DocuGen</h1>
+            <p className="body-muted mt-4 max-w-2xl">
+              Métricas de negocio, salud técnica, solicitudes de nuevos documentos, catálogo comunitario y señales de
+              seguridad en una sola vista de administración.
+            </p>
+          </div>
+          <div className="surface-muted p-5">
+            <p className="text-sm font-bold text-[#2d6a4f]">Prioridad de revisión</p>
+            <div className="mt-4 grid gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-slate-600">Alertas abiertas</span>
+                <span className={operationalAlerts.length > 0 ? "badge bg-red-50 text-red-700" : "badge badge-pro"}>
+                  {operationalAlerts.length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-slate-600">Solicitudes a medida</span>
+                <span className="badge badge-empresa">{documentRequests.length}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-slate-600">Tipos comunitarios</span>
+                <span className="badge badge-free">{communityTypes.length}</span>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link href="/admin/catalogo-comunitario" className="focus-ring btn-primary px-4 py-3 text-sm">
+                Revisar catálogo
+              </Link>
+              <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
+                Ir al panel
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="MRR estimado" value={`${estimatedMrr} EUR`} helper="Calculado por plan, no desde Stripe" />
+        <MetricCard label="MRR estimado" value={`${estimatedMrr} EUR`} helper="Estimación por plan activo" />
         <MetricCard label="Usuarios" value={(totalUsersResult.count || 0).toString()} helper={`${planCounts.pro + planCounts.empresa} de pago`} />
-        <MetricCard label="Documentos" value={(totalDocumentsResult.count || 0).toString()} helper={`${docs30Result.count || 0} en 30 dias`} />
+        <MetricCard label="Documentos" value={(totalDocumentsResult.count || 0).toString()} helper={`${docs30Result.count || 0} en 30 días`} />
         <MetricCard label="Eventos 24h" value={(events24Result.count || 0).toString()} helper="Generaciones registradas" />
       </div>
 
@@ -183,18 +205,18 @@ export default async function AdminPage() {
 
       <AdminOperationalAlerts alerts={operationalAlerts} profiles={profiles} />
 
-      <section className="surface mt-4 rounded-md p-6">
+      <section className="surface mt-4 p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="eyebrow">APIs</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Errores monitorizados</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            <h2 className="panel-title mt-3">Errores monitorizados</h2>
+            <p className="body-muted mt-2 max-w-2xl">
               Fallos recientes de OpenAI, Stripe, Resend, Supabase y errores internos registrados por servidor.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
             <SmallStat label="Total" value={apiErrorEvents.length.toString()} />
-            <SmallStat label="Criticos" value={apiErrorEvents.filter((event) => event.severity === "high").length.toString()} />
+            <SmallStat label="Críticos" value={apiErrorEvents.filter((event) => event.severity === "high").length.toString()} />
             <SmallStat label="Proveedores" value={new Set(apiErrorEvents.map((event) => event.provider)).size.toString()} />
           </div>
         </div>
@@ -205,13 +227,13 @@ export default async function AdminPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-2 py-1 text-xs font-bold ${getSeverityClass(event.severity)}`}>
+                    <span className={`badge ${getSeverityClass(event.severity)}`}>
                       {event.severity}
                     </span>
-                    <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
+                    <span className="badge badge-free">
                       {event.provider}
                     </span>
-                    <span className="rounded-full border border-[#d8f3dc] px-2 py-1 text-xs text-slate-600">
+                    <span className="badge border border-[#d8f3dc] bg-white text-slate-600">
                       {event.error_code}
                     </span>
                   </div>
@@ -230,7 +252,7 @@ export default async function AdminPage() {
             <EmptyState
               eyebrow="Sin errores"
               title="No hay errores de APIs registrados"
-              description="Cuando falle un proveedor externo o una ruta critica, aparecera aqui."
+              description="Cuando falle un proveedor externo o una ruta crítica, aparecerá aquí."
               variant="flat"
               primaryAction={{ href: "/admin", label: "Actualizar panel" }}
             />
@@ -238,13 +260,13 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <section className="surface mt-4 rounded-md p-6">
+      <section className="surface mt-4 p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="eyebrow">Seguridad</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Eventos sensibles</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Bloqueos por rate limit, actividad sensible de equipos y senales que conviene revisar si aparecen picos.
+            <h2 className="panel-title mt-3">Eventos sensibles</h2>
+            <p className="body-muted mt-2 max-w-2xl">
+              Bloqueos por rate limit, actividad sensible de equipos y señales que conviene revisar si aparecen picos.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
@@ -255,11 +277,11 @@ export default async function AdminPage() {
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4">
-            <h3 className="font-serif-display text-2xl font-bold">Acciones con mas actividad</h3>
+          <div className="surface-flat p-4">
+            <h3 className="panel-title text-2xl">Acciones con más actividad</h3>
             <div className="mt-4 grid gap-3">
               {rateLimitSummary.map((item) => (
-                <div key={item.action} className="flex items-center justify-between gap-4 rounded-md bg-[#faf9f6] p-3">
+                <div key={item.action} className="interactive-subtle flex items-center justify-between gap-4 rounded-md bg-[#faf9f6] p-3">
                   <div>
                     <p className="font-semibold">{formatActionLabel(item.action)}</p>
                     <p className="mt-1 text-xs text-slate-500">{item.uniqueUsers} usuarios distintos</p>
@@ -269,9 +291,9 @@ export default async function AdminPage() {
               ))}
               {rateLimitSummary.length === 0 && (
                 <EmptyState
-                  eyebrow="Sin senales"
+                  eyebrow="Sin señales"
                   title="No hay eventos de rate limit recientes"
-                  description="Cuando haya actividad suficiente o bloqueos, apareceran aqui por tipo de accion."
+                  description="Cuando haya actividad suficiente o bloqueos, aparecerán aquí por tipo de acción."
                   variant="flat"
                   primaryAction={{ href: "/admin", label: "Actualizar panel" }}
                 />
@@ -279,8 +301,8 @@ export default async function AdminPage() {
             </div>
           </div>
 
-          <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4">
-            <h3 className="font-serif-display text-2xl font-bold">Ultimos eventos bloqueados</h3>
+          <div className="surface-flat p-4">
+            <h3 className="panel-title text-2xl">Últimos eventos bloqueados</h3>
             <div className="mt-4 divide-y divide-[#d8f3dc]">
               {securityEvents.slice(0, 8).map((event) => (
                 <SecurityEventItem key={event.id} event={event} profile={event.user_id ? profileById.get(event.user_id) : undefined} />
@@ -288,8 +310,8 @@ export default async function AdminPage() {
               {securityEvents.length === 0 && (
                 <EmptyState
                   eyebrow="Sin bloqueos"
-                  title="Aun no hay eventos de seguridad"
-                  description="Los rate limits bloqueados y futuras senales de abuso se registraran aqui."
+                  title="Aún no hay eventos de seguridad"
+                  description="Los rate limits bloqueados y futuras señales de abuso se registrarán aquí."
                   variant="flat"
                   primaryAction={{ href: "/dashboard", label: "Volver al panel" }}
                 />
@@ -300,13 +322,13 @@ export default async function AdminPage() {
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="surface rounded-md p-6">
+        <section className="surface p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="eyebrow">Planes</p>
-              <h2 className="font-serif-display mt-3 text-3xl font-bold">Distribucion</h2>
+              <h2 className="panel-title mt-3">Distribución</h2>
             </div>
-            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{profiles.length} perfiles leidos</span>
+            <span className="badge badge-free">{profiles.length} perfiles leídos</span>
           </div>
           <div className="mt-6 grid gap-3">
             <PlanRow label="Free" count={planCounts.free} total={profiles.length} />
@@ -315,26 +337,26 @@ export default async function AdminPage() {
           </div>
         </section>
 
-        <section className="surface rounded-md p-6">
+        <section className="surface p-6">
           <p className="eyebrow">Actividad</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Uso reciente</h2>
+          <h2 className="panel-title mt-3">Uso reciente</h2>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <SmallStat label="7 dias" value={(docs7Result.count || 0).toString()} />
-            <SmallStat label="30 dias" value={(docs30Result.count || 0).toString()} />
+            <SmallStat label="7 días" value={(docs7Result.count || 0).toString()} />
+            <SmallStat label="30 días" value={(docs30Result.count || 0).toString()} />
             <SmallStat label="Tokens muestra" value={formatNumber(totalTokens)} />
           </div>
           <p className="mt-4 text-xs leading-5 text-slate-500">
-            Los tokens se calculan sobre los ultimos {documents.length} documentos cargados en esta vista.
+            Los tokens se calculan sobre los últimos {documents.length} documentos cargados en esta vista.
           </p>
         </section>
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="surface rounded-md p-6">
+        <section className="surface p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="eyebrow">Documentos</p>
-              <h2 className="font-serif-display mt-3 text-3xl font-bold">Tipos populares</h2>
+              <h2 className="panel-title mt-3">Tipos populares</h2>
             </div>
             <Link href="/generar" className="btn-ghost px-3 py-2 text-sm">
               Ver tipos
@@ -342,7 +364,7 @@ export default async function AdminPage() {
           </div>
           <div className="grid gap-3">
             {popularTypes.map((item) => (
-              <div key={item.type} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <div key={item.type} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold">{item.label}</p>
@@ -355,8 +377,8 @@ export default async function AdminPage() {
             {popularTypes.length === 0 && (
               <EmptyState
                 eyebrow="Sin documentos"
-                title="Todavia no hay tipos populares"
-                description="Cuando los usuarios generen documentos, aqui veras que categorias y tipos empiezan a traccionar."
+                title="Todavía no hay tipos populares"
+                description="Cuando los usuarios generen documentos, aquí verás qué categorías y tipos empiezan a traccionar."
                 variant="flat"
                 primaryAction={{ href: "/catalogo", label: "Ver tipos" }}
               />
@@ -364,9 +386,9 @@ export default async function AdminPage() {
           </div>
         </section>
 
-        <section className="surface rounded-md p-6">
+        <section className="surface p-6">
           <p className="eyebrow">Usuarios</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Altas recientes</h2>
+          <h2 className="panel-title mt-3">Altas recientes</h2>
           <div className="mt-4 divide-y divide-[#d8f3dc]">
             {recentUsers.map((user) => (
               <article key={user.id} className="py-3">
@@ -382,8 +404,8 @@ export default async function AdminPage() {
             {recentUsers.length === 0 && (
               <EmptyState
                 eyebrow="Sin usuarios"
-                title="Aun no hay altas registradas"
-                description="Cuando entren los primeros usuarios, apareceran aqui con su plan y fecha de registro."
+                title="Aún no hay altas registradas"
+                description="Cuando entren los primeros usuarios, aparecerán aquí con su plan y fecha de registro."
                 variant="flat"
                 primaryAction={{ href: "/dashboard", label: "Volver al panel" }}
               />
@@ -392,11 +414,11 @@ export default async function AdminPage() {
         </section>
       </div>
 
-      <section className="surface mt-4 rounded-md p-6">
+      <section className="surface mt-4 p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="eyebrow">Ultimos documentos</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad reciente</h2>
+            <p className="eyebrow">Últimos documentos</p>
+            <h2 className="panel-title mt-3">Actividad reciente</h2>
           </div>
           <Link href="/historial" className="btn-ghost px-3 py-2 text-sm">
             Mis documentos
@@ -412,7 +434,7 @@ export default async function AdminPage() {
                   <div>
                     <p className="font-semibold">{doc.doc_label}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {config?.category || "Documento"} - {new Date(doc.created_at).toLocaleString("es-ES")}
+                      {config?.category || "Documento"} · {new Date(doc.created_at).toLocaleString("es-ES")}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -426,8 +448,8 @@ export default async function AdminPage() {
           {recentDocuments.length === 0 && (
             <EmptyState
               eyebrow="Sin actividad"
-              title="Todavia no hay documentos recientes"
-              description="La actividad aparecera aqui cuando los usuarios empiecen a generar borradores."
+              title="Todavía no hay documentos recientes"
+              description="La actividad aparecerá aquí cuando los usuarios empiecen a generar borradores."
               variant="flat"
               primaryAction={{ href: "/generar", label: "Crear documento de prueba" }}
             />
@@ -435,11 +457,11 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <section className="surface mt-4 rounded-md p-6">
+      <section className="surface mt-4 p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="eyebrow">Empresa</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Actividad sensible de equipos</h2>
+            <h2 className="panel-title mt-3">Actividad sensible de equipos</h2>
           </div>
           <Link href="/workspace" className="btn-ghost px-3 py-2 text-sm">
             Ver equipo
@@ -452,7 +474,7 @@ export default async function AdminPage() {
                 <div>
                   <p className="font-semibold">{event.summary}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {formatWorkspaceEventLabel(event.event_type)} - {new Date(event.created_at).toLocaleString("es-ES")}
+                    {formatWorkspaceEventLabel(event.event_type)} · {new Date(event.created_at).toLocaleString("es-ES")}
                   </p>
                 </div>
                 <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
@@ -465,7 +487,7 @@ export default async function AdminPage() {
             <EmptyState
               eyebrow="Sin cambios sensibles"
               title="No hay actividad reciente de roles o invitaciones"
-              description="Cuando un equipo cambie miembros, roles o invitaciones, se vera aqui."
+              description="Cuando un equipo cambie miembros, roles o invitaciones, se verá aquí."
               variant="flat"
               primaryAction={{ href: "/workspace", label: "Ir a Empresa" }}
             />
@@ -480,8 +502,8 @@ export default async function AdminPage() {
 
 function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
   return (
-    <div className="surface-flat interactive rounded-md p-5">
-      <p className="text-sm text-slate-500">{label}</p>
+    <div className="surface-flat interactive-subtle p-5">
+      <p className="text-sm font-semibold text-slate-500">{label}</p>
       <p className="mt-3 font-serif-display text-3xl font-bold text-[#2d6a4f]">{value}</p>
       <p className="mt-2 text-xs text-slate-500">{helper}</p>
     </div>
@@ -490,7 +512,7 @@ function MetricCard({ label, value, helper }: { label: string; value: string; he
 
 function SmallStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+    <div className="surface-muted p-4">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
       <p className="mt-2 font-serif-display text-2xl font-bold">{value}</p>
     </div>
@@ -501,13 +523,13 @@ function AdminHealthChecks({ report }: { report: HealthCheckReport }) {
   const summary = countHealthStatuses(report);
 
   return (
-    <section className="surface mt-4 rounded-md p-6">
+    <section className="surface mt-4 p-6">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Health checks</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Estado interno</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-            Comprobacion rapida de variables, tablas criticas y proveedores necesarios para operar DocuGen.
+          <h2 className="panel-title mt-3">Estado interno</h2>
+          <p className="body-muted mt-2 max-w-2xl">
+            Comprobación rápida de variables, tablas críticas y proveedores necesarios para operar DocuGen.
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
@@ -519,22 +541,22 @@ function AdminHealthChecks({ report }: { report: HealthCheckReport }) {
 
       <div className="grid gap-3 xl:grid-cols-5">
         {report.groups.map((group) => (
-          <div key={group.id} className="rounded-md border border-[#d8f3dc] bg-white/75 p-4">
+          <div key={group.id} className="surface-flat p-4">
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-serif-display text-xl font-bold">{group.label}</h3>
-              <span className={`rounded-full px-2 py-1 text-xs font-bold ${getHealthStatusClass(group.status)}`}>
+              <span className={`badge ${getHealthStatusClass(group.status)}`}>
                 {formatHealthStatus(group.status)}
               </span>
             </div>
             <div className="mt-4 grid gap-2">
               {group.checks.map((check) => (
-                <div key={check.id} className="rounded-md bg-[#faf9f6] p-3">
+                <div key={check.id} className="interactive-subtle rounded-md bg-[#faf9f6] p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-semibold">{check.label}</p>
                       <p className="mt-1 text-xs text-slate-500">{check.message}</p>
                     </div>
-                    <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${getHealthStatusClass(check.status)}`}>
+                    <span className={`badge ${getHealthStatusClass(check.status)}`}>
                       {formatHealthStatus(check.status)}
                     </span>
                   </div>
@@ -545,7 +567,7 @@ function AdminHealthChecks({ report }: { report: HealthCheckReport }) {
         ))}
       </div>
 
-      <p className="mt-4 text-xs text-slate-500">Ultima comprobacion: {new Date(report.generatedAt).toLocaleString("es-ES")}</p>
+      <p className="mt-4 text-xs text-slate-500">Última comprobación: {new Date(report.generatedAt).toLocaleString("es-ES")}</p>
     </section>
   );
 }
@@ -558,7 +580,7 @@ function PlanRow({ label, count, total }: { label: string; count: number; total:
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-semibold">{label}</span>
         <span className="text-slate-500">
-          {count} - {percent}%
+          {count} · {percent}%
         </span>
       </div>
       <div className="h-3 overflow-hidden rounded-full bg-[#d8f3dc]">
@@ -574,16 +596,16 @@ function SecurityEventItem({ event, profile }: { event: SecurityEventRow; profil
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2 py-1 text-xs font-bold ${getSeverityClass(event.severity)}`}>
+            <span className={`badge ${getSeverityClass(event.severity)}`}>
               {event.severity}
             </span>
             <p className="font-semibold">{event.summary}</p>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            {profile?.email || "Usuario no disponible"} - {new Date(event.created_at).toLocaleString("es-ES")}
+            {profile?.email || "Usuario no disponible"} · {new Date(event.created_at).toLocaleString("es-ES")}
           </p>
         </div>
-        <span className="rounded-full border border-[#d8f3dc] px-2 py-1 text-xs text-slate-600">{event.route || event.event_type}</span>
+        <span className="badge border border-[#d8f3dc] bg-white text-slate-600">{event.route || event.event_type}</span>
       </div>
     </article>
   );
@@ -641,14 +663,14 @@ function getRateLimitSummary(events: AdminRateLimitEvent[]) {
 
 function formatActionLabel(action: RateLimitAction) {
   const labels: Record<RateLimitAction, string> = {
-    document_generate: "Generacion de documentos",
+    document_generate: "Generación de documentos",
     document_improve: "Mejoras con IA",
     assistant_chat: "Chat asistente",
     assistant_generate: "Generar desde chat",
     template_upload: "Subida de plantillas",
     template_process: "Procesamiento de plantillas",
     workspace_invite: "Invitaciones",
-    workspace_member_manage: "Gestion de miembros",
+    workspace_member_manage: "Gestión de miembros",
   };
 
   return labels[action];
@@ -663,12 +685,12 @@ function formatWorkspaceEventLabel(eventType: WorkspaceAuditEventRow["event_type
     template_processed: "Plantilla procesada",
     template_updated: "Plantilla actualizada",
     template_deleted: "Plantilla eliminada",
-    member_invited: "Invitacion enviada",
-    member_joined: "Miembro anadido",
+    member_invited: "Invitación enviada",
+    member_joined: "Miembro añadido",
     member_role_updated: "Rol actualizado",
     member_permissions_updated: "Permisos actualizados",
     member_removed: "Miembro eliminado",
-    invitation_revoked: "Invitacion revocada",
+    invitation_revoked: "Invitación revocada",
   };
 
   return labels[eventType];

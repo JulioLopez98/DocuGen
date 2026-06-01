@@ -38,37 +38,37 @@ export function AdminOperationalAlerts({
   };
 
   return (
-    <section className="surface mt-4 rounded-md p-6">
+    <section className="surface mt-4 p-6">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Alertas</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Operativa interna</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-            Avisos accionables generados desde eventos de seguridad. Resuelvelos cuando ya esten revisados.
+          <h2 className="panel-title mt-3">Operativa interna</h2>
+          <p className="body-muted mt-2 max-w-2xl">
+            Avisos accionables generados desde eventos de seguridad. Resuélvelos cuando ya estén revisados.
           </p>
         </div>
-        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">
+        <span className={openAlerts.length > 0 ? "badge bg-red-50 text-red-700" : "badge badge-pro"}>
           {openAlerts.length} abiertas
         </span>
       </div>
 
       <div className="grid gap-3">
         {openAlerts.slice(0, 8).map((alert) => (
-          <article key={alert.id} className="rounded-md border border-[#d8f3dc] bg-white/75 p-4">
+          <article key={alert.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/75 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full px-2 py-1 text-xs font-bold ${getSeverityClass(alert.severity)}`}>
+                  <span className={`badge ${getSeverityClass(alert.severity)}`}>
                     {alert.severity}
                   </span>
-                  <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
+                  <span className="badge badge-free">
                     {formatAlertType(alert.alert_type)}
                   </span>
                 </div>
                 <h3 className="mt-3 font-serif-display text-2xl font-bold">{alert.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{alert.description}</p>
+                <p className="body-muted mt-2">{alert.description}</p>
                 <p className="mt-2 text-xs text-slate-500">
-                  {alert.user_id ? profileById.get(alert.user_id)?.email || "Usuario no disponible" : "Sistema"} -{" "}
+                  {alert.user_id ? profileById.get(alert.user_id)?.email || "Usuario no disponible" : "Sistema"} ·{" "}
                   {new Date(alert.created_at).toLocaleString("es-ES")}
                 </p>
               </div>
@@ -85,10 +85,10 @@ export function AdminOperationalAlerts({
         ))}
 
         {openAlerts.length === 0 && (
-          <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-6">
+          <div className="status-success p-6">
             <p className="text-sm font-bold text-[#2d6a4f]">Sin alertas abiertas</p>
             <p className="mt-2 text-sm text-slate-600">
-              Cuando haya eventos de alta severidad o avisos operativos, apareceran aqui.
+              Cuando haya eventos de alta severidad o avisos operativos, aparecerán aquí.
             </p>
           </div>
         )}

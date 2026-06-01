@@ -26,7 +26,7 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
       const payload = (await response.json()) as { url?: string; message?: string };
 
       if (!response.ok || !payload.url) {
-        setError(payload.message || "No se pudo crear la sesion.");
+        setError(payload.message || "No se pudo crear la sesión.");
         return;
       }
 
@@ -67,15 +67,15 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
           disabled={loading !== null}
           className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
         >
-          {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripcion"}
+          {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripción"}
         </button>
       )}
       {isPaid && !hasCustomer && (
-        <p className="rounded-md bg-[#faf9f6] px-3 py-2 text-sm text-slate-600">
-          Plan activo. El portal de Stripe aparecera cuando exista un cliente de facturacion asociado.
+        <p className="status-note">
+          Plan activo. El portal de Stripe aparecerá cuando exista un cliente de facturación asociado.
         </p>
       )}
-      {error && <p className="w-full text-sm text-red-700">{error}</p>}
+      {error && <p className="status-error w-full">{error}</p>}
     </div>
   );
 }

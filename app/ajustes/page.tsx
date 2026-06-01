@@ -35,15 +35,32 @@ export default async function SettingsPage() {
   const hasBrand = Boolean(brandSettings?.company_name || brandSettings?.cif || brandSettings?.address || brandSettings?.logo_url);
 
   return (
-    <section className="container-page py-10">
-      <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
-        <div className="max-w-3xl">
-          <p className="eyebrow">Ajustes</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">Cuenta, plan y marca</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Gestiona tu cuenta, suscripcion, exportaciones, marca personalizada y datos guardados.
-          </p>
+    <section className="container-page py-8 lg:py-10">
+      <div className="surface mb-6 overflow-hidden">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_340px] lg:items-end">
+          <div>
+            <p className="eyebrow">Ajustes</p>
+            <h1 className="section-title mt-3 max-w-4xl">Administra tu cuenta profesional</h1>
+            <p className="body-muted mt-4 max-w-3xl">
+              Controla plan, uso, exportaciones, identidad de marca y datos guardados desde una zona pensada para dejar
+              DocuGen listo para trabajar.
+            </p>
+          </div>
+          <div className="surface-muted p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-[#2d6a4f]">Estado de cuenta</p>
+              <PlanBadge plan={profile.plan} />
+            </div>
+            <p className="body-muted mt-3">
+              {isPro
+                ? "Tu plan permite uso avanzado, Word, plantillas y marca."
+                : `Te quedan ${remaining} documentos gratuitos este mes.`}
+            </p>
+          </div>
         </div>
+      </div>
+
+      <div className="mb-6 flex flex-wrap justify-end gap-3">
         <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
           Volver al panel
         </Link>
@@ -54,14 +71,14 @@ export default async function SettingsPage() {
           {
             id: "cuenta",
             label: "Cuenta",
-            description: "Email, plan y uso",
+            description: "Email, plan y uso mensual",
             content: (
-              <section className="surface rounded-md p-6">
+              <section className="surface p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="eyebrow">Cuenta</p>
-                    <h2 className="font-serif-display mt-3 text-3xl font-bold">Tu cuenta</h2>
-                    <p className="mt-2 text-sm text-slate-600">{user.email}</p>
+                    <h2 className="panel-title mt-3">Tu cuenta</h2>
+                    <p className="body-muted mt-2">{user.email}</p>
                   </div>
                   <PlanBadge plan={profile.plan} />
                 </div>
@@ -75,7 +92,7 @@ export default async function SettingsPage() {
                 <div className="mt-6">
                   <UsageBar used={profile.docs_this_month} plan={profile.plan} />
                 </div>
-                <p className="mt-4 text-sm text-slate-600">
+                <p className="status-note mt-4">
                   {isPro ? "Tu plan incluye documentos ilimitados." : `Te quedan ${remaining} documentos gratuitos este mes.`}
                 </p>
               </section>
@@ -83,15 +100,15 @@ export default async function SettingsPage() {
           },
           {
             id: "suscripcion",
-            label: "Suscripcion",
+            label: "Suscripción",
             description: "Stripe y formatos",
             content: (
               <div className="grid gap-4">
-                <section className="surface rounded-md p-6">
-                  <p className="eyebrow">Suscripcion</p>
-                  <h2 className="font-serif-display mt-3 text-3xl font-bold">Plan y facturacion</h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    Actualiza a Pro o gestiona tu suscripcion desde el portal seguro de Stripe.
+                <section className="surface p-6">
+                  <p className="eyebrow">Suscripción</p>
+                  <h2 className="panel-title mt-3">Plan y facturación</h2>
+                  <p className="body-muted mt-3">
+                    Actualiza a Pro o gestiona tu suscripción desde el portal seguro de Stripe.
                   </p>
                   <div className="mt-6">
                     <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
@@ -101,9 +118,9 @@ export default async function SettingsPage() {
                   </Link>
                 </section>
 
-                <section className="surface rounded-md p-6">
+                <section className="surface p-6">
                   <p className="eyebrow">Exportaciones</p>
-                  <h2 className="font-serif-display mt-3 text-3xl font-bold">Formatos disponibles</h2>
+                  <h2 className="panel-title mt-3">Formatos disponibles</h2>
                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
                     <ExportFormat title="PDF" status="Incluido" active />
                     <ExportFormat title="TXT" status="Incluido" active />
@@ -125,12 +142,12 @@ export default async function SettingsPage() {
             description: "Documentos y limpieza",
             content: (
               <div className="grid gap-4">
-                <section className="surface rounded-md p-6">
+                <section className="surface p-6">
                   <p className="eyebrow">Datos</p>
-                  <h2 className="font-serif-display mt-3 text-3xl font-bold">Documentos guardados</h2>
+                  <h2 className="panel-title mt-3">Documentos guardados</h2>
                   {documentCount ? (
                     <>
-                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                      <p className="body-muted mt-3">
                         Tienes <strong>{documentCount}</strong> documentos guardados. Puedes consultarlos,
                         descargarlos o reutilizarlos como plantilla.
                       </p>
@@ -141,9 +158,9 @@ export default async function SettingsPage() {
                   ) : (
                     <div className="mt-5">
                       <EmptyState
-                        eyebrow="Documentos vacios"
-                        title="Aun no hay documentos que gestionar"
-                        description="Cuando generes tu primer borrador, esta seccion te permitira revisar documentos y limpiar tus datos."
+                        eyebrow="Documentos vacíos"
+                        title="Aún no hay documentos que gestionar"
+                        description="Cuando generes tu primer borrador, esta sección te permitirá revisar documentos y limpiar tus datos."
                         variant="flat"
                         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
                         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
@@ -163,7 +180,7 @@ export default async function SettingsPage() {
 
 function ExportFormat({ title, status, active }: { title: string; status: string; active: boolean }) {
   return (
-    <div className={`rounded-md border p-4 ${active ? "border-[#d8f3dc] bg-[#faf9f6]" : "border-slate-200 bg-slate-50"}`}>
+    <div className={`interactive-subtle rounded-md border p-4 ${active ? "border-[#d8f3dc] bg-[#faf9f6]" : "border-slate-200 bg-slate-50"}`}>
       <p className="font-semibold">{title}</p>
       <p className={`mt-2 text-xs font-semibold ${active ? "text-[#2d6a4f]" : "text-slate-500"}`}>{status}</p>
     </div>
@@ -172,8 +189,8 @@ function ExportFormat({ title, status, active }: { title: string; status: string
 
 function AccountFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
+    <div className="surface-flat interactive-subtle p-4">
+      <p className="eyebrow">{label}</p>
       <p className="mt-2 font-serif-display text-2xl font-bold capitalize">{value}</p>
     </div>
   );

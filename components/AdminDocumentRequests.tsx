@@ -116,12 +116,12 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
   }
 
   return (
-    <section className="surface mt-4 rounded-md p-6">
+    <section className="surface mt-4 p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow">Generador libre</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-bold">Solicitudes a medida</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <h2 className="panel-title mt-3">Solicitudes a medida</h2>
+          <p className="body-muted mt-2 max-w-2xl">
             Revisa lo que piden los usuarios, añade notas internas y marca candidatas para convertirlas en catálogo.
           </p>
         </div>
@@ -134,7 +134,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
       </div>
 
       {communityTypes.length > 0 && (
-        <div className="mb-5 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
+        <div className="mb-5 surface-muted p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-[#2d6a4f]">Candidatos creados</p>
@@ -143,7 +143,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+              <span className="badge badge-free">
                 {communityTypes.length} recientes
               </span>
               <Link href="/admin/catalogo-comunitario" className="focus-ring btn-ghost px-3 py-2 text-xs">
@@ -153,13 +153,13 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           </div>
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             {communityTypes.slice(0, 6).map((type) => (
-              <div key={type.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-3">
+              <div key={type.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">{type.label}</p>
                     <p className="mt-1 text-xs text-slate-500">{type.category || "A medida"} · {type.status}</p>
                   </div>
-                  <span className="rounded-full bg-[#2d6a4f] px-2 py-1 text-[10px] font-bold uppercase text-white">
+                  <span className="badge badge-empresa">
                     {type.required_plan}
                   </span>
                 </div>
@@ -184,16 +184,16 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           const sourceLabel = getRequestSourceLabel(request);
 
           return (
-            <article key={request.id} className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+            <article key={request.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
               <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-semibold">{request.title}</h3>
-                    <span className="rounded-full bg-[#d8f3dc] px-2 py-1 text-xs font-bold text-[#2d6a4f]">
+                    <span className="badge badge-free">
                       {statusLabels[editable.status]}
                     </span>
                     {sourceLabel && (
-                      <span className="rounded-full bg-[#1f2933] px-2 py-1 text-xs font-bold text-white">
+                      <span className="badge bg-[#1f2933] text-white">
                         {sourceLabel}
                       </span>
                     )}
@@ -221,7 +221,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                   </div>
                 </div>
 
-                <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
+                <div className="surface-muted p-4">
                   <label className="block">
                     <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Estado</span>
                     <select
@@ -281,7 +281,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
 
 function StatusPill({ label, value }: { label: string; value: number }) {
   return (
-    <span className="rounded-full bg-[#d8f3dc] px-3 py-1 font-bold text-[#2d6a4f]">
+    <span className="badge badge-free">
       {label}: {value}
     </span>
   );
