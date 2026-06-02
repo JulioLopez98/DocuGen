@@ -150,6 +150,32 @@ const typeRules: Partial<Record<DocumentType, string>> = {
     "Regla especial: documento operativo, no contrato extenso. Incluye comprador, proveedor, referencia, conceptos, cantidades si se aportan, importe, entrega, pago y contacto.",
   "albaran-entrega":
     "Regla especial: documento de entrega/recepcion. Lista productos o materiales, cantidades si se aportan, estado, observaciones, fecha/lugar y firmas de entrega/recepcion.",
+  "contrato-formativo-practicas":
+    "Regla especial: maxima prudencia laboral/formativa. Incluye plan formativo, tutor, duracion, jornada y retribucion solo si se aportan. Marca convenio, centro formativo o normativa como pendiente si faltan. Recomienda revision laboral o academica.",
+  "hoja-encargo-profesional":
+    "Regla especial: hoja de encargo clara. Define alcance incluido/excluido, honorarios, provisiones, plazos, obligaciones del cliente y cierre. No la conviertas en contrato largo salvo que el usuario lo pida.",
+  "contrato-agencia-comercial":
+    "Regla especial: contrato B2B de agencia. Concreta territorio, productos, exclusividad, comisiones, liquidacion, objetivos y terminacion. No inventes indemnizaciones, exclusividades ni objetivos minimos.",
+  "contrato-distribucion":
+    "Regla especial: contrato B2B de distribucion. Define proveedor, distribuidor, productos, territorio, pedidos, precios, pagos, entregas, marca y duracion. No inventes margenes ni exclusividades.",
+  "memorandum-entendimiento":
+    "Regla especial: redacta como MoU preliminar. Debe distinguir claramente lo no vinculante de lo vinculante si se aporta. Incluye objetivos, aportaciones, calendario y proximos pasos sin sonar a contrato definitivo.",
+  "acta-junta-socios":
+    "Regla especial: acta societaria prudente. Incluye convocatoria/quorum/mayorias solo si se aportan; si faltan, usa [PENDIENTE DE COMPLETAR]. No inventes porcentajes, capital social ni acuerdos.",
+  "autorizacion-representacion":
+    "Regla especial: autorizacion limitada para tramite concreto. No la conviertas en poder notarial. Incluye alcance, entidad, fecha, documentos identificativos y firmas.",
+  "carta-autorizacion-recogida":
+    "Regla especial: carta breve de autorizacion para recoger documentacion. Tono claro y practico. Incluye autorizante, autorizado, documento, entidad, fecha y firmas. No uses clausulas contractuales.",
+  "requerimiento-pago":
+    "Regla especial: comunicacion formal de reclamacion de cantidad. Tono firme y prudente. Incluye deuda, referencia, vencimiento, plazo de pago y contacto. No amenaces con acciones no aportadas.",
+  "reconocimiento-deuda":
+    "Regla especial: reconocimiento de deuda con importe, causa, calendario de pago y firmas. No inventes intereses, garantias, vencimientos ni consecuencias. Marca lagunas como pendientes.",
+  "recibo-pago":
+    "Regla especial: recibo sencillo, no factura fiscal. Incluye receptor, pagador, importe, concepto, fecha, metodo y firma. No anadas clausulas legales extensas.",
+  "informe-incidencia":
+    "Regla especial: informe interno objetivo. Estructura hechos, impacto, acciones tomadas, responsable, estado y proximos pasos. Evita culpabilizar o afirmar hechos no aportados.",
+  "encargo-tratamiento-datos":
+    "Regla especial: acuerdo RGPD de encargo de tratamiento. Mucha prudencia: no inventes herramientas, medidas tecnicas, transferencias, subencargados ni categorias de datos. Usa pendientes cuando falte informacion.",
 };
 
 const forbiddenByIntent: Partial<Record<DocumentType, string>> = {
@@ -165,6 +191,12 @@ const forbiddenByIntent: Partial<Record<DocumentType, string>> = {
   "politica-envios": "Prohibido: inventar transportistas, zonas, costes o plazos.",
   "consentimiento-newsletter": "Prohibido: texto largo de politica completa, casillas premarcadas, consentimiento ambiguo.",
   "factura-proforma": "Prohibido: presentarla como factura fiscal definitiva.",
+  "recibo-pago": "Prohibido: presentarlo como factura fiscal, inventar impuestos o anadir clausulas largas.",
+  "informe-incidencia": "Prohibido: acusaciones no verificadas, lenguaje disciplinario o conclusiones tecnicas no aportadas.",
+  "autorizacion-representacion": "Prohibido: convertirlo en poder notarial o autorizacion general ilimitada.",
+  "carta-autorizacion-recogida": "Prohibido: clausulas contractuales, poder general, compromisos no relacionados con la recogida.",
+  "requerimiento-pago": "Prohibido: amenazas, intereses, penalizaciones o acciones judiciales no indicadas.",
+  "encargo-tratamiento-datos": "Prohibido: inventar herramientas, transferencias internacionales, subencargados o medidas de seguridad concretas.",
 };
 
 export function getOpenAIClient() {

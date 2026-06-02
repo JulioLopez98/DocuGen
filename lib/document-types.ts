@@ -38,7 +38,20 @@ export type DocumentType =
   | "orden-compra"
   | "albaran-entrega"
   | "contrato-arras"
-  | "inventario-inmueble";
+  | "inventario-inmueble"
+  | "contrato-formativo-practicas"
+  | "hoja-encargo-profesional"
+  | "contrato-agencia-comercial"
+  | "contrato-distribucion"
+  | "memorandum-entendimiento"
+  | "acta-junta-socios"
+  | "autorizacion-representacion"
+  | "carta-autorizacion-recogida"
+  | "requerimiento-pago"
+  | "reconocimiento-deuda"
+  | "recibo-pago"
+  | "informe-incidencia"
+  | "encargo-tratamiento-datos";
 
 export type FieldType = "text" | "email" | "number" | "date" | "textarea";
 export type PlanRequirement = "free" | "pro";
@@ -855,14 +868,303 @@ export const documentTypes = [
       { name: "observaciones", label: "Observaciones", type: "textarea" },
     ],
   },
+  {
+    type: "contrato-formativo-practicas",
+    label: "Contrato formativo/prácticas",
+    seoTitle: "Generador de contrato formativo o prácticas",
+    seoDescription: "Prepara un borrador prudente de contrato formativo o de prácticas para España.",
+    summary: "Borrador laboral para prácticas, formación, tutor, duración, jornada y retribución.",
+    category: "Laboral",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como borrador laboral formativo o de prácticas para España. Incluye empresa, persona trabajadora o estudiante, centro formativo si procede, tutor, puesto, plan formativo, duración, jornada, retribución o ayuda si se aporta, convenio o normativa aplicable como pendiente si falta, protección de datos y firmas. Recomienda revisión laboral/académica.",
+    fields: [
+      { name: "empresa", label: "Empresa" },
+      { name: "cif_empresa", label: "CIF de la empresa" },
+      { name: "persona", label: "Persona en prácticas/formación" },
+      { name: "nif_persona", label: "NIF de la persona" },
+      { name: "centro_formativo", label: "Centro formativo" },
+      { name: "puesto", label: "Puesto o área" },
+      { name: "plan_formativo", label: "Plan formativo", type: "textarea" },
+      { name: "tutor", label: "Tutor o responsable" },
+      { name: "duracion", label: "Duración" },
+      { name: "jornada", label: "Jornada" },
+      { name: "retribucion", label: "Retribución o ayuda" },
+    ],
+  },
+  {
+    type: "hoja-encargo-profesional",
+    label: "Hoja de encargo profesional",
+    seoTitle: "Generador de hoja de encargo profesional",
+    seoDescription: "Crea una hoja de encargo con alcance, honorarios, plazos y responsabilidades.",
+    summary: "Documento para formalizar un encargo profesional con cliente, servicios, honorarios y condiciones.",
+    category: "Laboral y servicios",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como hoja de encargo profesional. Incluye profesional o despacho, cliente, objeto del encargo, alcance incluido y excluido, honorarios, provisiones si procede, plazos, obligaciones de información del cliente, confidencialidad, protección de datos, resolución y firmas. Mantén tono claro y prudente.",
+    fields: [
+      { name: "profesional", label: "Profesional o despacho" },
+      { name: "nif_profesional", label: "NIF/CIF profesional" },
+      { name: "cliente", label: "Cliente" },
+      { name: "nif_cliente", label: "NIF/CIF cliente" },
+      { name: "objeto_encargo", label: "Objeto del encargo", type: "textarea" },
+      { name: "alcance", label: "Alcance incluido", type: "textarea" },
+      { name: "exclusiones", label: "Exclusiones", type: "textarea" },
+      { name: "honorarios", label: "Honorarios" },
+      { name: "plazos", label: "Plazos" },
+      { name: "condiciones", label: "Condiciones adicionales", type: "textarea" },
+    ],
+  },
+  {
+    type: "contrato-agencia-comercial",
+    label: "Contrato de agencia comercial",
+    seoTitle: "Generador de contrato de agencia comercial",
+    seoDescription: "Prepara un borrador B2B de agencia comercial con territorio, comisiones y exclusividad.",
+    summary: "Acuerdo comercial para agente, principal, territorio, objetivos, comisiones y duración.",
+    category: "Comercial",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de agencia comercial B2B. Incluye principal, agente, productos o servicios, territorio, exclusividad si se aporta, obligaciones, objetivos, comisiones, liquidación, duración, confidencialidad, no captación si procede, terminación y firmas. Recomienda revisión profesional por impacto mercantil.",
+    fields: [
+      { name: "principal", label: "Empresa principal" },
+      { name: "agente", label: "Agente comercial" },
+      { name: "productos_servicios", label: "Productos o servicios", type: "textarea" },
+      { name: "territorio", label: "Territorio" },
+      { name: "exclusividad", label: "Exclusividad" },
+      { name: "comisiones", label: "Comisiones", type: "textarea" },
+      { name: "objetivos", label: "Objetivos comerciales", type: "textarea" },
+      { name: "duracion", label: "Duración" },
+      { name: "terminacion", label: "Terminación", type: "textarea" },
+    ],
+  },
+  {
+    type: "contrato-distribucion",
+    label: "Contrato de distribución",
+    seoTitle: "Generador de contrato de distribución",
+    seoDescription: "Crea un borrador de distribución comercial con territorio, productos y condiciones.",
+    summary: "Contrato B2B para fabricante/proveedor y distribuidor con zona, precios, pedidos y obligaciones.",
+    category: "Comercial",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de distribución B2B. Incluye proveedor, distribuidor, productos, territorio, exclusividad si procede, pedidos, precios, condiciones de pago, entregas, obligaciones comerciales, marca, confidencialidad, duración, terminación y firmas. No inventes mínimos ni exclusividades.",
+    fields: [
+      { name: "proveedor", label: "Proveedor o fabricante" },
+      { name: "distribuidor", label: "Distribuidor" },
+      { name: "productos", label: "Productos", type: "textarea" },
+      { name: "territorio", label: "Territorio" },
+      { name: "exclusividad", label: "Exclusividad" },
+      { name: "precios", label: "Precios o márgenes", type: "textarea" },
+      { name: "pedidos_entregas", label: "Pedidos y entregas", type: "textarea" },
+      { name: "duracion", label: "Duración" },
+      { name: "condiciones_pago", label: "Condiciones de pago", type: "textarea" },
+    ],
+  },
+  {
+    type: "memorandum-entendimiento",
+    label: "Memorándum de entendimiento",
+    seoTitle: "Generador de memorándum de entendimiento",
+    seoDescription: "Redacta un MoU o memorándum de entendimiento para colaboración inicial.",
+    summary: "Documento preliminar para alinear intención, objetivos, aportaciones y próximos pasos.",
+    category: "Empresa",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como memorándum de entendimiento no definitivo salvo que el usuario indique lo contrario. Incluye partes, contexto, objetivos, áreas de colaboración, aportaciones, calendario, confidencialidad si procede, naturaleza no vinculante o vinculante parcial como pendiente, próximos pasos y firmas.",
+    fields: [
+      { name: "parte_1", label: "Parte 1" },
+      { name: "parte_2", label: "Parte 2" },
+      { name: "contexto", label: "Contexto", type: "textarea" },
+      { name: "objetivos", label: "Objetivos", type: "textarea" },
+      { name: "aportaciones", label: "Aportaciones de cada parte", type: "textarea" },
+      { name: "calendario", label: "Calendario o hitos" },
+      { name: "naturaleza", label: "Naturaleza vinculante/no vinculante" },
+      { name: "proximos_pasos", label: "Próximos pasos", type: "textarea" },
+    ],
+  },
+  {
+    type: "acta-junta-socios",
+    label: "Acta de junta de socios",
+    seoTitle: "Generador de acta de junta de socios",
+    seoDescription: "Prepara un borrador de acta de junta con asistentes, acuerdos y votaciones.",
+    summary: "Acta societaria para reuniones de socios, acuerdos, votaciones y certificación interna.",
+    category: "Empresa",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como borrador de acta de junta de socios o reunión societaria. Incluye sociedad, convocatoria si se aporta, fecha, lugar, asistentes, quórum como pendiente si falta, orden del día, deliberaciones, acuerdos, votaciones, cierre y firmas. No inventes porcentajes ni mayorías.",
+    fields: [
+      { name: "sociedad", label: "Sociedad" },
+      { name: "cif", label: "CIF" },
+      { name: "fecha", label: "Fecha", type: "date" },
+      { name: "lugar", label: "Lugar" },
+      { name: "asistentes", label: "Socios/asistentes", type: "textarea" },
+      { name: "orden_dia", label: "Orden del día", type: "textarea" },
+      { name: "acuerdos", label: "Acuerdos adoptados", type: "textarea" },
+      { name: "votaciones", label: "Votaciones o mayorías", type: "textarea" },
+      { name: "firmantes", label: "Firmantes" },
+    ],
+  },
+  {
+    type: "autorizacion-representacion",
+    label: "Autorización de representación",
+    seoTitle: "Generador de autorización de representación",
+    seoDescription: "Crea una autorización sencilla para que una persona actúe en nombre de otra.",
+    summary: "Autorización formal para trámites concretos, representante, representado y alcance.",
+    category: "Profesional",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como autorización sencilla de representación para un trámite concreto. Incluye autorizante, autorizado, documento identificativo, entidad o trámite, alcance limitado, fecha, lugar, advertencia de uso limitado y firmas. No la conviertas en poder notarial.",
+    fields: [
+      { name: "autorizante", label: "Autorizante" },
+      { name: "dni_autorizante", label: "DNI/NIF autorizante" },
+      { name: "autorizado", label: "Autorizado" },
+      { name: "dni_autorizado", label: "DNI/NIF autorizado" },
+      { name: "tramite", label: "Trámite autorizado", type: "textarea" },
+      { name: "entidad", label: "Entidad u oficina" },
+      { name: "duracion", label: "Validez o fecha" },
+      { name: "lugar", label: "Lugar" },
+    ],
+  },
+  {
+    type: "carta-autorizacion-recogida",
+    label: "Autorización para recogida",
+    seoTitle: "Generador de carta de autorización para recogida",
+    seoDescription: "Redacta una carta para autorizar a otra persona a recoger documentación.",
+    summary: "Carta breve para autorizar recogida de documentos ante oficina, entidad o administración.",
+    category: "Profesional",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como carta de autorización breve y práctica para recogida de documentación. Incluye autorizante, autorizado, documento a recoger, entidad, fecha, alcance limitado y firmas. No añadas cláusulas contractuales ni lenguaje de poder notarial.",
+    fields: [
+      { name: "autorizante", label: "Autorizante" },
+      { name: "dni_autorizante", label: "DNI/NIF autorizante" },
+      { name: "autorizado", label: "Autorizado" },
+      { name: "dni_autorizado", label: "DNI/NIF autorizado" },
+      { name: "documento_recoger", label: "Documento a recoger" },
+      { name: "entidad", label: "Entidad u oficina" },
+      { name: "fecha_recogida", label: "Fecha de recogida", type: "date" },
+      { name: "lugar", label: "Lugar" },
+    ],
+  },
+  {
+    type: "requerimiento-pago",
+    label: "Requerimiento de pago",
+    seoTitle: "Generador de requerimiento de pago",
+    seoDescription: "Prepara una carta formal para reclamar el pago de una cantidad pendiente.",
+    summary: "Comunicación formal para deuda, factura, plazo de pago y datos de contacto.",
+    category: "Legal",
+    includesSignatures: false,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como requerimiento de pago formal y prudente. Incluye acreedor, deudor, origen de la deuda, importe, factura o referencia, fecha de vencimiento, plazo razonable para pagar, medio de pago si se aporta y cierre. Tono firme pero no agresivo. No amenaces con acciones concretas si no se aportan.",
+    fields: [
+      { name: "acreedor", label: "Acreedor" },
+      { name: "deudor", label: "Deudor" },
+      { name: "importe", label: "Importe pendiente" },
+      { name: "referencia", label: "Factura o referencia" },
+      { name: "origen_deuda", label: "Origen de la deuda", type: "textarea" },
+      { name: "fecha_vencimiento", label: "Fecha de vencimiento", type: "date" },
+      { name: "plazo_pago", label: "Plazo solicitado para pago" },
+      { name: "medio_pago", label: "Medio de pago" },
+    ],
+  },
+  {
+    type: "reconocimiento-deuda",
+    label: "Reconocimiento de deuda",
+    seoTitle: "Generador de reconocimiento de deuda",
+    seoDescription: "Crea un borrador de reconocimiento de deuda con importe, causa y calendario de pago.",
+    summary: "Documento para reconocer una deuda, fijar vencimiento, pagos parciales y firmas.",
+    category: "Legal",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como reconocimiento de deuda. Incluye acreedor, deudor, importe, causa u origen, forma y calendario de pago, vencimiento, posibles pagos parciales, intereses solo si se aportan, consecuencias prudentes por impago, jurisdicción si se indica y firmas. No inventes intereses.",
+    fields: [
+      { name: "acreedor", label: "Acreedor" },
+      { name: "deudor", label: "Deudor" },
+      { name: "importe", label: "Importe de la deuda" },
+      { name: "origen", label: "Origen o causa", type: "textarea" },
+      { name: "calendario_pago", label: "Calendario de pago", type: "textarea" },
+      { name: "vencimiento", label: "Vencimiento" },
+      { name: "intereses", label: "Intereses o recargos" },
+      { name: "jurisdiccion", label: "Jurisdicción" },
+    ],
+  },
+  {
+    type: "recibo-pago",
+    label: "Recibo de pago",
+    seoTitle: "Generador de recibo de pago",
+    seoDescription: "Genera un recibo sencillo para acreditar un pago recibido.",
+    summary: "Recibo profesional con pagador, receptor, importe, concepto, fecha y firma.",
+    category: "Comercial",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como recibo de pago sencillo. Incluye receptor, pagador, importe, concepto, fecha, método de pago, referencia si existe, declaración de recepción y firma. No lo presentes como factura fiscal si no lo es.",
+    fields: [
+      { name: "receptor_pago", label: "Quien recibe el pago" },
+      { name: "pagador", label: "Pagador" },
+      { name: "importe", label: "Importe" },
+      { name: "concepto", label: "Concepto", type: "textarea" },
+      { name: "fecha_pago", label: "Fecha de pago", type: "date" },
+      { name: "metodo_pago", label: "Método de pago" },
+      { name: "referencia", label: "Referencia" },
+    ],
+  },
+  {
+    type: "informe-incidencia",
+    label: "Informe de incidencia",
+    seoTitle: "Generador de informe de incidencia",
+    seoDescription: "Crea un informe interno de incidencia con hechos, impacto y acciones tomadas.",
+    summary: "Documento operativo para registrar incidencias, responsables, impacto y próximos pasos.",
+    category: "Profesional",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como informe interno de incidencia. Incluye fecha, área, descripción objetiva, impacto, personas implicadas si se aportan, acciones tomadas, estado, responsable y próximos pasos. Evita culpar sin hechos verificables.",
+    fields: [
+      { name: "titulo", label: "Título de la incidencia" },
+      { name: "fecha", label: "Fecha", type: "date" },
+      { name: "area", label: "Área o proyecto" },
+      { name: "descripcion", label: "Descripción de la incidencia", type: "textarea" },
+      { name: "impacto", label: "Impacto", type: "textarea" },
+      { name: "acciones_tomadas", label: "Acciones tomadas", type: "textarea" },
+      { name: "responsable", label: "Responsable" },
+      { name: "proximos_pasos", label: "Próximos pasos", type: "textarea" },
+    ],
+  },
+  {
+    type: "encargo-tratamiento-datos",
+    label: "Encargo de tratamiento de datos",
+    seoTitle: "Generador de encargo de tratamiento de datos",
+    seoDescription: "Prepara un borrador de acuerdo de encargo de tratamiento RGPD.",
+    summary: "Documento para responsable, encargado, servicios, datos tratados, seguridad y subencargados.",
+    category: "Legal",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como acuerdo de encargo de tratamiento de datos con mucha prudencia. Incluye responsable, encargado, servicio, categorías de datos e interesados si se aportan, instrucciones, medidas de seguridad, confidencialidad, subencargados, transferencias como pendiente si faltan, asistencia al responsable, destino de datos al finalizar y firmas. No inventes herramientas ni medidas concretas.",
+    fields: [
+      { name: "responsable", label: "Responsable del tratamiento" },
+      { name: "encargado", label: "Encargado del tratamiento" },
+      { name: "servicio", label: "Servicio prestado", type: "textarea" },
+      { name: "datos_tratados", label: "Datos tratados", type: "textarea" },
+      { name: "interesados", label: "Categorías de interesados" },
+      { name: "medidas_seguridad", label: "Medidas de seguridad", type: "textarea" },
+      { name: "subencargados", label: "Subencargados" },
+      { name: "destino_final", label: "Destino de los datos al finalizar" },
+    ],
+  },
 ] as const satisfies readonly DocumentTypeConfig[];
 
 export const futureDocumentTypes = [
-  "Contrato de practicas",
-  "Acuerdo de socios",
-  "Pacto de no competencia",
-  "Condiciones generales de venta",
-  "Documento de encargo profesional",
+  "Carta de despido disciplinario",
+  "Contrato de préstamo entre particulares",
+  "Política interna de uso de dispositivos",
+  "Protocolo de onboarding de empleado",
+  "Solicitud de aplazamiento de pago",
 ];
 
 export const documentTypeValues = documentTypes.map((item) => item.type) as [DocumentType, ...DocumentType[]];
