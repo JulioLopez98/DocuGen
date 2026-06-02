@@ -290,7 +290,7 @@ export function GeneratorClient({
 
       setGenerated(data);
     } catch {
-      setError("No se pudo conectar con el generador.");
+      setError("No se pudo conectar con el generador. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -344,7 +344,7 @@ export function GeneratorClient({
 
       setGenerated(data);
     } catch {
-      setError("No se pudo conectar con el generador.");
+      setError("No se pudo conectar con el generador. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -372,7 +372,7 @@ export function GeneratorClient({
 
       setGenerated(data);
     } catch {
-      setError("No se pudo conectar con el generador.");
+      setError("No se pudo conectar con el generador. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -406,7 +406,7 @@ export function GeneratorClient({
 
       setGenerated({ ...data, templateTrace: generated.templateTrace || null });
     } catch {
-      setError("No se pudo conectar con el generador.");
+      setError("No se pudo conectar con el generador. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setRefiningMode(null);
     }
@@ -903,7 +903,7 @@ export function GeneratorClient({
               </div>
             )}
           </div>
-          {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando...</span>}
+          {loading && <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">Generando borrador...</span>}
         </div>
         {generatorMode === "catalog" && !selectedDocumentConfirmed ? (
           <DocumentChoicePanel
@@ -1002,7 +1002,20 @@ export function GeneratorClient({
             defaultValues={lastPayload?.docType === selected ? lastPayload.formData : undefined}
           />
         )}
-        {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {loading && (
+          <div className="mt-4 rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4 text-sm text-[#1f2933]">
+            <p className="font-bold text-[#2d6a4f]">DocuGen está preparando tu borrador</p>
+            <p className="mt-1 text-xs leading-5 text-slate-600">
+              Normalmente tarda unos segundos. Mantén esta pestaña abierta; el resultado aparecerá aquí al terminar.
+            </p>
+          </div>
+        )}
+        {error && (
+          <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <p className="font-bold">No se pudo completar la acción</p>
+            <p className="mt-1">{error}</p>
+          </div>
+        )}
       </section>
 
       {generated && (

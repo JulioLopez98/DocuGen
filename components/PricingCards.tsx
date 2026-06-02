@@ -34,7 +34,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
 
       window.location.href = payload.url;
     } catch {
-      setError("No se pudo conectar con Stripe.");
+      setError("No se pudo conectar con Stripe. Espera unos segundos y vuelve a intentarlo.");
     } finally {
       setLoading(null);
     }

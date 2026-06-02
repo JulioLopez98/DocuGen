@@ -76,7 +76,7 @@ export function TemplateDirectGenerator({
         templateTrace: payload.templateTrace,
       });
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo generar desde la plantilla porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setLoading(false);
     }

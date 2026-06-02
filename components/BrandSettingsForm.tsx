@@ -91,7 +91,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
 
       setMessage("Marca guardada correctamente.");
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudieron guardar los ajustes porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setSaving(false);
     }

@@ -30,7 +30,7 @@ export function DangerZone() {
       setMessage("Documentos borrados correctamente.");
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo borrar el historial porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setLoading(false);
     }

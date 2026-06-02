@@ -67,7 +67,7 @@ export function TemplateVariablesEditor({ templateId, initialVariables }: Templa
       setMessage("Variables guardadas correctamente.");
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudieron guardar las variables porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setSaving(false);
     }

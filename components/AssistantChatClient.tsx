@@ -90,7 +90,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo contactar con el asistente. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
       });
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo generar desde el asistente. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setGenerating(false);
     }

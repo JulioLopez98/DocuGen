@@ -72,7 +72,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
       router.push("/plantillas");
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo borrar la plantilla porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setLoading(null);
     }
@@ -93,7 +93,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo procesar la plantilla porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setLoading(null);
     }
@@ -118,7 +118,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo actualizar la plantilla porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setLoading(null);
     }

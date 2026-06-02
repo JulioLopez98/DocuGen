@@ -43,7 +43,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   const workspaceById = useMemo(() => new Map(workspaces.map((workspace) => [workspace.id, workspace])), [workspaces]);
 
   async function deleteDocument(id: string) {
-    if (!window.confirm("Borrar este documento?")) {
+    if (!window.confirm("¿Borrar este documento? Esta acción no se puede deshacer.")) {
       return;
     }
 
@@ -61,7 +61,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo conectar con DocuGen. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setBusyId(null);
     }
@@ -86,7 +86,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo conectar con DocuGen. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setBusyId(null);
     }
@@ -102,7 +102,9 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
       const communityPayload = community ? buildCommunityRegeneratePayload(doc.form_data) : null;
 
       if (community && !communityPayload) {
-        setError("No se puede regenerar este documento comunitario porque falta su referencia interna. Abre el tipo desde Comunidad y vuelve a generarlo.");
+        setError(
+          "Este documento comunitario no se puede regenerar desde el historial porque falta su referencia interna. Abre Comunidad y vuelve a elegir el tipo.",
+        );
         return;
       }
 
@@ -127,7 +129,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
       router.push(`/historial/${payload.id}`);
       router.refresh();
     } catch {
-      setError("No se pudo conectar con el generador.");
+      setError("No se pudo conectar con el generador. Espera unos segundos y vuelve a intentarlo.");
     } finally {
       setBusyId(null);
     }
@@ -137,7 +139,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
     return (
       <EmptyState
         eyebrow="Biblioteca vacía"
-        title="Tus documentos empezarán aquí"
+        title="Tus documentos aparecerán aquí"
         description="Cuando generes tu primer borrador, podrás abrirlo, descargarlo, reutilizarlo como base o borrarlo desde esta pantalla."
         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}

@@ -186,7 +186,7 @@ export function EditableDocumentResult({
       setSaveMessage("Cambios guardados");
       window.setTimeout(() => setSaveMessage(null), 1800);
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo guardar porque DocuGen no respondió. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -219,7 +219,7 @@ export function EditableDocumentResult({
       setSaveMessage(`Version ${data.restoredFrom || version.version_number} restaurada`);
       window.setTimeout(() => setSaveMessage(null), 2200);
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo restaurar la versión porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setRestoringId(null);
     }
@@ -264,7 +264,7 @@ export function EditableDocumentResult({
       setSaveMessage("Mejora lista para comparar.");
       window.setTimeout(() => setSaveMessage(null), 2600);
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError("No se pudo mejorar el documento porque DocuGen no respondió. Inténtalo de nuevo en unos segundos.");
     } finally {
       setImproving(false);
       setImprovingLabel(null);
