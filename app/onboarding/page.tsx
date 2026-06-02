@@ -33,16 +33,19 @@ export default async function OnboardingPage() {
         <div className="grid gap-8 p-6 lg:grid-cols-[1fr_360px] lg:items-center">
           <div>
             <p className="eyebrow">Primer documento</p>
-            <h1 className="font-serif-display mt-3 text-5xl font-bold leading-tight">Vamos a crear tu primer borrador</h1>
+            <h1 className="font-serif-display mt-3 text-5xl font-bold leading-tight">Vamos a crear tu primer borrador útil</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              Elige un documento habitual, completa los campos y revisa el resultado. DocuGen guardara el borrador en tu
-              Documentos para que puedas descargarlo o reutilizarlo despues.
+              Elige tu situación, empieza por un documento recomendado y revisa el resultado. DocuGen guardará el borrador
+              en Documentos para que puedas descargarlo, editarlo o reutilizarlo después.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/catalogo" className="focus-ring btn-primary px-5 py-3 text-sm">
-                Ver tipos de documento
+              <Link href="#elige-tu-objetivo" className="focus-ring btn-primary px-5 py-3 text-sm">
+                Elegir objetivo
               </Link>
-              <Link href="/dashboard" className="focus-ring btn-secondary px-5 py-3 text-sm">
+              <Link href="/generar" className="focus-ring btn-secondary px-5 py-3 text-sm">
+                Ir al generador
+              </Link>
+              <Link href="/dashboard" className="focus-ring btn-ghost px-5 py-3 text-sm">
                 Saltar por ahora
               </Link>
             </div>
@@ -54,16 +57,21 @@ export default async function OnboardingPage() {
             <p className="mt-3 text-sm leading-6 text-slate-600">
               {isFree
                 ? "Free incluye 3 documentos al mes y los tipos esenciales para probar el flujo."
-                : "Tu plan permite documentos ilimitados y acceso a tipos Pro."}
+                : "Tu plan permite documentos ilimitados, tipos Pro y exportación Word."}
             </p>
+            {isFree && (
+              <Link href="/precios" className="focus-ring btn-secondary mt-5 w-full px-4 py-3 text-sm">
+                Ver qué desbloquea Pro
+              </Link>
+            )}
           </aside>
         </div>
       </div>
 
       <section className="mt-6 grid gap-4 md:grid-cols-3">
         {[
-          ["1", "Elige un tipo", "Empieza con un documento habitual o busca dentro de todos los tipos."],
-          ["2", "Rellena campos", "Usa datos reales o deja informacion pendiente para completarla despues."],
+          ["1", "Elige objetivo", "Dinos si trabajas como freelance, empresa, agencia, RRHH o ecommerce."],
+          ["2", "Empieza recomendado", "Usa un documento habitual para entender el flujo sin perderte en el catálogo completo."],
           ["3", "Exporta y reutiliza", "Descarga PDF/TXT, Word si eres Pro, o usa Documentos como base."],
         ].map(([step, title, text]) => (
           <article key={step} className="surface-flat rounded-md p-5">
@@ -76,7 +84,7 @@ export default async function OnboardingPage() {
         ))}
       </section>
 
-      <section className="mt-6">
+      <section id="elige-tu-objetivo" className="mt-6 scroll-mt-24">
         <OnboardingChooser plan={profile.plan} />
       </section>
     </section>

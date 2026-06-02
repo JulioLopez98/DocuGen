@@ -73,6 +73,11 @@ export default async function DashboardPage() {
               <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
                 Crear documento
               </Link>
+              {!lastDocument && (
+                <Link href="/onboarding" className="focus-ring btn-secondary px-5 py-3 text-sm">
+                  Empezar guiado
+                </Link>
+              )}
               <Link href={lastDocument ? `/historial/${lastDocument.id}` : "/historial"} className="focus-ring btn-secondary px-5 py-3 text-sm">
                 {lastDocument ? "Continuar último" : "Ver documentos"}
               </Link>
@@ -140,6 +145,34 @@ export default async function DashboardPage() {
           </Link>
         </aside>
       </div>
+
+      {isFree && (
+        <section className="surface-flat mt-5 border-[#2d6a4f] bg-[#f4fbf5] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="eyebrow">Prueba Free</p>
+              <h2 className="mt-2 text-xl font-bold">
+                {remaining > 0 ? `Te quedan ${remaining} documentos para validar DocuGen` : "Has llegado al límite Free este mes"}
+              </h2>
+              <p className="body-muted mt-2 max-w-2xl text-sm">
+                {remaining > 0
+                  ? "Crea un borrador real, exporta PDF/TXT y comprueba si el flujo te ahorra tiempo antes de pasar a Pro."
+                  : "Pro desbloquea documentos ilimitados, Word, plantillas, marca y documentos a medida."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {remaining > 0 && (
+                <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
+                  Usar documento Free
+                </Link>
+              )}
+              <Link href="/precios" className="focus-ring btn-secondary px-4 py-3 text-sm">
+                Ver Pro
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mt-5 grid gap-5 xl:grid-cols-[1fr_0.86fr]">
         <div className="surface p-6">

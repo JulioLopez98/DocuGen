@@ -20,19 +20,19 @@ type OnboardingChooserProps = {
 const personas: Persona[] = [
   {
     id: "autonomo",
-    label: "Autonomo / freelance",
+    label: "Autónomo / freelance",
     description: "Contratos, presupuestos, propuestas y cartas para trabajar con clientes.",
     documents: ["contrato-freelance", "presupuesto-comercial", "propuesta-proyecto", "factura-proforma"],
   },
   {
     id: "empresa",
-    label: "Pequena empresa",
-    description: "Documentos para clientes, proveedores, colaboraciones y gestion interna.",
+    label: "Pequeña empresa",
+    description: "Documentos para clientes, proveedores, colaboraciones y gestión interna.",
     documents: ["prestacion-servicios-empresa", "acuerdo-colaboracion", "respuesta-reclamacion", "orden-compra"],
   },
   {
     id: "agencia",
-    label: "Agencia / consultoria",
+    label: "Agencia / consultoría",
     description: "Propuestas, contratos digitales, mantenimiento y acuerdos con clientes.",
     documents: ["propuesta-proyecto", "contrato-desarrollo-web", "contrato-mantenimiento-web", "acuerdo-nda"],
   },
@@ -64,13 +64,18 @@ export function OnboardingChooser({ plan }: OnboardingChooserProps) {
     () => persona.documents.map((type) => getDocumentConfig(type)).filter((doc): doc is NonNullable<ReturnType<typeof getDocumentConfig>> => Boolean(doc)),
     [persona.documents],
   );
+  const freeDocuments = recommendedDocuments.filter((doc) => !requiresPro(doc)).length;
+  const proDocuments = recommendedDocuments.length - freeDocuments;
   const primaryDocument = recommendedDocuments.find((doc) => !isFree || !requiresPro(doc)) || recommendedDocuments[0];
 
   return (
     <div className="grid gap-6 lg:grid-cols-[330px_1fr]">
       <aside className="surface h-fit rounded-md p-4">
-        <p className="eyebrow">Tu perfil</p>
-        <h2 className="font-serif-display mt-3 text-2xl font-bold">Que quieres crear?</h2>
+        <p className="eyebrow">Tu objetivo</p>
+        <h2 className="font-serif-display mt-3 text-2xl font-bold">¿Qué necesitas preparar?</h2>
+        <p className="mt-2 text-xs leading-5 text-slate-600">
+          Elige el caso más parecido. No te encierra: solo ordena las recomendaciones para empezar más rápido.
+        </p>
         <div className="mt-5 grid gap-2">
           {personas.map((item) => {
             const active = item.id === selectedPersona;
@@ -98,6 +103,10 @@ export function OnboardingChooser({ plan }: OnboardingChooserProps) {
             <p className="eyebrow">Recomendados para ti</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">{persona.label}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{persona.description}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="badge badge-free">{freeDocuments} Free</span>
+              {proDocuments > 0 && <span className="badge badge-pro">{proDocuments} Pro</span>}
+            </div>
           </div>
           <Link href={primaryDocument ? `/generar?type=${primaryDocument.type}` : "/generar"} className="focus-ring btn-primary px-5 py-3 text-sm">
             Empezar con recomendado
@@ -143,12 +152,19 @@ export function OnboardingChooser({ plan }: OnboardingChooserProps) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm leading-6 text-slate-600">
               {isFree
-                ? "Tu plan Free incluye 3 documentos al mes y acceso a documentos esenciales. Puedes desbloquear tipos avanzados con Pro."
-                : "Tu plan permite generar documentos ilimitados y usar documentos Pro desde el primer momento."}
+                ? "Free te permite probar el flujo con documentos esenciales. Si necesitas Word, plantillas, documentos a medida o tipos avanzados, Pro es el siguiente paso natural."
+                : "Tu plan permite generar documentos ilimitados, usar documentos Pro y trabajar con plantillas o marca personalizada."}
             </p>
-            <Link href="/catalogo" className="focus-ring btn-ghost px-3 py-2 text-sm">
-              Ver tipos de documento
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/catalogo" className="focus-ring btn-ghost px-3 py-2 text-sm">
+                Ver tipos
+              </Link>
+              {isFree && (
+                <Link href="/precios" className="focus-ring btn-secondary px-3 py-2 text-sm">
+                  Ver Pro
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>

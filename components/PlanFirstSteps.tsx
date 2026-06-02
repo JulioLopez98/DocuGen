@@ -75,7 +75,7 @@ function getSteps(plan: Plan, context: Context): Step[] {
       return [
         { title: "Elige un tipo", text: "Empieza por contrato, presupuesto, carta o documento web.", href: "/generar", action: "Crear documento" },
         { title: "Revisa el borrador", text: "Completa marcadores pendientes antes de descargar o copiar.", href: "/catalogo", action: "Ver tipos" },
-        { title: "Guarda margen", text: "Free incluye 3 documentos al mes; Pro elimina el limite.", href: "/precios", action: "Comparar planes" },
+        { title: "Guarda margen", text: "Free incluye 3 documentos al mes; Pro elimina el límite.", href: "/precios", action: "Comparar planes" },
       ];
     }
 
@@ -90,7 +90,7 @@ function getSteps(plan: Plan, context: Context): Step[] {
     if (plan === "free") {
       return [
         { title: "Prueba el flujo base", text: "Crea documentos con tipos esenciales antes de subir ejemplos propios.", href: "/generar", action: "Crear" },
-        { title: "Evalua Pro", text: "Plantillas, Word y a medida se desbloquean para uso recurrente.", href: "/precios", action: "Ver Pro" },
+        { title: "Evalúa Pro", text: "Plantillas, Word y a medida se desbloquean para uso recurrente.", href: "/precios", action: "Ver Pro" },
         { title: "Prepara archivos", text: "Ten a mano DOCX/PDF limpios con buenos ejemplos de tu empresa.", href: "/catalogo", action: "Ver tipos" },
       ];
     }
@@ -105,7 +105,7 @@ function getSteps(plan: Plan, context: Context): Step[] {
   if (context === "assistant") {
     return [
       { title: "Describe el caso", text: "Explica para que lo necesitas, partes implicadas y datos disponibles.", href: "/asistente", action: "Empezar chat" },
-      { title: "Aterriza requisitos", text: "Pide al asistente que te diga que informacion falta.", href: "/asistente", action: "Preguntar" },
+      { title: "Aterriza requisitos", text: "Pide al asistente que te diga qué información falta.", href: "/asistente", action: "Preguntar" },
       { title: "Genera y guarda", text: "Cuando el caso este claro, crea el borrador en Documentos.", href: "/asistente", action: "Generar" },
     ];
   }
@@ -114,7 +114,7 @@ function getSteps(plan: Plan, context: Context): Step[] {
     if (plan !== "empresa") {
       return [
         { title: "Trabaja personal", text: "Usa Documentos y Plantillas como espacio individual.", href: "/dashboard", action: "Ir al panel" },
-        { title: "Compara Empresa", text: "Equipo anade miembros, roles, avisos y documentos compartidos.", href: "/precios", action: "Ver Empresa" },
+        { title: "Compara Empresa", text: "Equipo añade miembros, roles, avisos y documentos compartidos.", href: "/precios", action: "Ver Empresa" },
         { title: "Prepara procesos", text: "Define quien crea, revisa y reutiliza documentos.", href: "/plantillas", action: "Ver plantillas" },
       ];
     }
