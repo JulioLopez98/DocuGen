@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { BillingStatusNotice } from "@/components/BillingStatusNotice";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import { PlanBadge } from "@/components/PlanBadge";
@@ -133,6 +134,10 @@ export default async function DashboardPage() {
 
           <div className="mt-5">
             <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
+          </div>
+
+          <div className="mt-5">
+            <BillingStatusNotice profile={profile} variant="compact" />
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">

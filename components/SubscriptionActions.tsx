@@ -26,7 +26,7 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
       const payload = (await response.json()) as { url?: string; message?: string };
 
       if (!response.ok || !payload.url) {
-        setError(payload.message || "No se pudo crear la sesión.");
+        setError(payload.message || "No se pudo crear la sesion.");
         return;
       }
 
@@ -39,44 +39,52 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
   }
 
   return (
-    <div className="flex flex-wrap gap-3">
-      {!isPaid && (
-        <button
-          type="button"
-          onClick={() => go("/api/create-checkout", "pro")}
-          disabled={loading !== null}
-          className="focus-ring btn-primary px-4 py-2 text-sm disabled:opacity-60"
-        >
-          {loading === "/api/create-checkout:pro" ? "Conectando..." : "Actualizar a Pro"}
-        </button>
-      )}
-      {plan !== "empresa" && (
-        <button
-          type="button"
-          onClick={() => go("/api/create-checkout", "empresa")}
-          disabled={loading !== null}
-          className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
-        >
-          {loading === "/api/create-checkout:empresa"
-            ? "Conectando..."
-            : isPaid
-              ? "Cambiar a Empresa"
-              : "Actualizar a Empresa"}
-        </button>
-      )}
+    <div className="grid gap-3">
+      <div className="flex flex-wrap gap-3">
+        {!isPaid && (
+          <button
+            type="button"
+            onClick={() => go("/api/create-checkout", "pro")}
+            disabled={loading !== null}
+            className="focus-ring btn-primary px-4 py-2 text-sm disabled:opacity-60"
+          >
+            {loading === "/api/create-checkout:pro" ? "Conectando..." : "Actualizar a Pro"}
+          </button>
+        )}
+        {plan !== "empresa" && (
+          <button
+            type="button"
+            onClick={() => go("/api/create-checkout", "empresa")}
+            disabled={loading !== null}
+            className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
+          >
+            {loading === "/api/create-checkout:empresa"
+              ? "Conectando..."
+              : isPaid
+                ? "Cambiar a Empresa"
+                : "Actualizar a Empresa"}
+          </button>
+        )}
+        {isPaid && hasCustomer && (
+          <button
+            type="button"
+            onClick={() => go("/api/create-portal")}
+            disabled={loading !== null}
+            className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
+          >
+            {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripcion"}
+          </button>
+        )}
+      </div>
       {isPaid && hasCustomer && (
-        <button
-          type="button"
-          onClick={() => go("/api/create-portal")}
-          disabled={loading !== null}
-          className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
-        >
-          {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripción"}
-        </button>
+        <p className="text-xs leading-5 text-slate-500">
+          Desde Stripe puedes cambiar de plan, actualizar la tarjeta o cancelar. Si cancelas, el acceso normalmente se
+          mantiene hasta que termine el periodo ya pagado.
+        </p>
       )}
       {isPaid && !hasCustomer && (
         <p className="status-note">
-          Plan activo. El portal de Stripe aparecerá cuando exista un cliente de facturación asociado.
+          Plan activo. El portal de Stripe aparecera cuando exista un cliente de facturacion asociado.
         </p>
       )}
       {error && <p className="status-error w-full">{error}</p>}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { BillingStatusNotice } from "@/components/BillingStatusNotice";
 import { BrandSettingsForm } from "@/components/BrandSettingsForm";
 import { DangerZone } from "@/components/DangerZone";
 import { EmptyState } from "@/components/EmptyState";
@@ -112,6 +113,9 @@ export default async function SettingsPage() {
                   </p>
                   <div className="mt-6">
                     <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
+                  </div>
+                  <div className="mt-5">
+                    <BillingStatusNotice profile={profile} />
                   </div>
                   <Link href="/precios" className="mt-4 inline-flex text-sm font-semibold text-[#2d6a4f]">
                     Comparar planes

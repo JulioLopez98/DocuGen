@@ -7,6 +7,10 @@ create table if not exists public.profiles (
   role text not null default 'user' check (role in ('user', 'admin')),
   docs_this_month integer not null default 0,
   stripe_customer_id text,
+  stripe_subscription_id text,
+  stripe_subscription_status text,
+  stripe_current_period_end timestamptz,
+  stripe_cancel_at_period_end boolean not null default false,
   referral_code text unique,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -298,6 +302,7 @@ create table if not exists public.chat_messages (
 
 create index if not exists profiles_plan_idx on public.profiles(plan);
 create index if not exists profiles_stripe_customer_id_idx on public.profiles(stripe_customer_id);
+create index if not exists profiles_stripe_subscription_id_idx on public.profiles(stripe_subscription_id);
 create index if not exists documents_user_created_idx on public.documents(user_id, created_at desc);
 create index if not exists documents_workspace_idx on public.documents(workspace_id);
 create index if not exists documents_reference_template_idx on public.documents(reference_template_id);

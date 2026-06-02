@@ -58,7 +58,7 @@ const faqs = [
   {
     question: "¿Puedo cancelar Pro cuando quiera?",
     answer:
-      "Sí. Desde el panel puedes abrir el portal de cliente de Stripe para gestionar o cancelar la suscripción.",
+      "Sí. Desde el panel puedes abrir el portal seguro de Stripe para cambiar o cancelar tu suscripción. Si cancelas al final del periodo, mantienes el acceso hasta que termine el mes ya pagado y después vuelves a Free.",
   },
   {
     question: "¿Qué pasa si sigo en Free?",

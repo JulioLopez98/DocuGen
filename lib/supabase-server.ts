@@ -10,6 +10,10 @@ export type Profile = {
   role: "user" | "admin";
   docs_this_month: number;
   stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_subscription_status: string | null;
+  stripe_current_period_end: string | null;
+  stripe_cancel_at_period_end: boolean | null;
   referral_code: string | null;
 };
 
