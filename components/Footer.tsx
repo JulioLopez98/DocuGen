@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 export function Footer() {
   return (
@@ -11,16 +12,24 @@ export function Footer() {
             laboral, fiscal ni profesional.
           </p>
         </div>
-        <div className="flex flex-wrap gap-4">
-          <Link href="/catalogo">Tipos de documento</Link>
-          <Link href="/plantillas">Plantillas</Link>
-          <Link href="/precios">Precios</Link>
-          <Link href="/generar">Generador</Link>
-          <Link href="/aviso-legal">Aviso legal</Link>
-          <Link href="/politica-privacidad">Privacidad</Link>
-          <Link href="/auth">Acceso</Link>
+        <div className="flex flex-wrap gap-2">
+          <FooterLink href="/catalogo">Tipos de documento</FooterLink>
+          <FooterLink href="/plantillas">Plantillas</FooterLink>
+          <FooterLink href="/precios">Precios</FooterLink>
+          <FooterLink href="/generar">Generador</FooterLink>
+          <FooterLink href="/aviso-legal">Aviso legal</FooterLink>
+          <FooterLink href="/politica-privacidad">Privacidad</FooterLink>
+          <FooterLink href="/auth">Acceso</FooterLink>
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="focus-ring rounded-md px-2 py-2 transition hover:text-[#2d6a4f]">
+      {children}
+    </Link>
   );
 }
