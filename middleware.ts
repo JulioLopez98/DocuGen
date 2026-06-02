@@ -1,7 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const protectedPrefixes = ["/dashboard", "/generar", "/historial", "/admin", "/onboarding", "/plantillas"];
+const protectedPrefixes = [
+  "/dashboard",
+  "/generar",
+  "/historial",
+  "/admin",
+  "/onboarding",
+  "/plantillas",
+  "/asistente",
+  "/workspace",
+  "/ajustes",
+];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

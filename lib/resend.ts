@@ -56,12 +56,12 @@ export async function sendWelcomeEmail({ to, name }: SendWelcomeEmailInput) {
       errorCode: "welcome_email_failed",
       severity: "medium",
       message: result.error.message,
-      metadata: { to },
+      metadata: { hasRecipient: Boolean(to) },
     });
     throw new Error(result.error.message);
   }
 
-  console.log("resend_welcome_sent", { id: result.data?.id, to });
+  console.log("resend_welcome_sent", { id: result.data?.id, hasRecipient: true });
 }
 
 export async function sendDocumentReadyEmail({ to, documentTitle, documentUrl }: SendDocumentReadyEmailInput) {
@@ -87,12 +87,12 @@ export async function sendDocumentReadyEmail({ to, documentTitle, documentUrl }:
       errorCode: "document_ready_email_failed",
       severity: "medium",
       message: result.error.message,
-      metadata: { to, documentTitle },
+      metadata: { hasRecipient: Boolean(to) },
     });
     throw new Error(result.error.message);
   }
 
-  console.log("resend_document_ready_sent", { id: result.data?.id, to, documentTitle });
+  console.log("resend_document_ready_sent", { id: result.data?.id, hasRecipient: true });
 }
 
 export async function sendWorkspaceInvitationEmail({
@@ -127,10 +127,10 @@ export async function sendWorkspaceInvitationEmail({
       errorCode: "workspace_invitation_email_failed",
       severity: "high",
       message: result.error.message,
-      metadata: { to, workspaceName, role },
+      metadata: { hasRecipient: Boolean(to), role },
     });
     throw new Error(result.error.message);
   }
 
-  console.log("resend_workspace_invitation_sent", { id: result.data?.id, to, workspaceName });
+  console.log("resend_workspace_invitation_sent", { id: result.data?.id, hasRecipient: true });
 }
