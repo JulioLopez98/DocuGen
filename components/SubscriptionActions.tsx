@@ -57,7 +57,11 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
           disabled={loading !== null}
           className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
         >
-          {loading === "/api/create-checkout:empresa" ? "Conectando..." : "Actualizar a Empresa"}
+          {loading === "/api/create-checkout:empresa"
+            ? "Conectando..."
+            : isPaid
+              ? "Cambiar a Empresa"
+              : "Actualizar a Empresa"}
         </button>
       )}
       {isPaid && hasCustomer && (

@@ -58,6 +58,8 @@ export async function POST(request: Request) {
       const userId = session.metadata?.supabase_user_id;
       const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
       const targetPlan = normalizePaidPlan(session.metadata?.target_plan);
+      const subscriptionId =
+        typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
       if (userId && customerId && targetPlan) {
         await db
@@ -66,10 +68,14 @@ export async function POST(request: Request) {
           .eq("id", userId);
 
         await db.from("workspaces").update({ plan: targetPlan }).eq("owner_id", userId);
+
+        if (subscriptionId) {
+          await cancelDuplicateSubscriptions(stripe, customerId, subscriptionId);
+        }
       }
     }
 
-    if (event.type === "customer.subscription.updated") {
+    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
       const subscription = event.data.object as Stripe.Subscription;
       const plan = getPlanFromSubscription(subscription);
       const userId = subscription.metadata?.supabase_user_id;
@@ -81,6 +87,10 @@ export async function POST(request: Request) {
           customerId,
           plan,
         });
+
+        if (customerId && isActiveSubscription(subscription) && !subscription.cancel_at_period_end) {
+          await cancelDuplicateSubscriptions(stripe, customerId, subscription.id);
+        }
       }
     }
 
@@ -88,8 +98,9 @@ export async function POST(request: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.supabase_user_id;
       const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+      const fallbackPlan = customerId ? await getBestActivePlanForCustomer(stripe, customerId) : null;
 
-      await updatePlanByUserOrCustomer({ userId, customerId, plan: "free" });
+      await updatePlanByUserOrCustomer({ userId, customerId, plan: fallbackPlan ?? "free" });
     }
 
     if (event.type === "invoice.payment_failed") {
@@ -97,7 +108,8 @@ export async function POST(request: Request) {
       const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
 
       if (customerId) {
-        await updatePlanByUserOrCustomer({ customerId, plan: "free" });
+        const fallbackPlan = await getBestActivePlanForCustomer(stripe, customerId);
+        await updatePlanByUserOrCustomer({ customerId, plan: fallbackPlan ?? "free" });
       }
     }
 
@@ -157,4 +169,56 @@ function getPlanFromSubscription(subscription: Stripe.Subscription): PaidPlan | 
 
   const priceId = subscription.items.data[0]?.price.id;
   return getPlanFromStripePriceId(priceId);
+}
+
+function isActiveSubscription(subscription: Stripe.Subscription) {
+  return ["active", "trialing", "past_due"].includes(subscription.status);
+}
+
+async function cancelDuplicateSubscriptions(stripe: Stripe, customerId: string, keepSubscriptionId: string) {
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 100,
+  });
+
+  const duplicates = subscriptions.data.filter(
+    (subscription) =>
+      subscription.id !== keepSubscriptionId &&
+      (isActiveSubscription(subscription) || subscription.cancel_at_period_end),
+  );
+
+  for (const subscription of duplicates) {
+    try {
+      await stripe.subscriptions.cancel(subscription.id);
+    } catch (error) {
+      console.error("stripe_duplicate_subscription_cancel_error", {
+        subscriptionId: subscription.id,
+        message: getErrorMessage(error),
+      });
+    }
+  }
+}
+
+async function getBestActivePlanForCustomer(stripe: Stripe, customerId: string): Promise<PaidPlan | null> {
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 100,
+  });
+
+  const activePlans = subscriptions.data
+    .filter((subscription) => isActiveSubscription(subscription))
+    .map((subscription) => getPlanFromSubscription(subscription))
+    .filter((plan): plan is PaidPlan => Boolean(plan));
+
+  if (activePlans.includes("empresa")) {
+    return "empresa";
+  }
+
+  if (activePlans.includes("pro")) {
+    return "pro";
+  }
+
+  return null;
 }

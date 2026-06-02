@@ -100,11 +100,17 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
           ? "Empresa pronto"
           : loading === "empresa"
             ? "Conectando..."
-            : "Actualizar a Empresa",
+            : isPro
+              ? "Cambiar a Empresa"
+              : "Actualizar a Empresa",
       onClick: isEmpresa || !empresaCheckoutEnabled ? undefined : () => startCheckout("empresa"),
       href: isEmpresa ? "/workspace" : undefined,
       disabled: isEmpresa || !empresaCheckoutEnabled,
-      helper: !isEmpresa && !empresaCheckoutEnabled ? "Checkout Empresa pendiente de activar." : undefined,
+      helper: !isEmpresa && !empresaCheckoutEnabled
+        ? "Añade STRIPE_PRICE_ID_EMPRESA para vender Empresa."
+        : isPro
+          ? "Se abrirá el portal de Stripe para cambiar tu suscripción."
+          : undefined,
     },
   ];
 
