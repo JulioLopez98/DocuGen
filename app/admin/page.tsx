@@ -622,23 +622,32 @@ function countPlans(profiles: AdminProfile[]) {
 }
 
 function getPopularTypes(documents: AdminDocument[]) {
-  const counts = new Map<string, number>();
+  const counts = new Map<string, { count: number; label: string; category: string }>();
 
   for (const doc of documents) {
-    counts.set(doc.doc_type, (counts.get(doc.doc_type) || 0) + 1);
+    const config = getDocumentConfig(doc.doc_type);
+    const current = counts.get(doc.doc_type);
+
+    counts.set(doc.doc_type, {
+      count: (current?.count || 0) + 1,
+      label: config?.label || doc.doc_label || humanizeDocumentType(doc.doc_type),
+      category: config?.category || (doc.doc_type.startsWith("community:") ? "Comunidad" : "Documento"),
+    });
   }
 
   return Array.from(counts.entries())
-    .map(([type, count]) => {
-      const config = getDocumentConfig(type);
-      return {
-        type,
-        count,
-        label: config?.label || type,
-        category: config?.category || "Documento",
-      };
-    })
+    .map(([type, value]) => ({ type, ...value }))
     .sort((a, b) => b.count - a.count);
+}
+
+function humanizeDocumentType(type: string) {
+  const cleanType = type.replace(/^community:/, "").replace(/^template:/, "plantilla-");
+
+  return cleanType
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function getRateLimitSummary(events: AdminRateLimitEvent[]) {

@@ -99,6 +99,13 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
     try {
       const custom = isCustomDocument(doc);
       const community = isCommunityDocument(doc);
+      const communityPayload = community ? buildCommunityRegeneratePayload(doc.form_data) : null;
+
+      if (community && !communityPayload) {
+        setError("No se puede regenerar este documento comunitario porque falta su referencia interna. Abre el tipo desde Comunidad y vuelve a generarlo.");
+        return;
+      }
+
       const response = await fetch(custom ? "/api/custom-generate" : community ? "/api/community-generate" : "/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,7 +113,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
           custom
             ? buildCustomRegeneratePayload(doc.form_data)
             : community
-              ? buildCommunityRegeneratePayload(doc.form_data)
+              ? communityPayload
               : buildCatalogRegeneratePayload(doc),
         ),
       });
@@ -498,8 +505,12 @@ function buildCustomRegeneratePayload(formData: Record<string, string>) {
 function buildCommunityRegeneratePayload(formData: Record<string, string>) {
   const communityReference = parseCommunityReference(formData.__community_type);
 
+  if (!communityReference?.id) {
+    return null;
+  }
+
   return {
-    communityTypeId: communityReference?.id || "",
+    communityTypeId: communityReference.id,
     formData: stripInternalFormData(formData),
   };
 }
