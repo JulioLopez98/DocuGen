@@ -25,6 +25,43 @@ export async function DELETE() {
       console.error("history_clear_workspace_lookup_error", workspaceDocumentsError);
     }
 
+    const { data: userDocuments, error: userDocumentsError } = await db
+      .from("documents")
+      .select("id")
+      .eq("user_id", user.id)
+      .returns<Array<{ id: string }>>();
+
+    if (userDocumentsError) {
+      console.error("history_clear_document_lookup_error", userDocumentsError);
+      return errorResponse(500, "clear_failed", "No se pudo preparar el borrado del historial.");
+    }
+
+    const documentIds = (userDocuments || []).map((document) => document.id);
+
+    if (documentIds.length > 0) {
+      const { error: requestUpdateError } = await db
+        .from("document_requests")
+        .update({ generated_document_id: null })
+        .in("generated_document_id", documentIds)
+        .eq("user_id", user.id);
+
+      if (requestUpdateError) {
+        console.error("history_clear_request_reference_error", requestUpdateError);
+        return errorResponse(500, "clear_failed", "No se pudo preparar el borrado del historial.");
+      }
+
+      const { error: versionDeleteError } = await db
+        .from("document_versions")
+        .delete()
+        .in("document_id", documentIds)
+        .eq("user_id", user.id);
+
+      if (versionDeleteError) {
+        console.error("history_clear_versions_error", versionDeleteError);
+        return errorResponse(500, "clear_failed", "No se pudieron borrar las versiones del historial.");
+      }
+    }
+
     const { error } = await db.from("documents").delete().eq("user_id", user.id);
 
     if (error) {

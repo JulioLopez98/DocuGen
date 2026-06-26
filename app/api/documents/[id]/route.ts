@@ -148,6 +148,33 @@ export async function DELETE(_request: Request, { params }: Params) {
       .eq("id", params.id)
       .eq("user_id", user.id)
       .maybeSingle<DocumentRow>();
+
+    if (!document) {
+      return errorResponse(404, "document_not_found", "No se pudo encontrar el documento.");
+    }
+
+    const { error: requestUpdateError } = await db
+      .from("document_requests")
+      .update({ generated_document_id: null })
+      .eq("generated_document_id", params.id)
+      .eq("user_id", user.id);
+
+    if (requestUpdateError) {
+      console.error("document_delete_request_reference_error", requestUpdateError);
+      return errorResponse(500, "delete_failed", "No se pudo preparar el borrado del documento.");
+    }
+
+    const { error: versionDeleteError } = await db
+      .from("document_versions")
+      .delete()
+      .eq("document_id", params.id)
+      .eq("user_id", user.id);
+
+    if (versionDeleteError) {
+      console.error("document_delete_versions_error", versionDeleteError);
+      return errorResponse(500, "delete_failed", "No se pudieron borrar las versiones del documento.");
+    }
+
     const { error } = await db.from("documents").delete().eq("id", params.id).eq("user_id", user.id);
 
     if (error) {
@@ -155,20 +182,18 @@ export async function DELETE(_request: Request, { params }: Params) {
       return errorResponse(500, "delete_failed", "No se pudo borrar el documento.");
     }
 
-    if (document) {
-      await recordWorkspaceAuditEvent({
-        supabase,
-        workspaceId: document.workspace_id,
-        actorId: user.id,
-        eventType: "document_deleted",
-        targetType: "document",
-        targetId: document.id,
-        summary: `Borro ${document.doc_label}`,
-        metadata: {
-          docType: document.doc_type,
-        },
-      });
-    }
+    await recordWorkspaceAuditEvent({
+      supabase,
+      workspaceId: document.workspace_id,
+      actorId: user.id,
+      eventType: "document_deleted",
+      targetType: "document",
+      targetId: document.id,
+      summary: `Borro ${document.doc_label}`,
+      metadata: {
+        docType: document.doc_type,
+      },
+    });
 
     return NextResponse.json({ deleted: true });
   } catch (error) {
