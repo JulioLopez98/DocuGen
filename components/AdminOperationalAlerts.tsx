@@ -54,7 +54,7 @@ export function AdminOperationalAlerts({
 
       <div className="grid gap-3">
         {openAlerts.slice(0, 8).map((alert) => (
-          <article key={alert.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/75 p-4">
+          <article key={alert.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

@@ -151,7 +151,7 @@ export default async function PricingPage() {
         <PricingCards compact currentPlan={profile?.plan} empresaCheckoutEnabled={empresaCheckoutEnabled} />
       </div>
 
-      <div className="border-y border-[#d8f3dc] bg-white/44 py-12">
+      <div className="border-y border-[#d8f3dc] bg-[#f2efe8]/56 py-12">
         <div className="container-page">
           <div className="mb-6 max-w-2xl">
             <p className="eyebrow">Para quién</p>
@@ -174,7 +174,7 @@ export default async function PricingPage() {
           <h2 className="panel-title mt-3">Lo importante, sin rodeos</h2>
           <p className="body-muted mt-3">Free prueba el producto. Pro es el uso recurrente. Empresa es colaboración y control.</p>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-[#d8f3dc] bg-white/82 shadow-[0_16px_42px_rgba(31,41,51,0.06)]">
+        <div className="overflow-x-auto rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/84 shadow-[0_16px_42px_rgba(31,41,51,0.06)]">
           <div className="min-w-[860px]">
             <div className="grid grid-cols-[1.1fr_0.8fr_0.9fr_1fr] border-b border-[#d8f3dc] bg-[#faf9f6] text-sm font-bold">
               <div className="p-4">Característica</div>
@@ -220,7 +220,7 @@ export default async function PricingPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {docs.map((doc) => (
-                    <span key={doc.type} className="badge bg-white/70 text-slate-600">
+                    <span key={doc.type} className="badge bg-[#fffdf8]/72 text-slate-600">
                       {doc.label}
                     </span>
                   ))}

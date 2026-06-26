@@ -181,7 +181,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
               placeholder="Nombre, categoría, prompt..."
             />
           </label>
@@ -191,7 +191,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
             >
               <option value="all">Todos</option>
               {Object.entries(statusLabels).map(([value, label]) => (
@@ -207,7 +207,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
             <select
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
             >
               <option value="all">Todas</option>
               {categories.map((category) => (
@@ -223,7 +223,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
             <select
               value={originFilter}
               onChange={(event) => setOriginFilter(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
             >
               <option value="all">Todos</option>
               <option value="assistant">Asistente</option>
@@ -307,7 +307,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                   </Link>
                 </div>
 
-                <div className="mt-4 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+                <div className="mt-4 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Checklist asistido</p>
@@ -351,7 +351,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                       <input
                         value={editable.label}
                         onChange={(event) => updateCandidate(candidate.id, { label: event.target.value })}
-                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                       />
                     </label>
                     <label>
@@ -359,7 +359,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                       <input
                         value={editable.category || ""}
                         onChange={(event) => updateCandidate(candidate.id, { category: event.target.value })}
-                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                       />
                     </label>
                   </div>
@@ -369,7 +369,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                       value={editable.description}
                       onChange={(event) => updateCandidate(candidate.id, { description: event.target.value })}
                       rows={3}
-                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                     />
                   </label>
                   <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -380,7 +380,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                         onChange={(event) =>
                           updateCandidate(candidate.id, { status: event.target.value as CommunityDocumentTypeRow["status"] })
                         }
-                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                       >
                         {Object.entries(statusLabels).map(([value, label]) => (
                           <option key={value} value={value}>
@@ -398,7 +398,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                             required_plan: event.target.value as CommunityDocumentTypeRow["required_plan"],
                           })
                         }
-                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                        className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                       >
                         {Object.entries(planLabels).map(([value, label]) => (
                           <option key={value} value={value}>
@@ -414,7 +414,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                       value={editable.prompt_brief}
                       onChange={(event) => updateCandidate(candidate.id, { prompt_brief: event.target.value })}
                       rows={6}
-                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="mt-4 block">
@@ -423,7 +423,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                       value={editable.admin_notes || ""}
                       onChange={(event) => updateCandidate(candidate.id, { admin_notes: event.target.value })}
                       rows={3}
-                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                       placeholder="Criterio de aprobación, campos pendientes o riesgos detectados."
                     />
                   </label>
@@ -441,11 +441,11 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
                 </div>
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
-                  <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+                  <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Prompt base</p>
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{editable.prompt_brief}</p>
                   </div>
-                  <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+                  <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Campos sugeridos</p>
                     <div className="mt-3 grid gap-2">
                       {candidate.suggested_fields.map((field) => (

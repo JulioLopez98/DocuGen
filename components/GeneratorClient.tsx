@@ -468,7 +468,7 @@ export function GeneratorClient({
               className={`focus-ring interactive-subtle rounded-md border px-3 py-3 text-left text-sm ${
                 generatorMode === "catalog" && selectedIntentId === "all"
                   ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                  : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                  : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
               }`}
             >
               <span className="flex items-center justify-between gap-3">
@@ -479,7 +479,7 @@ export function GeneratorClient({
             </button>
           </div>
 
-          <details className="mt-4 rounded-md border border-[#d8f3dc] bg-white/60 p-3" open={selectedIntentId !== "all"}>
+          <details className="mt-4 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-3" open={selectedIntentId !== "all"}>
             <summary className="focus-ring cursor-pointer list-none rounded-md">
               <span className="flex items-center justify-between gap-3">
                 <span>
@@ -498,7 +498,7 @@ export function GeneratorClient({
                   className={`focus-ring interactive-subtle rounded-md border px-3 py-3 text-left text-sm ${
                     generatorMode === "catalog" && selectedIntentId === intent.id
                       ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                      : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                      : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
                   }`}
                 >
                   <span className="flex items-center justify-between gap-3">
@@ -557,7 +557,7 @@ export function GeneratorClient({
                   setWorkspaceId(event.target.value);
                   setReferenceTemplateId("");
                 }}
-                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
               >
                 <option value="">Personal</option>
                 {workspaces.map((workspace) => (
@@ -568,7 +568,7 @@ export function GeneratorClient({
               </select>
             </label>
             {selectedWorkspace && (
-              <p className="mt-3 rounded-md bg-white/75 p-3 text-xs leading-5 text-slate-600">
+              <p className="mt-3 rounded-md bg-[#fffdf8]/76 p-3 text-xs leading-5 text-slate-600">
                 El documento sera visible para miembros de {selectedWorkspace.name}.
               </p>
             )}
@@ -653,7 +653,7 @@ export function GeneratorClient({
                           className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                             referenceTemplateId === recommendation.template.id
                               ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                              : "border-[#d8f3dc] bg-white/75 hover:border-[#2d6a4f]"
+                              : "border-[#d8f3dc] bg-[#fffdf8]/76 hover:border-[#2d6a4f]"
                           }`}
                         >
                           <span className="flex flex-wrap items-center gap-2">
@@ -676,7 +676,7 @@ export function GeneratorClient({
                   <input
                     value={templateQuery}
                     onChange={(event) => setTemplateQuery(event.target.value)}
-                    className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+                    className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
                     placeholder="Nombre, categoría o resumen..."
                   />
                 </label>
@@ -689,7 +689,7 @@ export function GeneratorClient({
                       className={`focus-ring rounded-md border px-3 py-2 text-left text-xs font-semibold transition ${
                         templateView === view
                           ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                          : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                          : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
                       }`}
                     >
                       {getTemplateViewLabel(view)}
@@ -700,7 +700,7 @@ export function GeneratorClient({
                   type="button"
                   onClick={() => setReferenceTemplateId("")}
                   className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                    !referenceTemplateId ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                    !referenceTemplateId ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
                   }`}
                 >
                   <span className="font-bold">Sin plantilla</span>
@@ -719,7 +719,7 @@ export function GeneratorClient({
                     className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                       referenceTemplateId === template.id
                         ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                        : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                        : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
                     }`}
                   >
                     <span className="flex items-start justify-between gap-3">
@@ -745,14 +745,14 @@ export function GeneratorClient({
                       <span className="mt-2 block max-h-10 overflow-hidden text-xs leading-5 text-slate-500">{template.summary}</span>
                     )}
                     <span className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
-                      <span className="rounded-md bg-white/75 px-3 py-2">Último uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
-                      <span className="rounded-md bg-white/75 px-3 py-2">Modo: {formatUsageMode(metrics.mostUsedMode)}</span>
+                      <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Último uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
+                      <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Modo: {formatUsageMode(metrics.mostUsedMode)}</span>
                     </span>
                   </button>
                   );
                 })}
                 {visibleReferenceTemplates.length === 0 && (
-                  <div className="rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4">
+                  <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/72 p-4">
                     <p className="text-sm font-semibold">No hay plantillas con esos filtros</p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">Prueba con otra búsqueda o cambia la vista.</p>
                   </div>
@@ -764,7 +764,7 @@ export function GeneratorClient({
                 )}
               </div>
             ) : (
-              <div className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4">
+              <div className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/72 p-4">
                 <p className="text-sm font-semibold">No hay plantillas listas</p>
                 <p className="mt-1 text-xs leading-5 text-slate-500">
                   Sube y procesa una plantilla DOCX para usarla como referencia.
@@ -794,9 +794,9 @@ export function GeneratorClient({
                   </Link>
                 </div>
                 <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
-                  <span className="rounded-md bg-white/75 px-3 py-2">Estructura: opcional</span>
-                  <span className="rounded-md bg-white/75 px-3 py-2">Tono: opcional</span>
-                  <span className="rounded-md bg-white/75 px-3 py-2">Datos: no se copian</span>
+                  <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Estructura: opcional</span>
+                  <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Tono: opcional</span>
+                  <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Datos: no se copian</span>
                 </div>
               </div>
             )}
@@ -812,7 +812,7 @@ export function GeneratorClient({
                       className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
                         templateUsageMode === mode
                           ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                          : "border-[#d8f3dc] bg-white/70 hover:border-[#2d6a4f]"
+                          : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
                       }`}
                     >
                       <span className="font-bold">{getTemplateUsageDecisionLabel(mode)}</span>
@@ -1069,7 +1069,7 @@ function CreationModeCard({
       onClick={onClick}
       disabled={disabled}
       className={`focus-ring interactive-subtle rounded-md border p-4 text-left disabled:cursor-not-allowed disabled:opacity-50 ${
-        active ? "border-[#2d6a4f] bg-[#d8f3dc]/60 shadow-[0_10px_28px_rgba(45,106,79,0.12)]" : "border-[#d8f3dc] bg-white/74"
+        active ? "border-[#2d6a4f] bg-[#d8f3dc]/60 shadow-[0_10px_28px_rgba(45,106,79,0.12)]" : "border-[#d8f3dc] bg-[#fffdf8]/76"
       }`}
     >
       <span className="badge badge-free">{eyebrow}</span>
@@ -1137,7 +1137,7 @@ function DocumentChoicePanel({
         {categoryCount > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {groupedDocuments.map((group) => (
-              <span key={group.category} className="badge bg-white/80 text-slate-600">
+              <span key={group.category} className="badge bg-[#fffdf8]/82 text-slate-600">
                 {group.category}: {group.documents.length}
               </span>
             ))}
@@ -1151,7 +1151,7 @@ function DocumentChoicePanel({
             <details
               key={group.category}
               open={hasSearch || isFiltered || index === 0}
-              className="group rounded-md border border-[#d8f3dc] bg-white/75 shadow-[0_8px_24px_rgba(31,41,51,0.04)]"
+              className="group rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 shadow-[0_8px_24px_rgba(31,41,51,0.04)]"
             >
               <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-4 py-4 transition hover:bg-[#faf9f6]">
                 <span>
@@ -1430,7 +1430,7 @@ function formatUsageMode(mode: ReturnType<typeof getTemplateUsageMetrics>["mostU
 
 function InfoPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/72 px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 px-3 py-2">
       <span className="text-slate-500">{label}</span>
       <span className="font-semibold text-[#1f2933]">{value}</span>
     </div>
@@ -1481,7 +1481,7 @@ function TemplateInfluencePreview({
       </div>
 
       {templateSummary && (
-        <p className="mt-3 rounded-md bg-white/75 p-3 text-xs leading-5 text-slate-600">
+        <p className="mt-3 rounded-md bg-[#fffdf8]/76 p-3 text-xs leading-5 text-slate-600">
           Resumen detectado: {templateSummary}
         </p>
       )}
@@ -1494,7 +1494,7 @@ function TemplateInfluencePreview({
 
       <div className="mt-4 grid gap-2 text-xs leading-5 text-slate-600">
         {preview.rules.map((rule) => (
-          <p key={rule} className="rounded-md bg-white/75 px-3 py-2">
+          <p key={rule} className="rounded-md bg-[#fffdf8]/76 px-3 py-2">
             {rule}
           </p>
         ))}
@@ -1505,7 +1505,7 @@ function TemplateInfluencePreview({
 
 function InfluenceRow({ label, value, active }: { label: string; value: string; active: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-md bg-white/75 px-3 py-2 text-xs">
+    <div className="flex items-start justify-between gap-3 rounded-md bg-[#fffdf8]/76 px-3 py-2 text-xs">
       <div>
         <p className="font-bold text-[#1f2933]">{label}</p>
         <p className="mt-1 leading-5 text-slate-600">{value}</p>
@@ -1631,7 +1631,7 @@ function CommunityChoicePanel({
               key={type.id}
               type="button"
               onClick={() => onSelect(type.id)}
-              className="focus-ring rounded-md border border-[#d8f3dc] bg-white/75 p-5 text-left transition hover:border-[#2d6a4f] hover:bg-[#faf9f6]"
+              className="focus-ring rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 p-5 text-left transition hover:border-[#2d6a4f] hover:bg-[#faf9f6]"
             >
               <span className="flex flex-wrap items-start justify-between gap-3">
                 <span>
@@ -1686,14 +1686,14 @@ function CommunityForm({
               value={formData[field.name] || ""}
               onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
               rows={4}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
             />
           ) : (
             <input
               type={field.type === "email" || field.type === "date" ? field.type : "text"}
               value={formData[field.name] || ""}
               onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
             />
           )}
         </label>

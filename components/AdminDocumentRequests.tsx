@@ -153,7 +153,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           </div>
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             {communityTypes.slice(0, 6).map((type) => (
-              <div key={type.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-3">
+              <div key={type.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">{type.label}</p>
@@ -184,7 +184,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           const sourceLabel = getRequestSourceLabel(request);
 
           return (
-            <article key={request.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+            <article key={request.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
               <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -229,7 +229,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                       onChange={(event) =>
                         updateLocalRequest(request.id, { status: event.target.value as DocumentRequestStatus })
                       }
-                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                     >
                       {statusOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -245,7 +245,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                       value={editable.admin_notes}
                       onChange={(event) => updateLocalRequest(request.id, { admin_notes: event.target.value })}
                       rows={4}
-                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                       placeholder="Ej. Buena candidata para legal web. Revisar campos necesarios."
                     />
                   </label>

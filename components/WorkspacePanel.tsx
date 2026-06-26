@@ -181,7 +181,7 @@ export function WorkspacePanel({
               workspaceDocuments.slice(0, 8).map((document) => (
                 <article
                   key={document.id}
-                  className="interactive-subtle flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/72 p-4"
+                  className="interactive-subtle flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4"
                 >
                   <div>
                     <p className="font-semibold">{document.doc_label}</p>

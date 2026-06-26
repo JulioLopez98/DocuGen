@@ -78,7 +78,7 @@ export function WorkspaceActivityFeed({ events, actorProfiles }: WorkspaceActivi
           </div>
         ) : (
           filteredEvents.map((event) => (
-            <article key={event.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+            <article key={event.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">

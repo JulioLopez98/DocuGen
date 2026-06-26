@@ -74,7 +74,7 @@ export function TemplateVariablesEditor({ templateId, initialVariables }: Templa
   }
 
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Variables</p>
@@ -96,7 +96,7 @@ export function TemplateVariablesEditor({ templateId, initialVariables }: Templa
               <input
                 value={variable.name}
                 onChange={(event) => updateVariable(index, event.target.value)}
-                className="focus-ring w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                className="focus-ring w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
                 placeholder="Cliente, importe, fecha..."
               />
               <span className="mt-1 block text-xs text-slate-500">

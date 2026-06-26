@@ -128,7 +128,7 @@ export function DocResult({
         </div>
       )}
       {onRefine && (
-        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-[#2d6a4f]">Mejorar esta version</p>
@@ -193,7 +193,7 @@ export function DocResult({
 
 function TracePill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-white/75 px-3 py-2">
+    <div className="rounded-md bg-[#fffdf8]/76 px-3 py-2">
       <span className="block font-bold text-[#1f2933]">{label}</span>
       <span className="mt-1 block leading-5">{value}</span>
     </div>

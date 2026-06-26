@@ -155,7 +155,7 @@ export function WorkspaceNotificationsPanel({
               <article
                 key={notification.id}
                 className={`interactive-subtle rounded-md border p-4 transition ${
-                  unread ? "border-[#2d6a4f] bg-[#f4fbf6]" : "border-[#d8f3dc] bg-white/72"
+                  unread ? "border-[#2d6a4f] bg-[#f4fbf6]" : "border-[#d8f3dc] bg-[#fffdf8]/74"
                 }`}
               >
                 <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-start">

@@ -153,7 +153,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
           <PlanFirstSteps plan={plan} context="documents" />
           <div className="grid gap-3 sm:grid-cols-3">
           {["Contrato freelance", "Presupuesto comercial", "Carta de presentación"].map((item) => (
-            <div key={item} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4 text-sm font-semibold">
+            <div key={item} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4 text-sm font-semibold">
               {item}
             </div>
           ))}

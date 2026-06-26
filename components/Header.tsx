@@ -32,7 +32,7 @@ export async function Header() {
   const moreLinks = user ? buildUserMoreLinks({ isPaid, isEmpresa, role }) : [];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#d8f3dc]/80 bg-[#faf9f6]/88 shadow-[0_6px_24px_rgba(31,41,51,0.04)] backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[#d8f3dc]/80 bg-[#fffdf8]/90 shadow-[0_6px_24px_rgba(31,41,51,0.04)] backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" className="font-serif-display text-2xl font-bold tracking-tight text-[#2d6a4f]">
           DocuGen

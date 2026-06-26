@@ -61,7 +61,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="min-h-screen bg-[#faf9f6] text-[#1f2933] antialiased">
+      <body className="min-h-screen text-[#1f2933] antialiased">
         <a href="#contenido-principal" className="skip-link">
           Saltar al contenido principal
         </a>

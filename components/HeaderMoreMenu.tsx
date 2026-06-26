@@ -57,7 +57,7 @@ export function HeaderMoreMenu({ links }: { links: HeaderMoreLink[] }) {
           id={menuId}
           role="menu"
           aria-label="Más opciones de navegación"
-          className="absolute right-0 top-11 z-50 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#d8f3dc] bg-white shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
+          className="absolute right-0 top-11 z-50 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#d8f3dc] bg-[#fffdf8] shadow-[0_22px_55px_rgba(31,41,51,0.16)]"
         >
           <div className="grid p-2">
             {links.map((link) => {

@@ -300,7 +300,7 @@ export function WorkspaceMembersManager({
           <p className="text-sm font-bold text-[#2d6a4f]">Invitaciones pendientes</p>
           <div className="mt-3 grid gap-3">
             {invitations.map((invitation) => (
-              <article key={invitation.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <article key={invitation.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
                 <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
                   <div>
                     <p className="font-semibold">{invitation.email}</p>
@@ -311,7 +311,7 @@ export function WorkspaceMembersManager({
                   </div>
                   {canManageMembers && (
                     <button
-                      className="focus-ring rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                      className="focus-ring rounded-md border border-red-200 bg-[#fffdf8] px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
                       type="button"
                       onClick={() => revokeInvitation(invitation)}
                       disabled={pendingAction === `revoke-${invitation.id}`}
@@ -342,7 +342,7 @@ export function WorkspaceMembersManager({
             const inferredRole = inferWorkspaceRolePreset(member);
 
             return (
-              <article key={member.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <article key={member.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
                 <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -381,7 +381,7 @@ export function WorkspaceMembersManager({
                   <div className="flex flex-wrap items-center gap-2">
                     {canEditThisMember ? (
                       <select
-                        className="focus-ring rounded-md border border-[#c7ded0] bg-white px-3 py-2 text-sm"
+                        className="focus-ring rounded-md border border-[#c7ded0] bg-[#fffdf8] px-3 py-2 text-sm"
                         value={inferredRole === "custom" ? "custom" : inferredRole}
                         onChange={(event) => updateMemberRole(member.id, event.target.value as WorkspaceRolePreset)}
                         disabled={pendingAction === `role-${member.id}`}
@@ -405,7 +405,7 @@ export function WorkspaceMembersManager({
 
                     {canEditThisMember && (
                       <button
-                        className="focus-ring rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                        className="focus-ring rounded-md border border-red-200 bg-[#fffdf8] px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
                         type="button"
                         onClick={() => removeMember(member)}
                         disabled={pendingAction === `remove-${member.id}`}
@@ -424,7 +424,7 @@ export function WorkspaceMembersManager({
                     {permissionItems.map((item) => (
                       <label
                         key={item.key}
-                        className="flex items-center justify-between gap-3 rounded-md bg-white/75 px-3 py-2 text-xs"
+                        className="flex items-center justify-between gap-3 rounded-md bg-[#fffdf8]/76 px-3 py-2 text-xs"
                       >
                         <span>
                           <span className="block font-bold text-[#1f2933]">{item.label}</span>

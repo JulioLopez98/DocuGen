@@ -284,7 +284,7 @@ export default async function DashboardPage() {
           {recentDocuments.length > 1 && (
             <div className="mt-4 grid gap-2">
               {recentDocuments.slice(1).map((doc) => (
-                <article key={doc.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-3">
+                <article key={doc.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <h3 className="font-semibold">{doc.doc_label}</h3>
@@ -338,7 +338,7 @@ function hasManagedStripeSubscription(profile: { stripe_subscription_id: string 
 }
 function QuickAction({ href, eyebrow, label, text }: { href: string; eyebrow: string; label: string; text: string }) {
   return (
-    <Link href={href} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/70 p-4">
+    <Link href={href} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-4">
       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{eyebrow}</p>
       <p className="mt-2 font-bold">{label}</p>
       <p className="mt-2 text-xs leading-5 text-slate-600">{text}</p>
@@ -365,7 +365,7 @@ function OnboardingStepCard({
     <Link
       href={href}
       className={`interactive-subtle rounded-md border p-4 ${
-        done ? "border-[#2d6a4f] bg-[#d8f3dc]/45" : "border-[#d8f3dc] bg-white/75"
+        done ? "border-[#2d6a4f] bg-[#d8f3dc]/45" : "border-[#d8f3dc] bg-[#fffdf8]/76"
       }`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -391,7 +391,7 @@ function DashboardStat({ label, value, helper }: { label: string; value: string;
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-3">
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-3">
       <p className="text-xs font-semibold text-slate-500">{label}</p>
       <p className="mt-1 font-serif-display text-2xl font-bold text-[#2d6a4f]">{value}</p>
     </div>

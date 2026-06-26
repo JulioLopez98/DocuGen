@@ -148,7 +148,7 @@ export default async function TemplateDetailPage({ params }: Props) {
                 <h2 className="mt-2 font-serif-display text-2xl font-bold">{qaReport.label}</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6">{qaReport.summary}</p>
               </div>
-              <span className="badge bg-white/70">Calidad {qaReport.score || 0}/100</span>
+              <span className="badge bg-[#fffdf8]/72">Calidad {qaReport.score || 0}/100</span>
             </div>
             <div className="mt-4 grid gap-2 md:grid-cols-5">
               {qaReport.checks.map((check) => (
@@ -331,7 +331,7 @@ export default async function TemplateDetailPage({ params }: Props) {
             documentsFromTemplate.map((document) => (
               <article
                 key={document.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/75 p-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 p-4"
               >
                 <div>
                   <h3 className="font-semibold">{document.doc_label}</h3>
@@ -393,10 +393,10 @@ function StatusBadge({ status }: { status: DocumentTemplateRow["status"] }) {
 
 function QaCheckCard({ check }: { check: TemplateQaCheck }) {
   const styles: Record<TemplateQaCheck["status"], string> = {
-    ok: "border-[#2d6a4f] bg-white/70",
-    review: "border-amber-300 bg-white/70",
-    missing: "border-orange-300 bg-white/70",
-    blocked: "border-red-300 bg-white/70",
+    ok: "border-[#2d6a4f] bg-[#fffdf8]/72",
+    review: "border-amber-300 bg-[#fffdf8]/72",
+    missing: "border-orange-300 bg-[#fffdf8]/72",
+    blocked: "border-red-300 bg-[#fffdf8]/72",
   };
   const labels: Record<TemplateQaCheck["status"], string> = {
     ok: "OK",
@@ -409,7 +409,7 @@ function QaCheckCard({ check }: { check: TemplateQaCheck }) {
     <div className={`rounded-md border p-3 ${styles[check.status]}`}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-bold">{check.label}</p>
-        <span className="badge bg-white px-2 py-0.5 text-[10px]">{labels[check.status]}</span>
+        <span className="badge bg-[#fffdf8] px-2 py-0.5 text-[10px]">{labels[check.status]}</span>
       </div>
       <p className="mt-2 text-xs leading-5">{check.detail}</p>
     </div>
@@ -462,7 +462,7 @@ function formatDateOrNever(value: string | null) {
 
 function MetaLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/72 px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 px-3 py-2">
       <span className="text-slate-500">{label}</span>
       <span className="text-right font-semibold">{value}</span>
     </div>
@@ -471,7 +471,7 @@ function MetaLine({ label, value }: { label: string; value: string }) {
 
 function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
       <p className="mt-2 break-words text-sm leading-6 text-slate-600">{value}</p>
     </div>
@@ -480,7 +480,7 @@ function InfoBlock({ label, value }: { label: string; value: string }) {
 
 function AnalysisList({ title, items, empty }: { title: string; items: string[]; empty: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{title}</p>
       {items.length > 0 ? (
         <ul className="mt-3 grid gap-2 text-sm leading-6 text-slate-600">

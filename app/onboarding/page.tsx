@@ -51,7 +51,7 @@ export default async function OnboardingPage() {
             </div>
           </div>
 
-          <aside className="rounded-md border border-[#d8f3dc] bg-white/78 p-5">
+          <aside className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-5">
             <p className="text-sm font-bold text-[#2d6a4f]">Tu plan actual</p>
             <p className="mt-2 font-serif-display text-3xl font-bold capitalize">{profile.plan}</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">

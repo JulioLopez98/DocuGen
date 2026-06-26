@@ -41,7 +41,7 @@ export function EmptyState({
       {steps && steps.length > 0 && (
         <ol className="mt-6 grid gap-2">
           {steps.map((step, index) => (
-            <li key={step} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/70 px-3 py-2 text-sm leading-6 text-slate-600">
+            <li key={step} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 px-3 py-2 text-sm leading-6 text-slate-600">
               <span className="mr-2 font-bold text-[#2d6a4f]">{index + 1}.</span>
               {step}
             </li>

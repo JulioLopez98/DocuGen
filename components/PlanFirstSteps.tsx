@@ -20,7 +20,7 @@ export function PlanFirstSteps({ plan, context = "general", compact = false }: P
   const steps = getSteps(plan, context);
 
   return (
-    <section className={`rounded-md border border-[#d8f3dc] bg-white/72 ${compact ? "p-4" : "p-5"}`} aria-label="Primeros pasos recomendados">
+    <section className={`rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 ${compact ? "p-4" : "p-5"}`} aria-label="Primeros pasos recomendados">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Primeros pasos</p>
@@ -34,7 +34,7 @@ export function PlanFirstSteps({ plan, context = "general", compact = false }: P
       <ol className={`mt-4 grid gap-3 ${compact ? "md:grid-cols-1" : "md:grid-cols-3"}`}>
         {steps.map((step, index) => (
           <li key={step.title}>
-            <Link href={step.href} className="focus-ring block rounded-md border border-[#d8f3dc] bg-[#faf9f6]/75 p-4 transition hover:-translate-y-0.5 hover:border-[#2d6a4f] hover:bg-white">
+            <Link href={step.href} className="focus-ring block rounded-md border border-[#d8f3dc] bg-[#faf9f6]/75 p-4 transition hover:-translate-y-0.5 hover:border-[#2d6a4f] hover:bg-[#fffdf8]">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#2d6a4f] text-xs font-bold text-white">
                 {index + 1}
               </span>

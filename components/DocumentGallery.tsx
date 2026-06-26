@@ -44,7 +44,7 @@ export function DocumentGallery() {
           </Link>
         ))}
       </div>
-      <div className="mt-8 rounded-md border border-[#d8f3dc] bg-white/64 p-5">
+      <div className="mt-8 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm leading-6 text-slate-600">
             Hay más documentos laborales, legales, ecommerce, digitales e inmobiliarios dentro del generador.

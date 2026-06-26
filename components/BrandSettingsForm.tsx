@@ -185,7 +185,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[120px_1fr]">
-          <div className="flex h-28 w-28 items-center justify-center rounded-md border border-[#d8f3dc] bg-white p-3">
+          <div className="flex h-28 w-28 items-center justify-center rounded-md border border-[#d8f3dc] bg-[#fffdf8] p-3">
             {hasLogo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={form.logo_url} alt="Logo de marca" className="max-h-full max-w-full object-contain" />

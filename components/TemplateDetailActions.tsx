@@ -133,7 +133,7 @@ export function TemplateDetailActions({ template }: TemplateDetailActionsProps) 
         className={`focus-ring rounded-xl border px-4 py-3 text-sm font-semibold transition disabled:opacity-60 ${
           template.is_favorite
             ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
-            : "border-[#d8f3dc] bg-white text-[#2d6a4f] hover:border-[#2d6a4f]"
+            : "border-[#d8f3dc] bg-[#fffdf8] text-[#2d6a4f] hover:border-[#2d6a4f]"
         }`}
       >
         {template.is_favorite ? "Quitar de destacadas" : "Marcar como destacada"}

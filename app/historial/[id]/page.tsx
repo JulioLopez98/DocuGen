@@ -168,7 +168,7 @@ function buildSameTemplateUrl(document: DocumentRow) {
 
 function MetaLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-white/72 px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 px-3 py-2">
       <span className="text-slate-500">{label}</span>
       <span className="text-right font-semibold">{value}</span>
     </div>
@@ -177,7 +177,7 @@ function MetaLine({ label, value }: { label: string; value: string }) {
 
 function TraceCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
       <p className="mt-2 text-sm font-semibold leading-6">{value}</p>
     </div>

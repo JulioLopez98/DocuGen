@@ -388,7 +388,7 @@ export function EditableDocumentResult({
             <textarea
               value={content}
               onChange={(event) => setContent(event.target.value)}
-              className="focus-ring min-h-[560px] w-full rounded-md border border-[#d8f3dc] bg-white/90 p-5 font-mono text-sm leading-7 text-[#1f2933]"
+              className="focus-ring min-h-[560px] w-full rounded-md border border-[#d8f3dc] bg-[#fffdf8]/92 p-5 font-mono text-sm leading-7 text-[#1f2933]"
               spellCheck
             />
           </label>
@@ -415,7 +415,7 @@ export function EditableDocumentResult({
             <select
               value={improveMode}
               onChange={(event) => setImproveMode(event.target.value as ImproveMode)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
             >
               {improveModes.map((mode) => (
                 <option key={mode.value} value={mode.value}>
@@ -431,7 +431,7 @@ export function EditableDocumentResult({
               value={customInstruction}
               onChange={(event) => setCustomInstruction(event.target.value)}
               disabled={improveMode !== "custom"}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-3 text-sm transition focus:border-[#2d6a4f] disabled:bg-slate-100 disabled:text-slate-400"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f] disabled:bg-slate-100 disabled:text-slate-400"
               placeholder="Ej: hazlo más directo, cambia a tono email, elimina tecnicismos..."
             />
           </label>
@@ -467,7 +467,7 @@ export function EditableDocumentResult({
                 type="button"
                 onClick={() => void improveWithAi(instruction)}
                 disabled={improving}
-                className="focus-ring rounded-md border border-[#d8f3dc] bg-white/75 p-3 text-left transition hover:border-[#2d6a4f] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="focus-ring rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 p-3 text-left transition hover:border-[#2d6a4f] hover:bg-[#fffdf8] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="text-sm font-bold">{instruction.label}</span>
                 <span className="mt-1 block text-xs leading-5 text-slate-500">{instruction.description}</span>
@@ -519,7 +519,7 @@ export function EditableDocumentResult({
         </div>
 
         {versions.length === 0 ? (
-          <p className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-white/70 p-4 text-sm text-slate-600">
+          <p className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/72 p-4 text-sm text-slate-600">
             Aún no hay versiones guardadas. Edita el documento y pulsa Guardar para crear la primera.
           </p>
         ) : (
@@ -529,7 +529,7 @@ export function EditableDocumentResult({
               const isCurrent = version.content === savedContent;
 
               return (
-                <details key={version.id} className="rounded-md border border-[#d8f3dc] bg-white/75">
+                <details key={version.id} className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76">
                   <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 p-3">
                     <div>
                       <p className="text-sm font-semibold">
@@ -596,7 +596,7 @@ function ComparisonPanel({ title, content, tone }: { title: string; content: str
   const toneClass =
     tone === "highlight"
       ? "border-[#2d6a4f] bg-[#f4fbf5]"
-      : "border-slate-200 bg-white/75";
+      : "border-slate-200 bg-[#fffdf8]/76";
 
   return (
     <div className={`rounded-md border ${toneClass}`}>

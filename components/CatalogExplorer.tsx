@@ -42,7 +42,7 @@ export function CatalogExplorer({ signedIn = false, initialCategory = "Todos" }:
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-4 py-3 text-sm transition focus:border-[#2d6a4f]"
+              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-4 py-3 text-sm transition focus:border-[#2d6a4f]"
               placeholder="Contrato, privacidad, teletrabajo, reclamación..."
             />
           </label>
@@ -130,7 +130,7 @@ function CategoryLink({ active, href, label }: { active: boolean; href: string; 
     <Link
       href={href}
       className={`focus-ring rounded-full border px-3 py-2 text-xs font-bold transition ${
-        active ? "border-[#2d6a4f] bg-[#2d6a4f] text-white" : "border-[#d8f3dc] bg-white/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
+        active ? "border-[#2d6a4f] bg-[#2d6a4f] text-white" : "border-[#d8f3dc] bg-[#fffdf8]/74 text-[#2d6a4f] hover:border-[#2d6a4f]"
       }`}
     >
       {label}

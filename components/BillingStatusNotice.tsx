@@ -16,7 +16,7 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
 
   if (!isPaid) {
     return (
-      <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm">
+      <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-4 text-sm">
         <p className="font-bold text-[#2d6a4f]">Plan Free activo</p>
         <p className="mt-2 text-slate-600">
           Puedes usar tus documentos gratuitos del mes. Si actualizas, la suscripción se gestionará desde el portal
@@ -28,7 +28,7 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
 
   if (!hasManagedSubscription) {
     return (
-      <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm">
+      <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-4 text-sm">
         <p className="font-bold text-[#2d6a4f]">Plan {getPlanLabel(profile.plan)} activo</p>
         <p className="mt-2 text-slate-600">
           Este acceso está activado manualmente para pruebas o desarrollo. No hay una suscripción activa en Stripe que

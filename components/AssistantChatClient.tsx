@@ -161,7 +161,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
                 className={`focus-ring rounded-md border px-3 py-3 text-sm transition ${
                   session.id === sessionId
                     ? "border-[#2d6a4f] bg-[#d8f3dc]"
-                    : "border-[#d8f3dc] bg-white/72 hover:border-[#2d6a4f]"
+                    : "border-[#d8f3dc] bg-[#fffdf8]/74 hover:border-[#2d6a4f]"
                 }`}
               >
                 <span className="font-semibold">Conversación</span>
@@ -173,7 +173,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
       )}
 
       <section className="surface overflow-hidden p-0">
-        <div className="border-b border-[#d8f3dc] bg-white/72 px-5 py-4">
+        <div className="border-b border-[#d8f3dc] bg-[#fffdf8]/74 px-5 py-4">
           <p className="text-sm font-bold text-[#2d6a4f]">Describe el documento. DocuGen te guía.</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
             Incluye objetivo, partes implicadas, fechas, importes y condiciones importantes. Evita datos sensibles innecesarios.
@@ -192,7 +192,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
                     key={prompt}
                     type="button"
                     onClick={() => setMessage(prompt)}
-                    className="focus-ring interactive-subtle rounded-md border border-[#d8f3dc] bg-white/80 px-4 py-3 text-left text-sm font-semibold text-[#1f2933]"
+                    className="focus-ring interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/82 px-4 py-3 text-left text-sm font-semibold text-[#1f2933]"
                   >
                     {prompt}
                   </button>
@@ -207,7 +207,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               className={`max-w-[86%] rounded-2xl p-4 text-sm leading-6 shadow-sm ${
                 chatMessage.role === "user"
                   ? "ml-auto bg-[#2d6a4f] text-white"
-                  : "mr-auto border border-[#d8f3dc] bg-white/90 text-[#1f2933]"
+                  : "mr-auto border border-[#d8f3dc] bg-[#fffdf8]/92 text-[#1f2933]"
               }`}
             >
               <p className={`mb-2 text-[10px] font-bold uppercase tracking-[0.14em] ${chatMessage.role === "user" ? "text-white/70" : "text-[#2d6a4f]"}`}>
@@ -218,7 +218,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
           ))}
 
           {loading && (
-            <div className="mr-auto rounded-2xl border border-[#d8f3dc] bg-white/80 p-4 text-sm text-slate-600 shadow-sm">
+            <div className="mr-auto rounded-2xl border border-[#d8f3dc] bg-[#fffdf8]/82 p-4 text-sm text-slate-600 shadow-sm">
               Pensando la mejor forma de enfocarlo...
             </div>
           )}

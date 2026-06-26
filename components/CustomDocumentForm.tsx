@@ -48,7 +48,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
         <span className="text-sm font-semibold">Nombre del documento</span>
         <input
           {...register("title")}
-          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
           placeholder="Ej. Carta de reclamacion a proveedor"
         />
         {errors.title && <span className="mt-1 block text-xs text-red-700">{errors.title.message}</span>}
@@ -59,7 +59,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
         <textarea
           {...register("description")}
           rows={5}
-          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
           placeholder="Describe el documento, las partes, contexto, condiciones y cualquier detalle importante."
         />
         {errors.description && <span className="mt-1 block text-xs text-red-700">{errors.description.message}</span>}
@@ -70,7 +70,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
           <span className="text-sm font-semibold">Uso previsto</span>
           <input
             {...register("intendedUse")}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
             placeholder="Interno, cliente, web, seleccion..."
           />
         </label>
@@ -79,7 +79,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
           <span className="text-sm font-semibold">Sector</span>
           <input
             {...register("sector")}
-            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+            className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
             placeholder="Tecnologia, inmobiliario, comercio..."
           />
         </label>
@@ -89,7 +89,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
         <span className="text-sm font-semibold">Tono</span>
         <select
           {...register("tone")}
-          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
         >
           {toneOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -104,7 +104,7 @@ export function CustomDocumentForm({ onSubmit, disabled }: CustomDocumentFormPro
         <textarea
           {...register("requiredData")}
           rows={4}
-          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white/90 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+          className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
           placeholder="Nombres, fechas, importes, condiciones, plazos o puntos que no deben faltar."
         />
       </label>

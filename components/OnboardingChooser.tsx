@@ -86,7 +86,7 @@ export function OnboardingChooser({ plan }: OnboardingChooserProps) {
                 type="button"
                 onClick={() => setSelectedPersona(item.id)}
                 className={`focus-ring rounded-md border px-4 py-3 text-left transition ${
-                  active ? "border-[#2d6a4f] bg-[#d8f3dc]/72" : "border-[#d8f3dc] bg-white/72 hover:border-[#2d6a4f]"
+                  active ? "border-[#2d6a4f] bg-[#d8f3dc]/72" : "border-[#d8f3dc] bg-[#fffdf8]/74 hover:border-[#2d6a4f]"
                 }`}
               >
                 <span className="block text-sm font-bold">{item.label}</span>

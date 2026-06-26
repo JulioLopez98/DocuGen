@@ -30,7 +30,7 @@ export function SettingsTabs({ sections }: SettingsTabsProps) {
                 type="button"
                 onClick={() => setActive(section.id)}
                 className={`focus-ring rounded-xl px-4 py-3 text-left transition ${
-                  isActive ? "bg-[#d8f3dc] text-[#1f2933] shadow-sm" : "hover:bg-white/80"
+                  isActive ? "bg-[#d8f3dc] text-[#1f2933] shadow-sm" : "hover:bg-[#fffdf8]/82"
                 }`}
               >
                 <span className="block text-sm font-bold">{section.label}</span>

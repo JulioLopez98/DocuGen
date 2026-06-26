@@ -2,19 +2,23 @@
 
 :root {
   --cream: #faf9f6;
+  --cream-deep: #f2efe8;
+  --cream-warm: #f7f3eb;
   --green: #2d6a4f;
   --green-dark: #24583f;
   --green-light: #d8f3dc;
+  --green-wash: #eef8ef;
   --ink: #1f2933;
   --muted: #64748b;
-  --line: rgba(45, 106, 79, 0.16);
-  --paper: #ffffff;
+  --line: rgba(45, 106, 79, 0.2);
+  --line-strong: rgba(45, 106, 79, 0.34);
+  --paper: #fffdf8;
   --success-soft: #ecfdf3;
   --warning-soft: #fff8e6;
   --danger-soft: #fef2f2;
-  --shadow-soft: 0 18px 50px rgba(31, 41, 51, 0.08);
-  --shadow-lift: 0 22px 60px rgba(45, 106, 79, 0.16);
-  --shadow-tight: 0 8px 24px rgba(31, 41, 51, 0.06);
+  --shadow-soft: 0 16px 42px rgba(31, 41, 51, 0.07);
+  --shadow-lift: 0 22px 56px rgba(45, 106, 79, 0.15);
+  --shadow-tight: 0 8px 22px rgba(31, 41, 51, 0.055);
 }
 
 * {
@@ -28,11 +32,25 @@ html {
 body {
   margin: 0;
   background:
-    linear-gradient(180deg, rgba(216, 243, 220, 0.34) 0, rgba(250, 249, 246, 0) 420px),
-    radial-gradient(circle at 18% 4%, rgba(45, 106, 79, 0.1), transparent 28rem),
+    linear-gradient(180deg, rgba(216, 243, 220, 0.42) 0, rgba(247, 243, 235, 0.72) 380px, rgba(250, 249, 246, 1) 860px),
+    radial-gradient(circle at 18% 4%, rgba(45, 106, 79, 0.12), transparent 26rem),
+    radial-gradient(circle at 92% 18%, rgba(216, 243, 220, 0.55), transparent 24rem),
     var(--cream);
   color: var(--ink);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+main {
+  min-height: 72vh;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.28), rgba(250, 249, 246, 0.86) 42rem),
+    repeating-linear-gradient(
+      90deg,
+      rgba(45, 106, 79, 0.025) 0,
+      rgba(45, 106, 79, 0.025) 1px,
+      transparent 1px,
+      transparent 7rem
+    );
 }
 
 a {
@@ -83,8 +101,10 @@ select {
 }
 
 .surface {
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(247, 243, 235, 0.76)),
+    var(--paper);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(14px);
   border-radius: 12px;
@@ -92,13 +112,17 @@ select {
 
 .surface-flat {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.78), rgba(238, 248, 239, 0.5)),
+    var(--cream-warm);
   border-radius: 12px;
 }
 
 .surface-muted {
   border: 1px solid var(--line);
-  background: rgba(250, 249, 246, 0.82);
+  background:
+    linear-gradient(180deg, rgba(238, 248, 239, 0.74), rgba(242, 239, 232, 0.74)),
+    var(--cream-deep);
   border-radius: 12px;
 }
 
@@ -148,7 +172,7 @@ select {
 
 .interactive-subtle:hover {
   border-color: rgba(45, 106, 79, 0.34);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 253, 248, 0.95);
   box-shadow: var(--shadow-tight);
 }
 
@@ -187,14 +211,14 @@ select {
   justify-content: center;
   border-radius: 12px;
   border: 1px solid rgba(45, 106, 79, 0.42);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 253, 248, 0.76);
   color: #2d6a4f;
   font-weight: 700;
 }
 
 .btn-secondary:hover {
   transform: translateY(-1px);
-  background: #ffffff;
+  background: #fffdf8;
   border-color: #2d6a4f;
 }
 
@@ -262,7 +286,7 @@ select {
   width: 100%;
   border-radius: 12px;
   border: 1px solid #cbd5e1;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 253, 248, 0.94);
   color: var(--ink);
   padding: 0.75rem 0.9rem;
   font-size: 0.925rem;

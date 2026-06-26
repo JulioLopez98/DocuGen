@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-[#d8f3dc] bg-white/55">
+    <footer className="mt-20 border-t border-[#d8f3dc] bg-[#f2efe8]/82">
       <div className="container-page grid gap-6 py-10 text-sm text-slate-600 md:grid-cols-[1fr_auto]">
         <div>
           <p className="font-serif-display text-xl font-bold text-[#2d6a4f]">DocuGen</p>

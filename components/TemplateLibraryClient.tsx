@@ -406,7 +406,7 @@ export function TemplateLibraryClient({
         </form>
 
         {uploadQueue.length > 0 && (
-          <div className="mt-5 rounded-md border border-[#d8f3dc] bg-white/80 p-4">
+          <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/82 p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-bold">Cola de subida</p>
               <p className="text-xs text-slate-500">
@@ -606,20 +606,20 @@ function TemplateCard({
 
           {analysis && (
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="badge bg-white/80 text-[#2d6a4f]">{analysis.sections} secciones</span>
-              <span className="badge bg-white/80 text-[#2d6a4f]">{analysis.variables} variables</span>
-              <span className="badge bg-white/80 text-[#2d6a4f]">Calidad {analysis.qualityScore}/100</span>
+              <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{analysis.sections} secciones</span>
+              <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{analysis.variables} variables</span>
+              <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">Calidad {analysis.qualityScore}/100</span>
             </div>
           )}
 
           <p className="status-note mt-3 text-xs">{qaReport.summary}</p>
 
           <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
-            <span className="rounded-md border border-[#d8f3dc] bg-white/75 px-3 py-2">Usos: {metrics.totalUses}</span>
-            <span className="rounded-md border border-[#d8f3dc] bg-white/75 px-3 py-2">
+            <span className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 px-3 py-2">Usos: {metrics.totalUses}</span>
+            <span className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 px-3 py-2">
               Último uso: {formatDateOrNever(metrics.lastUsedAt)}
             </span>
-            <span className="rounded-md border border-[#d8f3dc] bg-white/75 px-3 py-2">
+            <span className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 px-3 py-2">
               Modo: {formatUsageMode(metrics.mostUsedMode)}
             </span>
           </div>
@@ -641,7 +641,7 @@ function TemplateCard({
             className={`focus-ring rounded-xl border px-3 py-2 text-xs font-semibold transition disabled:opacity-60 ${
               template.is_favorite
                 ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
-                : "border-[#d8f3dc] bg-white/70 text-[#2d6a4f] hover:border-[#2d6a4f]"
+                : "border-[#d8f3dc] bg-[#fffdf8]/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
             }`}
           >
             {template.is_favorite ? "Quitar destaque" : "Destacar"}

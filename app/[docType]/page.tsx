@@ -223,7 +223,7 @@ function getDocumentFaqs(config: DocumentTypeConfig) {
 
 function InfoLine({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-md border border-[#d8f3dc] bg-white/72 p-3">
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-3">
       <p className="font-semibold">{title}</p>
       <p className="mt-1 text-xs text-slate-500">{text}</p>
     </div>

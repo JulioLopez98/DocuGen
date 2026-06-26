@@ -233,7 +233,7 @@ export default async function AdminPage() {
                     <span className="badge badge-free">
                       {event.provider}
                     </span>
-                    <span className="badge border border-[#d8f3dc] bg-white text-slate-600">
+                    <span className="badge border border-[#d8f3dc] bg-[#fffdf8] text-slate-600">
                       {event.error_code}
                     </span>
                   </div>
@@ -364,7 +364,7 @@ export default async function AdminPage() {
           </div>
           <div className="grid gap-3">
             {popularTypes.map((item) => (
-              <div key={item.type} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/72 p-4">
+              <div key={item.type} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold">{item.label}</p>
@@ -605,7 +605,7 @@ function SecurityEventItem({ event, profile }: { event: SecurityEventRow; profil
             {profile?.email || "Usuario no disponible"} · {new Date(event.created_at).toLocaleString("es-ES")}
           </p>
         </div>
-        <span className="badge border border-[#d8f3dc] bg-white text-slate-600">{event.route || event.event_type}</span>
+        <span className="badge border border-[#d8f3dc] bg-[#fffdf8] text-slate-600">{event.route || event.event_type}</span>
       </div>
     </article>
   );

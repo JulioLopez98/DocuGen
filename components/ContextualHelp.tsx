@@ -32,7 +32,7 @@ export function ContextualHelp({
       {items.length > 0 && (
         <ul className="mt-4 grid gap-2">
           {items.map((item) => (
-            <li key={item} className="interactive-subtle rounded-md border border-[#d8f3dc]/70 bg-white/72 px-3 py-2 text-xs leading-5 text-slate-600">
+            <li key={item} className="interactive-subtle rounded-md border border-[#d8f3dc]/70 bg-[#fffdf8]/74 px-3 py-2 text-xs leading-5 text-slate-600">
               {item}
             </li>
           ))}
@@ -62,7 +62,7 @@ function getToneClassName(tone: ContextualHelpProps["tone"]) {
   }
 
   if (tone === "empresa") {
-    return "border-[#d8f3dc] bg-white";
+    return "border-[#d8f3dc] bg-[#fffdf8]";
   }
 
   return "border-[#d8f3dc] bg-[#faf9f6]";

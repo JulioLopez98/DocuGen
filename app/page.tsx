@@ -138,11 +138,11 @@ export default async function HomePage() {
                 <p className="mt-1">Definir el alcance, entregables, plazos y condiciones del proyecto solicitado.</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-md border border-[#d8f3dc] bg-white/78 p-3">
+                <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Exporta</p>
                   <p className="mt-1">PDF, TXT y Word Pro</p>
                 </div>
-                <div className="rounded-md border border-[#d8f3dc] bg-white/78 p-3">
+                <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guarda</p>
                   <p className="mt-1">Documentos y regeneración</p>
                 </div>
@@ -153,7 +153,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-[#d8f3dc]/80 bg-white/58 py-16">
+      <section className="border-b border-[#d8f3dc]/80 bg-[#f2efe8]/64 py-16">
         <div className="container-page">
           <div className="mb-8 max-w-3xl">
             <p className="eyebrow">Qué puedes hacer</p>
@@ -180,7 +180,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white/58 py-16">
+      <section className="bg-[#f2efe8]/64 py-16">
         <div className="container-page grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <p className="eyebrow">Qué resuelve</p>
