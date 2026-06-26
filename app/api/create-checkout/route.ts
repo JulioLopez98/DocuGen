@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { getStripe, getStripePriceIdForPlan, type StripePaidPlan } from "@/lib/stripe";
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    if (profile.plan !== "free") {
+    if (hasManagedStripeSubscription(profile)) {
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: `${appUrl}/dashboard`,
@@ -108,6 +108,13 @@ export async function POST(request: Request) {
     });
     return errorResponse(500, "checkout_failed", "No se pudo crear la sesion de pago.");
   }
+}
+
+function hasManagedStripeSubscription(profile: Profile) {
+  return Boolean(
+    profile.stripe_subscription_id ||
+      (profile.stripe_subscription_status && ["active", "trialing", "past_due"].includes(profile.stripe_subscription_status)),
+  );
 }
 
 async function readJsonBody(request: Request) {
