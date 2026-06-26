@@ -38,11 +38,55 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId);
   const [messages, setMessages] = useState<ChatMessageRow[]>(initialMessages);
+  const [localSessions, setLocalSessions] = useState<ChatSessionRow[]>(sessions);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const [generatedDocument, setGeneratedDocument] = useState<GeneratedAssistantDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  function startNewChat() {
+    setSessionId(null);
+    setMessages([]);
+    setMessage("");
+    setGeneratedDocument(null);
+    setError(null);
+    router.replace("/asistente");
+  }
+
+  async function deleteSession(targetSessionId: string) {
+    const confirmed = window.confirm("¿Borrar esta conversación? Esta acción no elimina documentos ya generados desde ella.");
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingSessionId(targetSessionId);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/assistant/sessions/${targetSessionId}`, { method: "DELETE" });
+      const payload = (await response.json()) as ApiError;
+
+      if (!response.ok) {
+        setError(payload.message || "No se pudo borrar la conversación.");
+        return;
+      }
+
+      setLocalSessions((current) => current.filter((session) => session.id !== targetSessionId));
+
+      if (sessionId === targetSessionId) {
+        startNewChat();
+      } else {
+        router.refresh();
+      }
+    } catch {
+      setError("No se pudo borrar la conversación. Comprueba tu conexión e inténtalo de nuevo.");
+    } finally {
+      setDeletingSessionId(null);
+    }
+  }
 
   async function sendMessage() {
     const cleanMessage = message.trim();
@@ -133,54 +177,28 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   }
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/asistente" className="focus-ring btn-secondary px-4 py-2 text-sm">
-          Nuevo chat
-        </Link>
-        <button
-          type="button"
-          onClick={generateFromChat}
-          disabled={generating || loading || messages.length === 0}
-          className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60"
-        >
-          {generating ? "Generando..." : "Generar documento"}
-        </button>
-      </div>
-
-      {sessions.length > 0 && (
-        <details className="surface-flat p-4">
-          <summary className="focus-ring cursor-pointer list-none rounded-md text-sm font-bold text-[#2d6a4f]">
-            Conversaciones anteriores ({sessions.length})
-          </summary>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {sessions.slice(0, 9).map((session) => (
-              <Link
-                key={session.id}
-                href={`/asistente?sessionId=${session.id}`}
-                className={`focus-ring rounded-md border px-3 py-3 text-sm transition ${
-                  session.id === sessionId
-                    ? "border-[#2d6a4f] bg-[#d8f3dc]"
-                    : "border-[#d8f3dc] bg-[#fffdf8]/74 hover:border-[#2d6a4f]"
-                }`}
-              >
-                <span className="font-semibold">Conversación</span>
-                <span className="mt-1 block text-xs text-slate-500">{new Date(session.updated_at).toLocaleString("es-ES")}</span>
-              </Link>
-            ))}
-          </div>
-        </details>
-      )}
-
-      <section className="surface overflow-hidden p-0">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start">
+      <section className="surface order-2 overflow-hidden p-0 xl:order-1">
         <div className="border-b border-[#d8f3dc] bg-[#fffdf8]/74 px-5 py-4">
-          <p className="text-sm font-bold text-[#2d6a4f]">Describe el documento. DocuGen te guía.</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            Incluye objetivo, partes implicadas, fechas, importes y condiciones importantes. Evita datos sensibles innecesarios.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Describe el documento. DocuGen te guía.</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Incluye objetivo, partes implicadas, fechas, importes y condiciones importantes. Evita datos sensibles innecesarios.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={generateFromChat}
+              disabled={generating || loading || messages.length === 0}
+              className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60"
+            >
+              {generating ? "Generando..." : "Generar documento"}
+            </button>
+          </div>
         </div>
 
-        <div className="grid min-h-[460px] content-start gap-3 p-5">
+        <div className="grid min-h-[500px] content-start gap-3 p-5">
           {messages.length === 0 && (
             <div className="mx-auto max-w-2xl rounded-xl border border-[#d8f3dc] bg-[#faf9f6]/85 p-5 text-center">
               <p className="eyebrow">Empieza con una frase</p>
@@ -254,8 +272,64 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         </div>
       </section>
 
+      <aside className="surface-flat order-1 p-4 xl:sticky xl:top-24 xl:order-2 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+        <button type="button" onClick={startNewChat} className="focus-ring btn-primary w-full px-4 py-3 text-sm">
+          Nuevo chat
+        </button>
+
+        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Cuándo usarlo</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Usa el asistente si no sabes qué documento elegir o necesitas que DocuGen te haga preguntas antes de redactar.
+          </p>
+          <Link href="/generar?mode=custom" className="focus-ring btn-ghost mt-3 px-0 py-2 text-sm">
+            A medida: una petición directa
+          </Link>
+        </div>
+
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-[#1f2933]">Conversaciones</p>
+            <span className="badge badge-free">{localSessions.length}</span>
+          </div>
+
+          {localSessions.length === 0 ? (
+            <p className="mt-3 rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/74 p-3 text-sm text-slate-500">
+              Aún no hay chats guardados.
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-2">
+              {localSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className={`rounded-md border p-2 transition ${
+                    session.id === sessionId ? "border-[#2d6a4f] bg-[#d8f3dc]/72" : "border-[#d8f3dc] bg-[#fffdf8]/74"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <Link href={`/asistente?sessionId=${session.id}`} className="focus-ring min-w-0 flex-1 rounded-md px-2 py-1 text-sm">
+                      <span className="block truncate font-semibold">Conversación</span>
+                      <span className="mt-1 block text-xs text-slate-500">{new Date(session.updated_at).toLocaleString("es-ES")}</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => deleteSession(session.id)}
+                      disabled={deletingSessionId === session.id}
+                      className="focus-ring rounded-md px-2 py-1 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+                      aria-label="Borrar conversación"
+                    >
+                      {deletingSessionId === session.id ? "..." : "Borrar"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </aside>
+
       {generatedDocument && (
-        <div>
+        <div className="order-3 xl:col-span-2">
           {generatedDocument.proposal && (
             <div className="status-success mb-4">
               <p className="text-sm font-bold text-[#2d6a4f]">Propuesta enviada al admin</p>
