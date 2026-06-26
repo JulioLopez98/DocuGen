@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BillingStatusNotice } from "@/components/BillingStatusNotice";
@@ -101,18 +101,22 @@ export default async function SettingsPage() {
           },
           {
             id: "suscripcion",
-            label: "Suscripción",
+            label: "SuscripciÃ³n",
             description: "Stripe y formatos",
             content: (
               <div className="grid gap-4">
                 <section className="surface p-6">
-                  <p className="eyebrow">Suscripción</p>
-                  <h2 className="panel-title mt-3">Plan y facturación</h2>
+                  <p className="eyebrow">SuscripciÃ³n</p>
+                  <h2 className="panel-title mt-3">Plan y facturaciÃ³n</h2>
                   <p className="body-muted mt-3">
-                    Actualiza a Pro o gestiona tu suscripción desde el portal seguro de Stripe.
+                    Actualiza a Pro o gestiona tu suscripciÃ³n desde el portal seguro de Stripe.
                   </p>
                   <div className="mt-6">
-                    <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
+                    <SubscriptionActions
+                      plan={profile.plan}
+                      hasCustomer={Boolean(profile.stripe_customer_id)}
+                      hasManagedSubscription={hasManagedStripeSubscription(profile)}
+                    />
                   </div>
                   <div className="mt-5">
                     <BillingStatusNotice profile={profile} />
@@ -162,9 +166,9 @@ export default async function SettingsPage() {
                   ) : (
                     <div className="mt-5">
                       <EmptyState
-                        eyebrow="Documentos vacíos"
-                        title="Aún no hay documentos que gestionar"
-                        description="Cuando generes tu primer borrador, esta sección te permitirá revisar documentos y limpiar tus datos."
+                        eyebrow="Documentos vacÃ­os"
+                        title="AÃºn no hay documentos que gestionar"
+                        description="Cuando generes tu primer borrador, esta secciÃ³n te permitirÃ¡ revisar documentos y limpiar tus datos."
                         variant="flat"
                         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
                         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
@@ -182,6 +186,12 @@ export default async function SettingsPage() {
   );
 }
 
+function hasManagedStripeSubscription(profile: { stripe_subscription_id: string | null; stripe_subscription_status: string | null }) {
+  return Boolean(
+    profile.stripe_subscription_id ||
+      (profile.stripe_subscription_status && ["active", "trialing", "past_due"].includes(profile.stripe_subscription_status)),
+  );
+}
 function ExportFormat({ title, status, active }: { title: string; status: string; active: boolean }) {
   return (
     <div className={`interactive-subtle rounded-md border p-4 ${active ? "border-[#d8f3dc] bg-[#faf9f6]" : "border-slate-200 bg-slate-50"}`}>

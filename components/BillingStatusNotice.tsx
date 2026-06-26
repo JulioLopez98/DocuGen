@@ -1,4 +1,4 @@
-import type { Profile } from "@/lib/supabase-server";
+﻿import type { Profile } from "@/lib/supabase-server";
 
 type BillingStatusNoticeProps = {
   profile: Profile;
@@ -7,6 +7,10 @@ type BillingStatusNoticeProps = {
 
 export function BillingStatusNotice({ profile, variant = "full" }: BillingStatusNoticeProps) {
   const isPaid = profile.plan !== "free";
+  const hasManagedSubscription = Boolean(
+    profile.stripe_subscription_id ||
+      (profile.stripe_subscription_status && ["active", "trialing", "past_due"].includes(profile.stripe_subscription_status)),
+  );
   const isCanceling = Boolean(profile.stripe_cancel_at_period_end && profile.stripe_current_period_end);
   const periodEndLabel = profile.stripe_current_period_end ? formatDate(profile.stripe_current_period_end) : null;
 
@@ -17,6 +21,18 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
         <p className="mt-2 text-slate-600">
           Puedes usar tus documentos gratuitos del mes. Si actualizas, la suscripcion se gestionara desde el portal
           seguro de Stripe.
+        </p>
+      </div>
+    );
+  }
+
+  if (!hasManagedSubscription) {
+    return (
+      <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm">
+        <p className="font-bold text-[#2d6a4f]">Plan {getPlanLabel(profile.plan)} activo</p>
+        <p className="mt-2 text-slate-600">
+          Este acceso esta activado manualmente para pruebas o desarrollo. No hay una suscripcion activa en Stripe que
+          cancelar desde el portal.
         </p>
       </div>
     );

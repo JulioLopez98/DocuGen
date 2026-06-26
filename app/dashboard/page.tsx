@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BillingStatusNotice } from "@/components/BillingStatusNotice";
@@ -64,10 +64,10 @@ export default async function DashboardPage() {
           <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-full bg-[#d8f3dc]/55" aria-hidden="true" />
           <div className="relative">
             <p className="eyebrow">Centro de control</p>
-            <h1 className="section-title mt-3 max-w-3xl">Hola, {displayName}. ¿Qué quieres preparar hoy?</h1>
+            <h1 className="section-title mt-3 max-w-3xl">Hola, {displayName}. Â¿QuÃ© quieres preparar hoy?</h1>
             <p className="body-muted mt-4 max-w-2xl">
-              Crea un documento desde el catálogo, continúa uno anterior o usa plantillas y funciones avanzadas cuando
-              necesites más control.
+              Crea un documento desde el catÃ¡logo, continÃºa uno anterior o usa plantillas y funciones avanzadas cuando
+              necesites mÃ¡s control.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
                 </Link>
               )}
               <Link href={lastDocument ? `/historial/${lastDocument.id}` : "/historial"} className="focus-ring btn-secondary px-5 py-3 text-sm">
-                {lastDocument ? "Continuar último" : "Ver documentos"}
+                {lastDocument ? "Continuar Ãºltimo" : "Ver documentos"}
               </Link>
               <Link href={isPaid ? "/plantillas" : "/precios"} className="focus-ring btn-ghost px-5 py-3 text-sm">
                 {isPaid ? "Plantillas" : "Ver Pro"}
@@ -90,15 +90,15 @@ export default async function DashboardPage() {
             <div className="mt-8 grid gap-3 md:grid-cols-3">
               <QuickAction
                 href="/generar"
-                eyebrow="Más usado"
-                label="Crear desde catálogo"
-                text="Busca por categoría o intención y genera un borrador guiado."
+                eyebrow="MÃ¡s usado"
+                label="Crear desde catÃ¡logo"
+                text="Busca por categorÃ­a o intenciÃ³n y genera un borrador guiado."
               />
               <QuickAction
                 href={isPaid ? "/generar?mode=custom" : "/precios"}
                 eyebrow={isPaid ? "Pro" : "Bloqueado"}
                 label="Pedir a medida"
-                text={isPaid ? "Describe un documento si no existe en el catálogo." : "Desbloquea documentos libres con Pro."}
+                text={isPaid ? "Describe un documento si no existe en el catÃ¡logo." : "Desbloquea documentos libres con Pro."}
               />
               <QuickAction
                 href="/historial"
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
             <div>
               <p className="eyebrow">Tu plan</p>
               <h2 className="mt-2 font-serif-display text-2xl font-bold">Estado de uso</h2>
-              <p className="mt-1 text-xs text-slate-500">Plan, límites y suscripción</p>
+              <p className="mt-1 text-xs text-slate-500">Plan, lÃ­mites y suscripciÃ³n</p>
             </div>
             <PlanBadge plan={profile.plan} />
           </div>
@@ -133,7 +133,11 @@ export default async function DashboardPage() {
           </p>
 
           <div className="mt-5">
-            <SubscriptionActions plan={profile.plan} hasCustomer={Boolean(profile.stripe_customer_id)} />
+            <SubscriptionActions
+              plan={profile.plan}
+              hasCustomer={Boolean(profile.stripe_customer_id)}
+              hasManagedSubscription={hasManagedStripeSubscription(profile)}
+            />
           </div>
 
           <div className="mt-5">
@@ -157,7 +161,7 @@ export default async function DashboardPage() {
             <div>
               <p className="eyebrow">Prueba Free</p>
               <h2 className="mt-2 text-xl font-bold">
-                {remaining > 0 ? `Te quedan ${remaining} documentos para validar DocuGen` : "Has llegado al límite Free este mes"}
+                {remaining > 0 ? `Te quedan ${remaining} documentos para validar DocuGen` : "Has llegado al lÃ­mite Free este mes"}
               </h2>
               <p className="body-muted mt-2 max-w-2xl text-sm">
                 {remaining > 0
@@ -217,21 +221,21 @@ export default async function DashboardPage() {
 
       <section className="mt-5 grid gap-5 lg:grid-cols-3">
         <ContextualHelp
-          title="Crear rápido"
-          description="El camino principal: catálogo, datos, borrador y exportación."
+          title="Crear rÃ¡pido"
+          description="El camino principal: catÃ¡logo, datos, borrador y exportaciÃ³n."
           items={["Elige un tipo documental.", "Completa solo los campos necesarios.", "Revisa antes de usar."]}
           primaryAction={{ href: "/generar", label: "Crear ahora" }}
         />
         <ContextualHelp
           title="Usar ejemplos propios"
           description="Las plantillas ayudan a orientar estructura y tono sin copiar datos sensibles."
-          items={isPaid ? ["Sube DOCX/PDF.", "Procesa la plantilla.", "Úsala como referencia."] : ["Disponible en Pro.", "Ideal para mantener estilo propio."]}
+          items={isPaid ? ["Sube DOCX/PDF.", "Procesa la plantilla.", "Ãšsala como referencia."] : ["Disponible en Pro.", "Ideal para mantener estilo propio."]}
           primaryAction={{ href: isPaid ? "/plantillas" : "/precios", label: isPaid ? "Abrir plantillas" : "Ver Pro" }}
           tone="pro"
         />
         <ContextualHelp
           title="Trabajar en equipo"
-          description="Empresa añade miembros, documentos compartidos, invitaciones y actividad."
+          description="Empresa aÃ±ade miembros, documentos compartidos, invitaciones y actividad."
           items={isEmpresa ? ["Invita miembros.", "Comparte documentos.", "Revisa actividad."] : ["Disponible en Empresa.", "Pensado para equipos."]}
           primaryAction={{ href: isEmpresa ? "/workspace" : "/precios", label: isEmpresa ? "Abrir equipo" : "Ver Empresa" }}
           tone="empresa"
@@ -252,10 +256,10 @@ export default async function DashboardPage() {
 
           {lastDocument ? (
             <div className="surface-muted p-5">
-              <p className="eyebrow">Último documento</p>
+              <p className="eyebrow">Ãšltimo documento</p>
               <h3 className="mt-2 text-xl font-bold">{lastDocument.doc_label}</h3>
               <p className="mt-2 text-sm text-slate-500">
-                {formatDate(lastDocument.created_at)} · {getDocumentCategory(lastDocument)}
+                {formatDate(lastDocument.created_at)} Â· {getDocumentCategory(lastDocument)}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Link href={`/historial/${lastDocument.id}`} className="focus-ring btn-primary px-4 py-2 text-sm">
@@ -268,8 +272,8 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <EmptyPanel
-              title="Aún no has generado documentos"
-              text="Crea tu primer borrador y aquí aparecerá para editarlo, exportarlo o reutilizarlo."
+              title="AÃºn no has generado documentos"
+              text="Crea tu primer borrador y aquÃ­ aparecerÃ¡ para editarlo, exportarlo o reutilizarlo."
               href="/generar"
               action="Crear primer documento"
             />
@@ -283,7 +287,7 @@ export default async function DashboardPage() {
                     <div>
                       <h3 className="font-semibold">{doc.doc_label}</h3>
                       <p className="text-xs text-slate-500">
-                        {formatDate(doc.created_at)} · {getDocumentCategory(doc)}
+                        {formatDate(doc.created_at)} Â· {getDocumentCategory(doc)}
                       </p>
                     </div>
                     <Link href={`/historial/${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
@@ -300,10 +304,10 @@ export default async function DashboardPage() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="eyebrow">Recomendado</p>
-              <h2 className="panel-title mt-3">Documentos útiles para empezar</h2>
+              <h2 className="panel-title mt-3">Documentos Ãºtiles para empezar</h2>
             </div>
             <Link href="/catalogo" className="focus-ring btn-ghost px-3 py-2 text-sm">
-              Catálogo completo
+              CatÃ¡logo completo
             </Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -324,6 +328,12 @@ export default async function DashboardPage() {
   );
 }
 
+function hasManagedStripeSubscription(profile: { stripe_subscription_id: string | null; stripe_subscription_status: string | null }) {
+  return Boolean(
+    profile.stripe_subscription_id ||
+      (profile.stripe_subscription_status && ["active", "trialing", "past_due"].includes(profile.stripe_subscription_status)),
+  );
+}
 function QuickAction({ href, eyebrow, label, text }: { href: string; eyebrow: string; label: string; text: string }) {
   return (
     <Link href={href} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-white/70 p-4">
@@ -429,9 +439,9 @@ function getOnboardingSteps({
     {
       title: isPaid ? "Configura tu marca" : "Desbloquea Pro",
       text: isPaid
-        ? "Añade datos corporativos y logo para que tus exportaciones salgan más profesionales."
+        ? "AÃ±ade datos corporativos y logo para que tus exportaciones salgan mÃ¡s profesionales."
         : remaining > 0
-          ? "Pro añade Word, documentos a medida, plantillas y generaciones ilimitadas."
+          ? "Pro aÃ±ade Word, documentos a medida, plantillas y generaciones ilimitadas."
           : "Has agotado Free. Pro desbloquea documentos ilimitados.",
       href: isPaid ? "/ajustes" : "/precios",
       action: isPaid ? "Ir a ajustes" : "Ver planes",
@@ -441,7 +451,7 @@ function getOnboardingSteps({
       title: isEmpresa ? "Trabaja en equipo" : "Funciones avanzadas",
       text: isEmpresa
         ? "Invita miembros, comparte documentos y controla permisos."
-        : "Plantillas, asistente y equipo viven fuera del flujo básico para no saturarte.",
+        : "Plantillas, asistente y equipo viven fuera del flujo bÃ¡sico para no saturarte.",
       href: isEmpresa ? "/workspace" : isPaid ? "/plantillas" : "/precios",
       action: isEmpresa ? "Abrir equipo" : isPaid ? "Ver plantillas" : "Ver Pro",
       done: isEmpresa,
@@ -498,7 +508,7 @@ function getBrandHelper({ hasBrand, isPaid }: { hasBrand: boolean; isPaid: boole
     return "Marca disponible en Pro";
   }
 
-  return hasBrand ? "Datos corporativos configurados" : "Añade logo y datos corporativos";
+  return hasBrand ? "Datos corporativos configurados" : "AÃ±ade logo y datos corporativos";
 }
 
 function formatDate(value: string) {

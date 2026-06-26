@@ -1,13 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
 type SubscriptionActionsProps = {
   plan: "free" | "pro" | "empresa";
   hasCustomer: boolean;
+  hasManagedSubscription?: boolean;
 };
 
-export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsProps) {
+export function SubscriptionActions({ plan, hasCustomer, hasManagedSubscription = false }: SubscriptionActionsProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const isPaid = plan !== "free";
@@ -65,7 +66,7 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
                 : "Actualizar a Empresa"}
           </button>
         )}
-        {isPaid && hasCustomer && (
+        {isPaid && hasCustomer && hasManagedSubscription && (
           <button
             type="button"
             onClick={() => go("/api/create-portal")}
@@ -76,10 +77,15 @@ export function SubscriptionActions({ plan, hasCustomer }: SubscriptionActionsPr
           </button>
         )}
       </div>
-      {isPaid && hasCustomer && (
+      {isPaid && hasCustomer && hasManagedSubscription && (
         <p className="text-xs leading-5 text-slate-500">
           Desde Stripe puedes cambiar de plan, actualizar la tarjeta o cancelar. Si cancelas, el acceso normalmente se
           mantiene hasta que termine el periodo ya pagado.
+        </p>
+      )}
+      {isPaid && hasCustomer && !hasManagedSubscription && (
+        <p className="status-note">
+          Plan activo manualmente para pruebas. No hay una suscripcion activa en Stripe que gestionar o cancelar.
         </p>
       )}
       {isPaid && !hasCustomer && (
