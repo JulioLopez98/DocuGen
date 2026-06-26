@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BillingStatusNotice } from "@/components/BillingStatusNotice";
@@ -101,15 +101,15 @@ export default async function SettingsPage() {
           },
           {
             id: "suscripcion",
-            label: "SuscripciÃ³n",
+            label: "Suscripción",
             description: "Stripe y formatos",
             content: (
               <div className="grid gap-4">
                 <section className="surface p-6">
-                  <p className="eyebrow">SuscripciÃ³n</p>
-                  <h2 className="panel-title mt-3">Plan y facturaciÃ³n</h2>
+                  <p className="eyebrow">Suscripción</p>
+                  <h2 className="panel-title mt-3">Plan y facturación</h2>
                   <p className="body-muted mt-3">
-                    Actualiza a Pro o gestiona tu suscripciÃ³n desde el portal seguro de Stripe.
+                    Actualiza a Pro o gestiona tu suscripción desde el portal seguro de Stripe.
                   </p>
                   <div className="mt-6">
                     <SubscriptionActions
@@ -168,9 +168,9 @@ export default async function SettingsPage() {
                   ) : (
                     <div className="mt-5">
                       <EmptyState
-                        eyebrow="Documentos vacÃ­os"
-                        title="AÃºn no hay documentos que gestionar"
-                        description="Cuando generes tu primer borrador, esta secciÃ³n te permitirÃ¡ revisar documentos y limpiar tus datos."
+                        eyebrow="Documentos vacíos"
+                        title="Aún no hay documentos que gestionar"
+                        description="Cuando generes tu primer borrador, esta sección te permitirá revisar documentos y limpiar tus datos."
                         variant="flat"
                         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
                         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}

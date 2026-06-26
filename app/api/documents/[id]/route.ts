@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   getDocumentVersions,
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, { params }: Params) {
     const { supabase, user } = await requireUser();
 
     if (!supabase || !user) {
-      return errorResponse(401, "unauthorized", "Inicia sesiÃ³n para guardar documentos.");
+      return errorResponse(401, "unauthorized", "Inicia sesión para guardar documentos.");
     }
 
     const payload = documentUpdateSchema.parse(await request.json());
@@ -126,7 +126,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ document: data, versions: versions || [] });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return errorResponse(400, "invalid_payload", "El documento no puede estar vacÃ­o.");
+      return errorResponse(400, "invalid_payload", "El documento no puede estar vacío.");
     }
 
     console.error("document_update_unhandled", error);

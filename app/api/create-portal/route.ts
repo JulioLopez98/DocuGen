@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { getStripe } from "@/lib/stripe";
 import { requireUser, type Profile } from "@/lib/supabase-server";
@@ -11,7 +11,7 @@ export async function POST() {
     const { supabase, user } = await requireUser();
 
     if (!supabase || !user) {
-      return errorResponse(401, "unauthorized", "Inicia sesiÃ³n para gestionar tu suscripciÃ³n.");
+      return errorResponse(401, "unauthorized", "Inicia sesión para gestionar tu suscripción.");
     }
 
     const stripe = getStripe();

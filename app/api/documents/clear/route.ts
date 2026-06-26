@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createSupabaseServiceClient, requireUser } from "@/lib/supabase-server";
 import { recordWorkspaceAuditEvent } from "@/lib/workspace-audit";
 
@@ -10,7 +10,7 @@ export async function DELETE() {
     const { supabase, user } = await requireUser();
 
     if (!supabase || !user) {
-      return errorResponse(401, "unauthorized", "Inicia sesiÃ³n para borrar el historial.");
+      return errorResponse(401, "unauthorized", "Inicia sesión para borrar el historial.");
     }
 
     const db = createSupabaseServiceClient() || supabase;

@@ -193,14 +193,14 @@ function normalizePaidPlan(plan?: string): PaidPlan | null {
 }
 
 function getPlanFromSubscription(subscription: Stripe.Subscription): PaidPlan | null {
-  const metadataPlan = normalizePaidPlan(subscription.metadata?.target_plan);
+  const priceId = subscription.items.data[0]?.price.id;
+  const pricePlan = getPlanFromStripePriceId(priceId);
 
-  if (metadataPlan) {
-    return metadataPlan;
+  if (pricePlan) {
+    return pricePlan;
   }
 
-  const priceId = subscription.items.data[0]?.price.id;
-  return getPlanFromStripePriceId(priceId);
+  return normalizePaidPlan(subscription.metadata?.target_plan);
 }
 
 function isActiveSubscription(subscription: Stripe.Subscription) {
