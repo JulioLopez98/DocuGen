@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ContextualHelp } from "@/components/ContextualHelp";
 import { GeneratorClient } from "@/components/GeneratorClient";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getDocumentConfig, type DocumentType } from "@/lib/document-types";
@@ -117,27 +116,15 @@ export default async function GeneratePage({ searchParams }: Props) {
       <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="max-w-3xl">
           <p className="eyebrow">Generador</p>
-          <h1 className="font-serif-display mt-3 text-4xl font-bold">Crea un borrador profesional</h1>
+          <h1 className="font-serif-display mt-3 text-4xl font-bold">Crear documento</h1>
           <p className="mt-3 text-slate-600">
-            Elige el documento, completa los campos y revisa el resultado antes de exportarlo o usarlo.
+            Elige una vía, completa solo los datos necesarios y genera un borrador listo para revisar.
           </p>
         </div>
         <div className="surface-flat rounded-md p-4 text-sm">
           <p className="font-semibold text-[#2d6a4f]">Exportaciones</p>
           <p className="mt-1 text-slate-600">{profile?.plan !== "free" ? "PDF, TXT y Word disponibles" : "PDF y TXT incluidos. Word con Pro"}</p>
         </div>
-      </div>
-      <div className="mb-6">
-        <ContextualHelp
-          title="Si no sabes por dónde empezar"
-          description="Piensa primero en la intención: vender, contratar, reclamar, preparar una web o pedir algo a medida. DocuGen te mostrará opciones más concretas en el panel izquierdo."
-          items={[
-            "Tipos de documento: mejor para documentos frecuentes con campos guiados.",
-            "Tipos de la comunidad: documentos nuevos revisados a partir de solicitudes reales.",
-            "A medida: para casos que no encajan en los tipos disponibles, disponible en Pro.",
-          ]}
-          secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
-        />
       </div>
       <Suspense>
         <GeneratorClient

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -418,56 +418,40 @@ export function GeneratorClient({
         <div className="grid gap-5 lg:grid-cols-[0.88fr_1.12fr] lg:items-end">
           <div>
             <p className="eyebrow">Crear documento</p>
-            <h1 className="panel-title mt-3">Elige el camino y DocuGen te guía paso a paso</h1>
+            <h1 className="panel-title mt-3">¿Qué quieres preparar?</h1>
             <p className="body-muted mt-3">
-              Empieza por el catálogo oficial, usa tipos comunitarios aprobados o pide un documento a medida si tu caso
-              no encaja todavía.
+              Elige una opción. Después verás solo lo necesario para completar y generar el documento.
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <CreationModeCard
               active={generatorMode === "catalog"}
               eyebrow={`${documentTypes.length} tipos`}
-              title="Catálogo"
-              text="Contratos, cartas, presupuestos, web y documentos profesionales."
+              title="Usar catálogo"
+              text="Elige un documento guiado por categorías."
               onClick={() => selectCatalogIntent("all")}
             />
             <CreationModeCard
               active={generatorMode === "community"}
               eyebrow={`${communityTypes.length} aprobados`}
-              title="Comunidad"
-              text="Tipos nacidos de solicitudes reales y revisados antes de usarse."
+              title="Tipos aprobados"
+              text="Documentos nuevos revisados por el equipo."
               onClick={selectCommunityMode}
               disabled={communityTypes.length === 0}
             />
             <CreationModeCard
               active={generatorMode === "custom"}
               eyebrow={customProLocked ? "Pro" : "Incluido"}
-              title="A medida"
-              text="Describe lo que necesitas si no existe en el catálogo."
+              title="Pedir a medida"
+              text="Describe tu caso si no encuentras el documento."
               onClick={selectCustomMode}
             />
           </div>
         </div>
       </section>
 
-      <GeneratorFlowSummary
-        mode={generatorMode}
-        selectedIntent={selectedIntent}
-        selectedDocumentLabel={
-          generatorMode === "community"
-            ? communityTypeConfirmed
-              ? selectedCommunityType?.label || null
-              : null
-            : selectedDocumentConfirmed
-              ? config.label
-              : null
-        }
-        selectedReferenceTemplateName={selectedReferenceTemplate?.name || null}
-      />
-
-      <div className="grid gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
-      <aside className="space-y-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-2">
+      <div className="grid gap-6">
+      <aside className="hidden">
         {generatorMode === "catalog" ? (
         <section className="surface-flat p-5">
           <div>
@@ -855,7 +839,7 @@ export function GeneratorClient({
 
       </aside>
 
-      <section className="surface min-h-[520px] p-6">
+      <section className="surface min-h-[520px] p-5 md:p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-5">
           <div>
             <p className="text-sm font-semibold text-[#2d6a4f]">
@@ -1092,62 +1076,6 @@ function CreationModeCard({
       <span className="mt-3 block font-bold text-[#1f2933]">{title}</span>
       <span className="mt-2 block text-xs leading-5 text-slate-600">{disabled ? "Aún no hay tipos disponibles." : text}</span>
     </button>
-  );
-}
-
-function GeneratorFlowSummary({
-  mode,
-  selectedIntent,
-  selectedDocumentLabel,
-  selectedReferenceTemplateName,
-}: {
-  mode: "catalog" | "community" | "custom";
-  selectedIntent: GeneratorIntent;
-  selectedDocumentLabel: string | null;
-  selectedReferenceTemplateName: string | null;
-}) {
-  const steps = [
-    {
-      label: "1. Punto de partida",
-      value: mode === "catalog" ? selectedIntent.label : mode === "community" ? "Tipos de la comunidad" : "Documento a medida",
-      done: true,
-    },
-    {
-      label: "2. Documento",
-      value: mode === "custom" ? "Definido por tu descripcion" : selectedDocumentLabel || "Pendiente de elegir",
-      done: mode === "custom" || Boolean(selectedDocumentLabel),
-    },
-    {
-      label: "3. Datos",
-      value: mode !== "custom" && !selectedDocumentLabel ? "Aparece despues" : "Completa el formulario",
-      done: false,
-    },
-    {
-      label: "Opcional",
-      value: selectedReferenceTemplateName ? `Plantilla: ${selectedReferenceTemplateName}` : "Sin plantilla",
-      done: Boolean(selectedReferenceTemplateName),
-    },
-  ];
-
-  return (
-    <section className="surface-flat p-4" aria-label="Progreso de creacion">
-      <div className="grid gap-3 md:grid-cols-4">
-        {steps.map((step, index) => (
-          <div
-            key={step.label}
-            className={`relative overflow-hidden rounded-md border px-4 py-3 ${
-              step.done ? "border-[#2d6a4f] bg-[#d8f3dc]/45 shadow-[0_8px_20px_rgba(45,106,79,0.08)]" : "border-[#d8f3dc] bg-white/70"
-            }`}
-          >
-            <span className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-white/75 text-xs font-bold text-[#2d6a4f]">
-              {index + 1}
-            </span>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">{step.label}</p>
-            <p className="mt-1 text-sm font-semibold text-[#1f2933]">{step.value}</p>
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 

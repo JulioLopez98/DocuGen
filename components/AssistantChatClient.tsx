@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DocResult } from "@/components/DocResult";
-import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import type { ChatMessageRow, ChatSessionRow } from "@/lib/supabase-server";
 
 type AssistantChatClientProps = {
@@ -134,89 +133,66 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <aside className="surface p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="eyebrow">Conversaciones</p>
-            <h2 className="panel-title mt-2">Tu hilo de trabajo</h2>
-          </div>
-          <Link href="/asistente" className="focus-ring btn-secondary px-3 py-2 text-xs">
-            Nueva
-          </Link>
-        </div>
+    <div className="mx-auto grid max-w-5xl gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/asistente" className="focus-ring btn-secondary px-4 py-2 text-sm">
+          Nuevo chat
+        </Link>
+        <button
+          type="button"
+          onClick={generateFromChat}
+          disabled={generating || loading || messages.length === 0}
+          className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60"
+        >
+          {generating ? "Generando..." : "Generar documento"}
+        </button>
+      </div>
 
-        <div className="mt-5 grid gap-2">
-          {sessions.length === 0 ? (
-            <div className="status-note">
-              <p className="font-semibold text-[#1f2933]">Aún no tienes conversaciones</p>
-              <p className="mt-2">Cuando envíes el primer mensaje, el hilo quedará guardado aquí.</p>
-            </div>
-          ) : (
-            sessions.map((session) => (
+      {sessions.length > 0 && (
+        <details className="surface-flat p-4">
+          <summary className="focus-ring cursor-pointer list-none rounded-md text-sm font-bold text-[#2d6a4f]">
+            Conversaciones anteriores ({sessions.length})
+          </summary>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {sessions.slice(0, 9).map((session) => (
               <Link
                 key={session.id}
                 href={`/asistente?sessionId=${session.id}`}
-                className={`focus-ring rounded-xl border px-3 py-3 text-sm transition ${
+                className={`focus-ring rounded-md border px-3 py-3 text-sm transition ${
                   session.id === sessionId
-                    ? "border-[#2d6a4f] bg-[#d8f3dc] shadow-sm"
-                    : "border-[#d8f3dc] bg-white/72 hover:border-[#2d6a4f] hover:bg-white"
+                    ? "border-[#2d6a4f] bg-[#d8f3dc]"
+                    : "border-[#d8f3dc] bg-white/72 hover:border-[#2d6a4f]"
                 }`}
               >
                 <span className="font-semibold">Conversación</span>
                 <span className="mt-1 block text-xs text-slate-500">{new Date(session.updated_at).toLocaleString("es-ES")}</span>
               </Link>
-            ))
-          )}
-        </div>
-
-        <div className="mt-6 rounded-md border border-[#d8f3dc] bg-[#faf9f6]/80 p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Flujo recomendado</p>
-          <ol className="mt-3 grid gap-2 text-sm leading-6 text-slate-600">
-            <li>1. Explica el caso con tus palabras.</li>
-            <li>2. Responde las preguntas de aclaración.</li>
-            <li>3. Genera el borrador cuando esté claro.</li>
-          </ol>
-        </div>
-      </aside>
-
-      <section className="surface p-5">
-        <div className="border-b border-[#d8f3dc] pb-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="eyebrow">Chat libre Pro</p>
-              <h1 className="panel-title mt-2">Describe el documento que necesitas</h1>
-              <p className="body-muted mt-3 max-w-3xl">
-                El asistente te ayuda a aclarar tipo de documento, datos necesarios y siguiente paso. Cuando tengas la
-                información suficiente, puedes generar el borrador y guardarlo en Documentos.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={generateFromChat}
-              disabled={generating || loading || messages.length === 0}
-              className="focus-ring btn-primary px-4 py-3 text-sm disabled:opacity-60"
-            >
-              {generating ? "Generando..." : "Generar documento"}
-            </button>
+            ))}
           </div>
+        </details>
+      )}
+
+      <section className="surface overflow-hidden p-0">
+        <div className="border-b border-[#d8f3dc] bg-white/72 px-5 py-4">
+          <p className="text-sm font-bold text-[#2d6a4f]">Describe el documento. DocuGen te guía.</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            Incluye objetivo, partes implicadas, fechas, importes y condiciones importantes. Evita datos sensibles innecesarios.
+          </p>
         </div>
 
-        <div className="mt-5 grid min-h-[420px] content-start gap-3">
+        <div className="grid min-h-[460px] content-start gap-3 p-5">
           {messages.length === 0 && (
-            <div className="surface-muted p-5">
-              <p className="eyebrow">Punto de partida</p>
-              <h2 className="mt-3 text-xl font-bold">Empieza con una situación real</h2>
-              <p className="body-muted mt-2">
-                No hace falta saber el nombre exacto del documento. Cuéntale al asistente qué quieres conseguir.
-              </p>
-              <div className="mt-4 grid gap-2">
+            <div className="mx-auto max-w-2xl rounded-xl border border-[#d8f3dc] bg-[#faf9f6]/85 p-5 text-center">
+              <p className="eyebrow">Empieza con una frase</p>
+              <h2 className="mt-3 text-2xl font-bold">No necesitas saber el nombre del documento</h2>
+              <p className="body-muted mt-2">Cuéntale al asistente qué quieres conseguir y él ordenará el caso.</p>
+              <div className="mt-5 grid gap-2 text-left">
                 {starterPrompts.map((prompt) => (
                   <button
                     key={prompt}
                     type="button"
                     onClick={() => setMessage(prompt)}
-                    className="focus-ring interactive-subtle rounded-xl border border-[#d8f3dc] bg-white/78 px-4 py-3 text-left text-sm font-semibold text-[#1f2933]"
+                    className="focus-ring interactive-subtle rounded-md border border-[#d8f3dc] bg-white/80 px-4 py-3 text-left text-sm font-semibold text-[#1f2933]"
                   >
                     {prompt}
                   </button>
@@ -224,14 +200,14 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               </div>
             </div>
           )}
-          {messages.length === 0 && <PlanFirstSteps plan="pro" context="assistant" compact />}
+
           {messages.map((chatMessage) => (
             <article
               key={chatMessage.id}
-              className={`max-w-[88%] rounded-2xl p-4 text-sm leading-6 shadow-sm ${
+              className={`max-w-[86%] rounded-2xl p-4 text-sm leading-6 shadow-sm ${
                 chatMessage.role === "user"
                   ? "ml-auto bg-[#2d6a4f] text-white"
-                  : "mr-auto border border-[#d8f3dc] bg-white/88 text-[#1f2933]"
+                  : "mr-auto border border-[#d8f3dc] bg-white/90 text-[#1f2933]"
               }`}
             >
               <p className={`mb-2 text-[10px] font-bold uppercase tracking-[0.14em] ${chatMessage.role === "user" ? "text-white/70" : "text-[#2d6a4f]"}`}>
@@ -240,6 +216,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               <p className="whitespace-pre-wrap">{chatMessage.content}</p>
             </article>
           ))}
+
           {loading && (
             <div className="mr-auto rounded-2xl border border-[#d8f3dc] bg-white/80 p-4 text-sm text-slate-600 shadow-sm">
               Pensando la mejor forma de enfocarlo...
@@ -247,7 +224,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
           )}
         </div>
 
-        <div className="mt-5 border-t border-[#d8f3dc] pt-4">
+        <div className="border-t border-[#d8f3dc] bg-[#faf9f6]/70 p-4">
           <label className="block">
             <span className="sr-only">Mensaje</span>
             <textarea
@@ -258,12 +235,12 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
                   void sendMessage();
                 }
               }}
-              className="field-control min-h-28"
-              placeholder="Cuéntame qué documento necesitas, para qué lo vas a usar y qué datos tienes..."
+              className="field-control min-h-24"
+              placeholder="Ejemplo: necesito una autorización para que mi hermano recoja un documento en el ayuntamiento..."
             />
           </label>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">Pulsa Ctrl+Enter para enviar. Genera el documento cuando el caso esté claro.</p>
+            <p className="text-xs text-slate-500">Ctrl+Enter para enviar. Genera el documento cuando el caso esté claro.</p>
             <button
               type="button"
               onClick={sendMessage}
@@ -275,30 +252,30 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
           </div>
           {error && <p className="status-error mt-3">{error}</p>}
         </div>
-
-        {generatedDocument && (
-          <div className="mt-6">
-            {generatedDocument.proposal && (
-              <div className="status-success mb-4">
-                <p className="text-sm font-bold text-[#2d6a4f]">Propuesta enviada al admin</p>
-                <p className="mt-1 text-xs leading-5 text-slate-600">
-                  Hemos creado una propuesta revisable para valorar si este tipo documental debe entrar en Tipos de documento:{" "}
-                  <strong>{generatedDocument.proposal.title}</strong>
-                  {generatedDocument.proposal.category ? ` · ${generatedDocument.proposal.category}` : ""}.
-                </p>
-              </div>
-            )}
-            <DocResult
-              documentId={generatedDocument.id}
-              docType={generatedDocument.docType}
-              title={generatedDocument.docLabel}
-              content={generatedDocument.content}
-              canExportDocx
-              onRegenerate={generateFromChat}
-            />
-          </div>
-        )}
       </section>
+
+      {generatedDocument && (
+        <div>
+          {generatedDocument.proposal && (
+            <div className="status-success mb-4">
+              <p className="text-sm font-bold text-[#2d6a4f]">Propuesta enviada al admin</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Hemos creado una propuesta revisable para valorar si este tipo documental debe entrar en el catálogo: {" "}
+                <strong>{generatedDocument.proposal.title}</strong>
+                {generatedDocument.proposal.category ? ` · ${generatedDocument.proposal.category}` : ""}.
+              </p>
+            </div>
+          )}
+          <DocResult
+            documentId={generatedDocument.id}
+            docType={generatedDocument.docType}
+            title={generatedDocument.docLabel}
+            content={generatedDocument.content}
+            canExportDocx
+            onRegenerate={generateFromChat}
+          />
+        </div>
+      )}
     </div>
   );
 }
