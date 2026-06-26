@@ -116,6 +116,8 @@ export default async function SettingsPage() {
                       plan={profile.plan}
                       hasCustomer={Boolean(profile.stripe_customer_id)}
                       hasManagedSubscription={hasManagedStripeSubscription(profile)}
+                      cancelAtPeriodEnd={profile.stripe_cancel_at_period_end}
+                      currentPeriodEnd={profile.stripe_current_period_end}
                     />
                   </div>
                   <div className="mt-5">
