@@ -1151,9 +1151,9 @@ function DocumentChoicePanel({
             <details
               key={group.category}
               open={hasSearch || isFiltered || index === 0}
-              className="group rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 shadow-[0_8px_24px_rgba(31,41,51,0.04)]"
+              className="doc-accordion group rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/76 shadow-[0_8px_24px_rgba(31,41,51,0.04)]"
             >
-              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-4 py-4 transition hover:bg-[#faf9f6]">
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-4 transition hover:bg-[#faf9f6]">
                 <span>
                   <span className="block font-bold text-[#1f2933]">{group.category}</span>
                   <span className="mt-1 block text-xs text-slate-500">
@@ -1167,7 +1167,7 @@ function DocumentChoicePanel({
                   <span className="text-sm font-bold text-[#2d6a4f] group-open:rotate-180">⌄</span>
                 </span>
               </summary>
-              <div className="divide-y divide-[#d8f3dc] border-t border-[#d8f3dc]">
+              <div className="divide-y divide-[#d8f3dc] border-t border-[#2d6a4f]/25 bg-[#fffdf8]/62">
                 {group.documents.map((doc) => (
                   <button
                     key={doc.type}
