@@ -39,6 +39,31 @@ export function SubscriptionActions({ plan, hasCustomer, hasManagedSubscription 
     }
   }
 
+  async function downgradeFree() {
+    if (!window.confirm("Volver al plan Free? Perderas acceso a funciones Pro y Empresa hasta que vuelvas a actualizar.")) {
+      return;
+    }
+
+    setLoading("/api/downgrade-free");
+    setError(null);
+
+    try {
+      const response = await fetch("/api/downgrade-free", { method: "POST" });
+      const payload = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        setError(payload.message || "No se pudo volver al plan Free.");
+        return;
+      }
+
+      window.location.href = "/dashboard";
+    } catch {
+      setError("No se pudo conectar con DocuGen. Espera unos segundos y vuelve a intentarlo.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap gap-3">
@@ -74,6 +99,16 @@ export function SubscriptionActions({ plan, hasCustomer, hasManagedSubscription 
             className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
           >
             {loading === "/api/create-portal" ? "Abriendo..." : "Gestionar suscripcion"}
+          </button>
+        )}
+        {isPaid && !hasManagedSubscription && (
+          <button
+            type="button"
+            onClick={downgradeFree}
+            disabled={loading !== null}
+            className="focus-ring rounded-xl border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+          >
+            {loading === "/api/downgrade-free" ? "Cambiando..." : "Volver a Free"}
           </button>
         )}
       </div>
