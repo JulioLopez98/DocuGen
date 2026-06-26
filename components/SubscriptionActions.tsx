@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -36,7 +36,7 @@ export function SubscriptionActions({
       const payload = (await response.json()) as { url?: string; message?: string };
 
       if (!response.ok || !payload.url) {
-        setError(payload.message || "No se pudo crear la sesion.");
+        setError(payload.message || "No se pudo crear la sesión.");
         return;
       }
 
@@ -52,9 +52,9 @@ export function SubscriptionActions({
     const canceling = action === "cancel_at_period_end";
     const confirmed = canceling
       ? window.confirm(
-          "Cancelar la suscripcion al final del periodo? Mantendras el acceso hasta la fecha ya pagada y no se renovara despues.",
+          `Vas a cancelar tu suscripción. Mantendrás el acceso a ${getPlanLabel(plan)} hasta ${periodEndLabel || "el final del periodo ya pagado"}. Después DocuGen pasará a Free automáticamente. No se devuelve el importe del mes ya pagado. ¿Quieres continuar?`,
         )
-      : window.confirm("Reactivar la suscripcion? Se volvera a renovar en el proximo periodo de facturacion.");
+      : window.confirm("¿Quieres reactivar la suscripción? El plan volverá a renovarse en el próximo periodo de facturación.");
 
     if (!confirmed) {
       return;
@@ -72,7 +72,7 @@ export function SubscriptionActions({
       const payload = (await response.json()) as { message?: string };
 
       if (!response.ok) {
-        setError(payload.message || "No se pudo actualizar la suscripcion.");
+        setError(payload.message || "No se pudo actualizar la suscripción.");
         return;
       }
 
@@ -136,7 +136,7 @@ export function SubscriptionActions({
                 : "Actualizar a Empresa"}
           </button>
         )}
-        {isPaid && hasCustomer && hasManagedSubscription && (
+        {isPaid && hasCustomer && hasManagedSubscription && !cancelAtPeriodEnd && (
           <button
             type="button"
             onClick={() => go("/api/create-portal")}
@@ -151,9 +151,9 @@ export function SubscriptionActions({
             type="button"
             onClick={() => updateStripeCancellation("cancel_at_period_end")}
             disabled={loading !== null}
-            className="focus-ring rounded-xl border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+            className="focus-ring rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:opacity-60"
           >
-            {loading === "/api/subscription/cancel:cancel_at_period_end" ? "Programando..." : "Cancelar al final del periodo"}
+            {loading === "/api/subscription/cancel:cancel_at_period_end" ? "Cancelando..." : "Cancelar suscripción"}
           </button>
         )}
         {isPaid && hasManagedSubscription && cancelAtPeriodEnd && (
@@ -163,7 +163,7 @@ export function SubscriptionActions({
             disabled={loading !== null}
             className="focus-ring btn-primary px-4 py-2 text-sm disabled:opacity-60"
           >
-            {loading === "/api/subscription/cancel:reactivate" ? "Reactivando..." : "Reactivar suscripcion"}
+            {loading === "/api/subscription/cancel:reactivate" ? "Reactivando..." : "Reactivar suscripción"}
           </button>
         )}
         {isPaid && !hasManagedSubscription && (
@@ -179,30 +179,43 @@ export function SubscriptionActions({
       </div>
       {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
         <p className="text-xs leading-5 text-slate-500">
-          Los pagos reales se gestionan con Stripe. Si cancelas, DocuGen mantendra tu acceso hasta el final del periodo
-          ya pagado{periodEndLabel ? ` (${periodEndLabel})` : ""} y despues volvera a Free automaticamente.
+          Puedes cambiar de plan o cancelar cuando quieras. Si cancelas, mantendrás {getPlanLabel(plan)} hasta
+          {periodEndLabel ? ` el ${periodEndLabel}` : " que termine el periodo ya pagado"}; después DocuGen pasará a Free
+          automáticamente. No se devuelve el importe del mes ya pagado.
         </p>
       )}
       {isPaid && hasManagedSubscription && cancelAtPeriodEnd && (
         <p className="status-warning">
-          Renovacion cancelada. Mantienes el acceso hasta {periodEndLabel || "el final del periodo pagado"}. Puedes
-          reactivar antes de esa fecha.
+          Suscripción cancelada. Mantienes {getPlanLabel(plan)} hasta {periodEndLabel || "el final del periodo ya pagado"}.
+          Después DocuGen pasará a Free automáticamente. Puedes reactivarla antes de esa fecha.
         </p>
       )}
       {isPaid && hasCustomer && !hasManagedSubscription && (
         <p className="status-note">
-          Plan activo manualmente para pruebas. No hay una suscripcion activa en Stripe que gestionar o cancelar.
+          Plan activo manualmente para pruebas. No hay una suscripción activa en Stripe que gestionar o cancelar.
         </p>
       )}
       {isPaid && !hasCustomer && (
         <p className="status-note">
-          Plan activo manualmente. No hay cliente ni suscripcion de Stripe asociados, asi que volver a Free no cancela
-          ningun pago.
+          Plan activo manualmente. No hay cliente ni suscripción de Stripe asociados, así que volver a Free no cancela
+          ningún pago.
         </p>
       )}
       {error && <p className="status-error w-full">{error}</p>}
     </div>
   );
+}
+
+function getPlanLabel(plan: "free" | "pro" | "empresa") {
+  if (plan === "empresa") {
+    return "Empresa";
+  }
+
+  if (plan === "pro") {
+    return "Pro";
+  }
+
+  return "Free";
 }
 
 function formatDate(value: string) {

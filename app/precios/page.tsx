@@ -58,7 +58,7 @@ const faqs = [
   {
     question: "¿Puedo cancelar Pro cuando quiera?",
     answer:
-      "Sí. Desde el panel puedes abrir el portal seguro de Stripe para cambiar o cancelar tu suscripción. Si cancelas al final del periodo, mantienes el acceso hasta que termine el mes ya pagado y después vuelves a Free.",
+      "Sí. Puedes cambiar de plan o cancelar desde tu cuenta. Si cancelas, mantienes el acceso hasta que termine el mes ya pagado y después DocuGen vuelve a Free automáticamente. No se devuelve el importe del periodo ya pagado.",
   },
   {
     question: "¿Qué pasa si sigo en Free?",

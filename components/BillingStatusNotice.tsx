@@ -1,4 +1,4 @@
-﻿import type { Profile } from "@/lib/supabase-server";
+import type { Profile } from "@/lib/supabase-server";
 
 type BillingStatusNoticeProps = {
   profile: Profile;
@@ -19,7 +19,7 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
       <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm">
         <p className="font-bold text-[#2d6a4f]">Plan Free activo</p>
         <p className="mt-2 text-slate-600">
-          Puedes usar tus documentos gratuitos del mes. Si actualizas, la suscripcion se gestionara desde el portal
+          Puedes usar tus documentos gratuitos del mes. Si actualizas, la suscripción se gestionará desde el portal
           seguro de Stripe.
         </p>
       </div>
@@ -31,7 +31,7 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
       <div className="rounded-md border border-[#d8f3dc] bg-white/70 p-4 text-sm">
         <p className="font-bold text-[#2d6a4f]">Plan {getPlanLabel(profile.plan)} activo</p>
         <p className="mt-2 text-slate-600">
-          Este acceso esta activado manualmente para pruebas o desarrollo. No hay una suscripcion activa en Stripe que
+          Este acceso está activado manualmente para pruebas o desarrollo. No hay una suscripción activa en Stripe que
           cancelar desde el portal.
         </p>
       </div>
@@ -41,15 +41,15 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
   if (isCanceling) {
     return (
       <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-        <p className="font-bold">Cancelacion programada</p>
+        <p className="font-bold">Suscripción cancelada</p>
         <p className="mt-2">
-          Tu plan {getPlanLabel(profile.plan)} seguira activo hasta el {periodEndLabel}. Ese dia DocuGen pasara
-          automaticamente a Free si no hay otra suscripcion activa.
+          Tu plan {getPlanLabel(profile.plan)} seguirá activo hasta el {periodEndLabel}. Ese día DocuGen pasará
+          automáticamente a Free si no hay otra suscripción activa.
         </p>
         {variant === "full" && (
           <p className="mt-2 text-amber-800">
-            Mientras tanto puedes seguir usando las funciones incluidas en tu plan. Si cambias de idea, puedes reactivar
-            la suscripcion desde Stripe.
+            No se devuelve el importe del mes ya pagado. Hasta esa fecha puedes seguir usando las funciones de tu plan y
+            reactivar la suscripción si cambias de idea.
           </p>
         )}
       </div>
@@ -58,15 +58,15 @@ export function BillingStatusNotice({ profile, variant = "full" }: BillingStatus
 
   return (
     <div className="rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4 text-sm">
-      <p className="font-bold text-[#2d6a4f]">Suscripcion activa</p>
+      <p className="font-bold text-[#2d6a4f]">Suscripción activa</p>
       <p className="mt-2 text-slate-700">
-        Tu plan {getPlanLabel(profile.plan)} esta activo
-        {periodEndLabel ? ` hasta el proximo periodo de facturacion: ${periodEndLabel}.` : "."}
+        Tu plan {getPlanLabel(profile.plan)} está activo
+        {periodEndLabel ? ` hasta el próximo periodo de facturación: ${periodEndLabel}.` : "."}
       </p>
       {variant === "full" && (
         <p className="mt-2 text-slate-600">
-          Si cancelas desde Stripe, el acceso no se corta de golpe: normalmente se mantiene hasta que termine el periodo
-          ya pagado y despues DocuGen vuelve a Free.
+          Puedes cambiar de plan o cancelar cuando quieras. Si cancelas, mantendrás el acceso hasta que termine el mes ya
+          pagado y después DocuGen volverá a Free automáticamente.
         </p>
       )}
     </div>
