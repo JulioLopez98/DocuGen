@@ -251,8 +251,24 @@ async function getTemplateReference(
     .eq("id", templateId)
     .single<DocumentTemplateRow>();
 
-  if (error || !template || (template.user_id !== userId && !template.workspace_id)) {
+  if (error || !template) {
     console.error("reference_template_not_found", error);
+    return errorResponse(404, "template_not_found", "No se encontro la plantilla de referencia.");
+  }
+
+  if (template.workspace_id) {
+    const workspaceAccess = await canUseWorkspace(supabase, userId, profile, template.workspace_id, "create_documents");
+
+    if (!workspaceAccess.allowed) {
+      return errorResponse(
+        workspaceAccess.reason === "permission_denied" ? 403 : 404,
+        workspaceAccess.reason || "workspace_denied",
+        workspaceAccess.reason === "permission_denied"
+          ? "No tienes permiso para usar plantillas de ese workspace."
+          : "No tienes acceso a esa plantilla de workspace.",
+      );
+    }
+  } else if (template.user_id !== userId) {
     return errorResponse(404, "template_not_found", "No se encontro la plantilla de referencia.");
   }
 

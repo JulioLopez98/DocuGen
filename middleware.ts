@@ -8,6 +8,7 @@ const protectedPrefixes = [
   "/admin",
   "/onboarding",
   "/plantillas",
+  "/mi-catalogo",
   "/asistente",
   "/workspace",
   "/ajustes",
