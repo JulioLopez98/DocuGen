@@ -11,14 +11,8 @@ import { documentTypes, getDefaultDocumentType, getDocumentConfig, requiresPro, 
 import type { PdfBrandSettings } from "@/lib/pdf";
 import type { RefinementMode } from "@/lib/refinement";
 import type { CommunityDocumentTypeRow, DocumentTemplateRow, WorkspaceRow } from "@/lib/supabase-server";
-import { getTemplateUsageMetrics, type TemplateUsageMetricsMap } from "@/lib/template-metrics";
-import {
-  defaultTemplateUsageMode,
-  templateUsageDescriptions,
-  templateUsageLabels,
-  templateUsageModes,
-  type TemplateUsageMode,
-} from "@/lib/template-usage";
+import type { TemplateUsageMetricsMap } from "@/lib/template-metrics";
+import { defaultTemplateUsageMode, type TemplateUsageMode } from "@/lib/template-usage";
 
 type GeneratedDocument = {
   id: string;
@@ -154,8 +148,6 @@ export function GeneratorClient({
   brandSettings,
   plan = "free",
   referenceTemplates = [],
-  referenceTemplateMetrics = {},
-  workspaces = [],
   communityTypes = [],
   initialReferenceTemplateId,
   initialTemplateUsageMode,
@@ -181,44 +173,22 @@ export function GeneratorClient({
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
   const [selectedIntentId, setSelectedIntentId] = useState<GeneratorIntentId>(initialIntentId);
-  const [templateQuery, setTemplateQuery] = useState("");
-  const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
   const [personalCatalogTypes, setPersonalCatalogTypes] = useState(communityTypes);
   const initialCommunityTypeExists = Boolean(initialCommunityTypeId && communityTypes.some((type) => type.id === initialCommunityTypeId));
   const [selectedCommunityId, setSelectedCommunityId] = useState(initialCommunityTypeExists ? initialCommunityTypeId || "" : communityTypes[0]?.id || "");
   const [communityTypeConfirmed, setCommunityTypeConfirmed] = useState(initialMode === "community" && initialCommunityTypeExists);
-  const [referenceTemplateId, setReferenceTemplateId] = useState(
-    referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
-  );
-  const [workspaceId, setWorkspaceId] = useState("");
-  const [templateUsageMode, setTemplateUsageMode] = useState<TemplateUsageMode>(initialTemplateUsageMode || defaultTemplateUsageMode);
+  const referenceTemplateId = referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "";
+  const workspaceId = "";
+  const templateUsageMode = initialTemplateUsageMode || defaultTemplateUsageMode;
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
   const customProLocked = plan === "free";
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery, selectedIntentId), [documentQuery, selectedIntentId]);
   const selectedIntent = generatorIntents.find((intent) => intent.id === selectedIntentId) || generatorIntents[0];
-  const visibleReferenceTemplates = useMemo(
-    () => filterAndRankReferenceTemplates(referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId || null),
-    [referenceTemplates, referenceTemplateMetrics, templateQuery, templateView, workspaceId],
-  );
-  const recommendedReferenceTemplates = useMemo(
-    () =>
-      getRecommendedReferenceTemplates(
-        referenceTemplates.filter((template) =>
-          workspaceId ? template.workspace_id === workspaceId || template.workspace_id === null : template.workspace_id === null,
-        ),
-        referenceTemplateMetrics,
-        config.category,
-      ),
-    [referenceTemplates, referenceTemplateMetrics, config.category, workspaceId],
-  );
-  const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
-  const selectedWorkspace = workspaces.find((workspace) => workspace.id === workspaceId);
   const selectedCommunityType = personalCatalogTypes.find((type) => type.id === selectedCommunityId);
   const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
-  const isFreePlan = plan === "free";
 
   function selectCatalogIntent(intentId: GeneratorIntentId) {
     const matchingDocuments = getDocumentsForIntent(intentId);
@@ -418,431 +388,118 @@ export function GeneratorClient({
 
   return (
     <div className="grid gap-6">
-      <section className="surface overflow-hidden p-6">
-        <div className="grid gap-5 lg:grid-cols-[0.88fr_1.12fr] lg:items-end">
+      <section className="surface overflow-hidden p-5 md:p-6">
+        <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr] xl:items-start">
           <div>
             <p className="eyebrow">Crear documento</p>
-            <h1 className="panel-title mt-3">¿Qué quieres preparar?</h1>
-            <p className="body-muted mt-3">
-              Elige una opción. Después verás solo lo necesario para completar y generar el documento.
+            <h1 className="panel-title mt-3">Empieza por el camino correcto</h1>
+            <p className="body-muted mt-3 max-w-2xl">
+              Primero elige si quieres partir del catálogo oficial, de tus tipos guardados o de una petición libre. Después solo verás el formulario necesario.
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <CreationModeCard
               active={generatorMode === "catalog"}
-              eyebrow={`${documentTypes.length} tipos`}
-              title="Usar catálogo"
-              text="Elige un documento guiado por categorías."
+              eyebrow={documentTypes.length + " tipos"}
+              title="Catálogo oficial"
+              text="Documentos guiados y ordenados por categoría."
               onClick={() => selectCatalogIntent("all")}
             />
             <CreationModeCard
               active={generatorMode === "community"}
-              eyebrow={`${personalCatalogTypes.length} guardados`}
+              eyebrow={personalCatalogTypes.length + " guardados"}
               title="Mi catálogo"
-              text="Documentos personalizados que guardes para reutilizar."
+              text={personalCatalogTypes.length > 0 ? "Tus tipos reutilizables, listos para generar." : "Guarda documentos a medida para reutilizarlos aquí."}
               onClick={selectCommunityMode}
-              disabled={personalCatalogTypes.length === 0}
             />
             <CreationModeCard
               active={generatorMode === "custom"}
               eyebrow={customProLocked ? "Pro" : "Incluido"}
-              title="Pedir a medida"
-              text="Describe tu caso si no encuentras el documento."
+              title="A medida"
+              text="Describe lo que necesitas si no existe en el catálogo."
               onClick={selectCustomMode}
             />
           </div>
         </div>
-      </section>
 
-      <div className="grid gap-6">
-      <aside className="hidden">
-        {generatorMode === "catalog" ? (
-        <section className="surface-flat p-5">
-          <div>
-            <p className="eyebrow">Catálogo</p>
-            <h2 className="mt-2 text-lg font-bold">Afina la búsqueda</h2>
-            <p className="body-muted mt-2 text-xs">
-              Ver todo suele ser lo más cómodo. Usa los filtros solo si quieres acotar por objetivo.
-            </p>
+        <div className="mt-5 rounded-xl border border-[#d8f3dc] bg-[#faf9f6]/80 p-3">
+          <div className="grid gap-2 md:grid-cols-4">
+            <StepChip label="1. Camino" value={getGeneratorModeLabel(generatorMode)} active />
+            <StepChip
+              label="2. Documento"
+              value={
+                generatorMode === "catalog"
+                  ? selectedDocumentConfirmed
+                    ? config.label
+                    : selectedIntent.id === "all"
+                      ? "Por elegir"
+                      : selectedIntent.label
+                  : generatorMode === "community"
+                    ? communityTypeConfirmed
+                      ? selectedCommunityType?.label || "Mi catálogo"
+                      : "Por elegir"
+                    : "Libre"
+              }
+              active={generatorMode !== "catalog" || selectedDocumentConfirmed}
+            />
+            <StepChip
+              label="3. Datos"
+              value={generated ? "Generado" : selectedDocumentConfirmed || generatorMode !== "catalog" ? "Completar" : "Pendiente"}
+              active={Boolean(generated || selectedDocumentConfirmed || generatorMode !== "catalog")}
+            />
+            <StepChip
+              label="Opcional"
+              value={referenceTemplateId ? "Con plantilla" : generatorMode === "community" ? "Gestionar aparte" : "Sin plantilla"}
+              active={Boolean(referenceTemplateId)}
+            />
           </div>
-          <div className="mt-4 grid gap-2">
-            <button
-              type="button"
-              onClick={() => selectCatalogIntent("all")}
-              className={`focus-ring interactive-subtle rounded-md border px-3 py-3 text-left text-sm ${
-                generatorMode === "catalog" && selectedIntentId === "all"
-                  ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                  : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
-              }`}
-            >
-              <span className="flex items-center justify-between gap-3">
-                <span className="font-bold">Ver todo el catálogo</span>
-                <span className="text-xs font-semibold text-[#2d6a4f]">{documentTypes.length}</span>
-              </span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">La vista más clara para explorar por categorías.</span>
-            </button>
-          </div>
+        </div>
 
-          <details className="mt-4 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/72 p-3" open={selectedIntentId !== "all"}>
-            <summary className="focus-ring cursor-pointer list-none rounded-md">
-              <span className="flex items-center justify-between gap-3">
-                <span>
-                  <span className="block text-sm font-bold text-[#1f2933]">Filtrar por objetivo</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">Atajos para acotar el catálogo.</span>
-                </span>
-                <span className="text-sm font-bold text-[#2d6a4f]">⌄</span>
-              </span>
-            </summary>
-            <div className="mt-3 grid gap-2">
-              {generatorIntents.filter((intent) => intent.id !== "all").map((intent) => (
+        {generatorMode === "catalog" && !selectedDocumentConfirmed && (
+          <div className="mt-5 border-t border-[#d8f3dc] pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Objetivo</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">Filtra solo si quieres acotar. Si no, explora por categorías.</p>
+              </div>
+              <button type="button" onClick={() => selectCatalogIntent("all")} className="focus-ring btn-ghost px-3 py-2 text-xs">
+                Ver todo
+              </button>
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {generatorIntents.map((intent) => (
                 <button
                   key={intent.id}
                   type="button"
                   onClick={() => selectCatalogIntent(intent.id)}
-                  className={`focus-ring interactive-subtle rounded-md border px-3 py-3 text-left text-sm ${
-                    generatorMode === "catalog" && selectedIntentId === intent.id
-                      ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                      : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
-                  }`}
+                  className={
+                    "focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition " +
+                    (selectedIntentId === intent.id
+                      ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
+                      : "border-[#d8f3dc] bg-[#fffdf8]/82 text-slate-600 hover:border-[#2d6a4f]")
+                  }
                 >
-                  <span className="flex items-center justify-between gap-3">
-                    <span className="font-bold">{intent.label}</span>
-                    <span className="text-xs font-semibold text-[#2d6a4f]">{getDocumentsForIntent(intent.id).length}</span>
-                  </span>
-                  {generatorMode === "catalog" && selectedIntentId === intent.id && (
-                    <span className="mt-1 block text-xs leading-5 text-slate-500">{intent.description}</span>
-                  )}
+                  {intent.label}
                 </button>
               ))}
             </div>
-          </details>
-
-        </section>
-        ) : (
-          <section className="surface-flat p-5">
-            <p className="eyebrow">Modo activo</p>
-            <h2 className="mt-2 text-lg font-bold">
-              {generatorMode === "community" ? "Mi catálogo" : "Documento a medida"}
-            </h2>
-            <p className="body-muted mt-2 text-xs">
-              {generatorMode === "community"
-                ? "Elige un tipo guardado y después completa sus campos."
-                : "Describe el documento que necesitas y DocuGen preparará un borrador personalizado."}
-            </p>
-            <button type="button" onClick={() => selectCatalogIntent("all")} className="focus-ring btn-secondary mt-4 w-full px-4 py-3 text-sm">
-              Volver al catálogo
-            </button>
-          </section>
-        )}
-
-        <details className="surface-flat rounded-md p-5">
-          <summary className="cursor-pointer list-none">
-            <span className="flex items-center justify-between gap-3">
-              <span>
-                <span className="block text-sm font-bold text-[#2d6a4f]">Opciones</span>
-                <span className="mt-1 block text-xs leading-5 text-slate-500">Plan, equipo y ajustes de guardado.</span>
-              </span>
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase text-[#2d6a4f]">{plan}</span>
-            </span>
-          </summary>
-
-          <div className="mt-4 grid gap-4 border-t border-[#d8f3dc] pt-4">
-          {workspaces.length > 0 && (
-          <div>
-            <p className="text-sm font-bold text-[#2d6a4f]">Espacio de trabajo</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Decide si el documento queda solo en tus documentos personales o compartido con un equipo.
-            </p>
-            <label className="mt-4 block">
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guardar en</span>
-              <select
-                value={workspaceId}
-                onChange={(event) => {
-                  setWorkspaceId(event.target.value);
-                  setReferenceTemplateId("");
-                }}
-                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-              >
-                <option value="">Personal</option>
-                {workspaces.map((workspace) => (
-                  <option key={workspace.id} value={workspace.id}>
-                    {workspace.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {selectedWorkspace && (
-              <p className="mt-3 rounded-md bg-[#fffdf8]/76 p-3 text-xs leading-5 text-slate-600">
-                El documento sera visible para miembros de {selectedWorkspace.name}.
-              </p>
-            )}
           </div>
         )}
 
-        <div>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-[#2d6a4f]">Tu plan</p>
-            <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold uppercase text-[#2d6a4f]">{plan}</span>
-          </div>
-          <div className="mt-4 grid gap-2 text-sm">
-            <InfoPill label="Generaciones" value={isFreePlan ? "3 al mes" : "Ilimitadas"} />
-            <InfoPill label="Word" value={canExportDocx ? "Incluido" : "Solo Pro"} />
-            <InfoPill label="A medida" value={isFreePlan ? "Solo Pro" : "Incluido"} />
-            <InfoPill label="Plantillas" value={isFreePlan ? "Solo Pro" : "Incluidas"} />
-          </div>
-          {isFreePlan && (
-            <Link href="/precios" className="focus-ring btn-primary mt-4 w-full px-4 py-3 text-center text-sm">
-              Ver que desbloquea Pro
+        {generatorMode === "community" && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/78 p-4">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Mi catálogo está separado de Documentos</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">Aquí solo eliges y generas. Para editar, borrar o revisar tus tipos guardados, usa la biblioteca.</p>
+            </div>
+            <Link href="/mi-catalogo" className="focus-ring btn-secondary px-4 py-3 text-sm">
+              Gestionar Mi catálogo
             </Link>
-          )}
-        </div>
           </div>
-        </details>
-
-        {generatorMode === "catalog" && plan !== "free" && selectedDocumentConfirmed && (
-          <details className="surface-flat rounded-md p-5" open={Boolean(selectedReferenceTemplate)}>
-            <summary className="cursor-pointer list-none">
-              <span className="flex items-center justify-between gap-3">
-                <span>
-                  <span className="block text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">
-                    Opcional. Usa un ejemplo propio para orientar tono y estructura.
-                  </span>
-                </span>
-                <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-                  {referenceTemplates.length}
-                </span>
-              </span>
-            </summary>
-            <div className="mt-4 border-t border-[#d8f3dc] pt-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold text-[#2d6a4f]">Plantilla de referencia</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Opcional: usa una plantilla propia para orientar estructura y tono sin copiar datos concretos.
-                </p>
-              </div>
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-                {referenceTemplates.length} listas
-              </span>
-            </div>
-            {referenceTemplates.length > 0 ? (
-              <div className="mt-4 grid gap-3">
-                {recommendedReferenceTemplates.length > 0 && (
-                  <div className="rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Recomendadas</p>
-                        <p className="mt-1 text-xs leading-5 text-slate-600">
-                          Sugeridas por uso, favoritas, recencia y afinidad con {config.category.toLowerCase()}.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTemplateView("all");
-                          setTemplateQuery("");
-                        }}
-                        className="focus-ring btn-ghost px-3 py-2 text-xs"
-                      >
-                        Ver todas
-                      </button>
-                    </div>
-                    <div className="mt-3 grid gap-2">
-                      {recommendedReferenceTemplates.map((recommendation) => (
-                        <button
-                          key={recommendation.template.id}
-                          type="button"
-                          onClick={() => setReferenceTemplateId(recommendation.template.id)}
-                          className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                            referenceTemplateId === recommendation.template.id
-                              ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                              : "border-[#d8f3dc] bg-[#fffdf8]/76 hover:border-[#2d6a4f]"
-                          }`}
-                        >
-                          <span className="flex flex-wrap items-center gap-2">
-                            <span className="font-bold">{recommendation.template.name}</span>
-                            <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">
-                              {recommendation.reason}
-                            </span>
-                          </span>
-                          <span className="mt-1 block text-xs leading-5 text-slate-500">
-                            {recommendation.template.category || "Sin categoría"} · {recommendation.metrics.totalUses} usos ·{" "}
-                            {formatDateOrNever(recommendation.metrics.lastUsedAt)}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <label>
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar plantilla</span>
-                  <input
-                    value={templateQuery}
-                    onChange={(event) => setTemplateQuery(event.target.value)}
-                    className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-3 text-sm transition focus:border-[#2d6a4f]"
-                    placeholder="Nombre, categoría o resumen..."
-                  />
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["all", "favorites", "used", "recent"] as const).map((view) => (
-                    <button
-                      key={view}
-                      type="button"
-                      onClick={() => setTemplateView(view)}
-                      className={`focus-ring rounded-md border px-3 py-2 text-left text-xs font-semibold transition ${
-                        templateView === view
-                          ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                          : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
-                      }`}
-                    >
-                      {getTemplateViewLabel(view)}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setReferenceTemplateId("")}
-                  className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                    !referenceTemplateId ? "border-[#2d6a4f] bg-[#d8f3dc]/70" : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
-                  }`}
-                >
-                  <span className="font-bold">Sin plantilla</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">
-                    Genera solo con el formulario y las reglas de DocuGen.
-                  </span>
-                </button>
-                {visibleReferenceTemplates.slice(0, 8).map((template) => {
-                  const metrics = getTemplateUsageMetrics(referenceTemplateMetrics, template.id);
-
-                  return (
-                  <button
-                    key={template.id}
-                    type="button"
-                    onClick={() => setReferenceTemplateId(template.id)}
-                    className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                      referenceTemplateId === template.id
-                        ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                        : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
-                    }`}
-                  >
-                    <span className="flex items-start justify-between gap-3">
-                      <span>
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span className="font-bold">{template.name}</span>
-                          {template.is_favorite && (
-                            <span className="rounded-full bg-[#1f2933] px-2 py-0.5 text-[10px] font-bold text-white">Destacada</span>
-                          )}
-                          {metrics.totalUses > 0 && (
-                            <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">
-                              {metrics.totalUses} usos
-                            </span>
-                          )}
-                        </span>
-                        <span className="mt-1 block text-xs leading-5 text-slate-500">
-                          {template.category || "Sin categoría"} · {new Date(template.created_at).toLocaleDateString("es-ES")}
-                        </span>
-                      </span>
-                      <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold text-[#2d6a4f]">Lista</span>
-                    </span>
-                    {template.summary && (
-                      <span className="mt-2 block max-h-10 overflow-hidden text-xs leading-5 text-slate-500">{template.summary}</span>
-                    )}
-                    <span className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
-                      <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Último uso: {formatDateOrNever(metrics.lastUsedAt)}</span>
-                      <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Modo: {formatUsageMode(metrics.mostUsedMode)}</span>
-                    </span>
-                  </button>
-                  );
-                })}
-                {visibleReferenceTemplates.length === 0 && (
-                  <div className="rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/72 p-4">
-                    <p className="text-sm font-semibold">No hay plantillas con esos filtros</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Prueba con otra búsqueda o cambia la vista.</p>
-                  </div>
-                )}
-                {referenceTemplates.length > 8 && (
-                  <Link href="/plantillas" className="focus-ring btn-ghost px-3 py-2 text-xs">
-                    Ver todas las plantillas
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="mt-4 rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/72 p-4">
-                <p className="text-sm font-semibold">No hay plantillas listas</p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Sube y procesa una plantilla DOCX para usarla como referencia.
-                </p>
-                <Link href="/plantillas" className="focus-ring btn-ghost mt-3 px-3 py-2 text-xs">
-                  Ir a plantillas
-                </Link>
-              </div>
-            )}
-            {selectedReferenceTemplate && (
-              <div className="mt-4 rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
-                      {selectedReferenceTemplate.category || "Plantilla"}
-                    </p>
-                    <h3 className="mt-1 font-bold">{selectedReferenceTemplate.name}</h3>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
-                      {selectedReferenceTemplate.summary || "Sin resumen extraido."}
-                    </p>
-                    <p className="mt-2 text-xs text-slate-500">
-                      Procesada el {new Date(selectedReferenceTemplate.created_at).toLocaleDateString("es-ES")}
-                    </p>
-                  </div>
-                  <Link href={`/plantillas/${selectedReferenceTemplate.id}`} className="focus-ring btn-ghost px-3 py-2 text-xs">
-                    Abrir
-                  </Link>
-                </div>
-                <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
-                  <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Estructura: opcional</span>
-                  <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Tono: opcional</span>
-                  <span className="rounded-md bg-[#fffdf8]/76 px-3 py-2">Datos: no se copian</span>
-                </div>
-              </div>
-            )}
-            {selectedReferenceTemplate && (
-              <div className="mt-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Como usarla</p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  {templateUsageModes.map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => setTemplateUsageMode(mode)}
-                      className={`focus-ring rounded-md border px-3 py-3 text-left text-sm transition ${
-                        templateUsageMode === mode
-                          ? "border-[#2d6a4f] bg-[#d8f3dc]/70"
-                          : "border-[#d8f3dc] bg-[#fffdf8]/72 hover:border-[#2d6a4f]"
-                      }`}
-                    >
-                      <span className="font-bold">{getTemplateUsageDecisionLabel(mode)}</span>
-                      <span className="mt-1 block text-xs font-semibold text-[#2d6a4f]">{templateUsageLabels[mode]}</span>
-                      <span className="mt-1 block text-xs leading-5 text-slate-500">{templateUsageDescriptions[mode]}</span>
-                    </button>
-                  ))}
-                </div>
-                <TemplateInfluencePreview
-                  mode={templateUsageMode}
-                  templateName={selectedReferenceTemplate.name}
-                  templateCategory={selectedReferenceTemplate.category}
-                  templateSummary={selectedReferenceTemplate.summary}
-                />
-                <p className="mt-3 rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
-                  Esta referencia orienta la estructura y el estilo. Los datos del formulario tienen prioridad y la IA
-                  no debe reutilizar nombres, importes, fechas ni condiciones concretas de la plantilla.
-                </p>
-              </div>
-            )}
-            </div>
-          </details>
         )}
+      </section>
 
-      </aside>
-
+      <div className="grid gap-6">
       <section className="surface min-h-[520px] p-5 md:p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-5">
           <div>
@@ -1066,6 +723,27 @@ function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
   }));
 }
 
+function getGeneratorModeLabel(mode: "catalog" | "community" | "custom") {
+  if (mode === "community") {
+    return "Mi catálogo";
+  }
+
+  if (mode === "custom") {
+    return "A medida";
+  }
+
+  return "Catálogo oficial";
+}
+
+function StepChip({ label, value, active = false }: { label: string; value: string; active?: boolean }) {
+  return (
+    <div className={`rounded-lg border px-3 py-3 ${active ? "border-[#2d6a4f] bg-[#d8f3dc]/55" : "border-[#d8f3dc] bg-[#fffdf8]/76"}`}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
+      <p className="mt-1 truncate text-sm font-bold text-[#1f2933]">{value}</p>
+    </div>
+  );
+}
+
 function CreationModeCard({
   active,
   eyebrow,
@@ -1261,6 +939,12 @@ function documentMatchesIntent(doc: typeof documentTypes[number], intentId: Gene
   return false;
 }
 
+function normalizeForMatch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
 function getIntentForDocument(type: DocumentType): GeneratorIntentId {
   const exactIntent = generatorIntents.find((intent) => intent.id !== "all" && intent.types?.includes(type));
 
@@ -1281,334 +965,10 @@ function getIntentForDocument(type: DocumentType): GeneratorIntentId {
   return categoryIntent?.id || "all";
 }
 
-function filterAndRankReferenceTemplates(
-  templates: TemplateOption[],
-  metricsMap: TemplateUsageMetricsMap,
-  query: string,
-  view: "all" | "favorites" | "used" | "recent",
-  workspaceId: string | null,
-) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  return templates
-    .filter((template) => {
-      const metrics = getTemplateUsageMetrics(metricsMap, template.id);
-      const searchable = `${template.name} ${template.category || ""} ${template.summary || ""}`.toLowerCase();
-      const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
-      const matchesScope = workspaceId ? template.workspace_id === workspaceId || template.workspace_id === null : template.workspace_id === null;
-      const matchesView =
-        view === "all" ||
-        (view === "favorites" && template.is_favorite) ||
-        (view === "used" && metrics.totalUses > 0) ||
-        view === "recent";
-
-      return matchesQuery && matchesView && matchesScope;
-    })
-    .sort((first, second) => {
-      const firstMetrics = getTemplateUsageMetrics(metricsMap, first.id);
-      const secondMetrics = getTemplateUsageMetrics(metricsMap, second.id);
-
-      if (view === "recent") {
-        return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
-      }
-
-      if (first.is_favorite !== second.is_favorite) {
-        return first.is_favorite ? -1 : 1;
-      }
-
-      if (firstMetrics.totalUses !== secondMetrics.totalUses) {
-        return secondMetrics.totalUses - firstMetrics.totalUses;
-      }
-
-      const firstLastUsed = firstMetrics.lastUsedAt ? new Date(firstMetrics.lastUsedAt).getTime() : 0;
-      const secondLastUsed = secondMetrics.lastUsedAt ? new Date(secondMetrics.lastUsedAt).getTime() : 0;
-
-      if (firstLastUsed !== secondLastUsed) {
-        return secondLastUsed - firstLastUsed;
-      }
-
-      return new Date(second.created_at).getTime() - new Date(first.created_at).getTime();
-    });
-}
-
-function getRecommendedReferenceTemplates(
-  templates: TemplateOption[],
-  metricsMap: TemplateUsageMetricsMap,
-  documentCategory: string,
-) {
-  return templates
-    .map((template) => {
-      const metrics = getTemplateUsageMetrics(metricsMap, template.id);
-      const categoryMatch = isCategoryMatch(template.category, documentCategory);
-      const score =
-        (template.is_favorite ? 80 : 0) +
-        Math.min(metrics.totalUses * 12, 60) +
-        (categoryMatch ? 35 : 0) +
-        getRecencyScore(metrics.lastUsedAt || template.created_at);
-
-      return {
-        template,
-        metrics,
-        score,
-        reason: getRecommendationReason(template, metrics, categoryMatch),
-      };
-    })
-    .filter((item) => item.score > 0)
-    .sort((first, second) => second.score - first.score)
-    .slice(0, 3);
-}
-
-function isCategoryMatch(templateCategory: string | null, documentCategory: string) {
-  if (!templateCategory) {
-    return false;
-  }
-
-  const normalizedTemplate = normalizeForMatch(templateCategory);
-  const normalizedDocument = normalizeForMatch(documentCategory);
-
-  return normalizedTemplate.includes(normalizedDocument) || normalizedDocument.includes(normalizedTemplate);
-}
-
-function normalizeForMatch(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function getRecencyScore(value: string | null) {
-  if (!value) {
-    return 0;
-  }
-
-  const ageDays = Math.max((Date.now() - new Date(value).getTime()) / (1000 * 60 * 60 * 24), 0);
-
-  if (ageDays <= 7) {
-    return 20;
-  }
-
-  if (ageDays <= 30) {
-    return 12;
-  }
-
-  if (ageDays <= 90) {
-    return 6;
-  }
-
-  return 1;
-}
-
-function getRecommendationReason(
-  template: TemplateOption,
-  metrics: ReturnType<typeof getTemplateUsageMetrics>,
-  categoryMatch: boolean,
-) {
-  if (template.is_favorite) {
-    return "Destacada";
-  }
-
-  if (metrics.totalUses > 0) {
-    return "Mas usada";
-  }
-
-  if (categoryMatch) {
-    return "Categoria similar";
-  }
-
-  return "Reciente";
-}
-
-function getTemplateViewLabel(view: "all" | "favorites" | "used" | "recent") {
-  const labels = {
-    all: "Todas",
-    favorites: "Destacadas",
-    used: "Usadas",
-    recent: "Recientes",
-  };
-
-  return labels[view];
-}
-
-function formatDateOrNever(value: string | null) {
-  if (!value) {
-    return "Sin uso";
-  }
-
-  return new Date(value).toLocaleDateString("es-ES");
-}
-
-function formatUsageMode(mode: ReturnType<typeof getTemplateUsageMetrics>["mostUsedMode"]) {
-  if (!mode) {
-    return "Sin datos";
-  }
-
-  return templateUsageLabels[mode];
-}
-
-function InfoPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 px-3 py-2">
-      <span className="text-slate-500">{label}</span>
-      <span className="font-semibold text-[#1f2933]">{value}</span>
-    </div>
-  );
-}
-
-function getTemplateUsageDecisionLabel(mode: TemplateUsageMode) {
-  if (mode === "structure_tone") {
-    return "Quiero que se parezca bastante";
-  }
-
-  if (mode === "structure") {
-    return "Quiero su orden de apartados";
-  }
-
-  if (mode === "tone") {
-    return "Quiero su forma de escribir";
-  }
-
-  return "Solo quiero una referencia suave";
-}
-
-function TemplateInfluencePreview({
-  mode,
-  templateName,
-  templateCategory,
-  templateSummary,
-}: {
-  mode: TemplateUsageMode;
-  templateName: string;
-  templateCategory: string | null;
-  templateSummary: string | null;
-}) {
-  const preview = getTemplateInfluencePreview(mode);
-
-  return (
-    <div className="mt-4 rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Vista previa de influencia</p>
-          <h3 className="mt-2 font-bold">{preview.title}</h3>
-          <p className="mt-2 text-xs leading-5 text-slate-600">
-            DocuGen usara <strong>{templateName}</strong>
-            {templateCategory ? ` (${templateCategory})` : ""} como referencia, sin convertirla en una copia literal.
-          </p>
-        </div>
-        <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{preview.weight}</span>
-      </div>
-
-      {templateSummary && (
-        <p className="mt-3 rounded-md bg-[#fffdf8]/76 p-3 text-xs leading-5 text-slate-600">
-          Resumen detectado: {templateSummary}
-        </p>
-      )}
-
-      <div className="mt-4 grid gap-3">
-        <InfluenceRow label="Estructura" value={preview.structure} active={preview.structureActive} />
-        <InfluenceRow label="Tono" value={preview.tone} active={preview.toneActive} />
-        <InfluenceRow label="Contenido" value={preview.content} active={false} />
-      </div>
-
-      <div className="mt-4 grid gap-2 text-xs leading-5 text-slate-600">
-        {preview.rules.map((rule) => (
-          <p key={rule} className="rounded-md bg-[#fffdf8]/76 px-3 py-2">
-            {rule}
-          </p>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function InfluenceRow({ label, value, active }: { label: string; value: string; active: boolean }) {
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-md bg-[#fffdf8]/76 px-3 py-2 text-xs">
-      <div>
-        <p className="font-bold text-[#1f2933]">{label}</p>
-        <p className="mt-1 leading-5 text-slate-600">{value}</p>
-      </div>
-      <span
-        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-          active ? "bg-[#d8f3dc] text-[#2d6a4f]" : "bg-[#faf9f6] text-slate-500"
-        }`}
-      >
-        {active ? "Influye" : "Limitado"}
-      </span>
-    </div>
-  );
-}
-
-function getTemplateInfluencePreview(mode: TemplateUsageMode) {
-  if (mode === "structure_tone") {
-    return {
-      title: "Influencia alta, sin copiar datos",
-      weight: "Alta",
-      structure: "Se respetará el orden general de apartados, jerarquía y ritmo del documento original.",
-      tone: "Se imitará el estilo profesional, nivel de formalidad y forma de presentar condiciones.",
-      content: "No se reutilizarán nombres, importes, fechas, clientes, cláusulas particulares ni datos sensibles.",
-      structureActive: true,
-      toneActive: true,
-      rules: [
-        "Ideal cuando quieres que el nuevo documento se parezca bastante al formato de tu empresa.",
-        "Los campos que rellenes en el formulario tienen prioridad sobre cualquier referencia de la plantilla.",
-      ],
-    };
-  }
-
-  if (mode === "structure") {
-    return {
-      title: "Influencia centrada en el esqueleto",
-      weight: "Media",
-      structure: "Se usará la plantilla como mapa de secciones y orden de lectura.",
-      tone: "El tono seguirá el estilo base de DocuGen, no el de la plantilla.",
-      content: "La plantilla no aportará condiciones concretas salvo como orientación estructural.",
-      structureActive: true,
-      toneActive: false,
-      rules: [
-        "Recomendado si te gusta la organización del documento, pero no quieres imitar su redacción.",
-        "Si falta información, se marcarán campos como [PENDIENTE DE COMPLETAR].",
-      ],
-    };
-  }
-
-  if (mode === "tone") {
-    return {
-      title: "Influencia centrada en estilo y voz",
-      weight: "Media",
-      structure: "La estructura dependerá del tipo documental elegido, no del orden de la plantilla.",
-      tone: "Se tendrá en cuenta la formalidad, claridad, longitud de frases y estilo general.",
-      content: "No se copiará el contenido material de la plantilla ni sus datos concretos.",
-      structureActive: false,
-      toneActive: true,
-      rules: [
-        "Util para mantener una voz de marca o una forma de escribir reconocible.",
-        "El resultado puede tener apartados distintos si el documento elegido lo requiere.",
-      ],
-    };
-  }
-
-  return {
-    title: "Referencia suave",
-    weight: "Baja",
-    structure: "La estructura seguira principalmente el tipo de documento seleccionado.",
-    tone: "El tono de la plantilla solo servira como inspiracion ligera.",
-    content: "La IA priorizara el formulario y las reglas de DocuGen por encima de la plantilla.",
-    structureActive: false,
-    toneActive: false,
-    rules: [
-      "Buena opcion cuando quieres evitar que la plantilla condicione demasiado el resultado.",
-      "Mantiene el valor de referencia sin arrastrar formulas demasiado especificas.",
-    ],
-  };
-}
-
 function CommunityChoicePanel({
   communityTypes,
   plan,
   onSelect,
-  onUpdate,
-  onDelete,
 }: {
   communityTypes: CommunityTypeOption[];
   plan: "free" | "pro" | "empresa";
@@ -1617,10 +977,6 @@ function CommunityChoicePanel({
   onDelete: (typeId: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState({ label: "", description: "" });
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleTypes = communityTypes.filter((type) => {
     if (!normalizedQuery) {
@@ -1630,198 +986,83 @@ function CommunityChoicePanel({
     return (type.label + " " + type.description + " " + (type.category || "")).toLowerCase().includes(normalizedQuery);
   });
 
-  async function saveType(type: CommunityTypeOption) {
-    setActionError(null);
-    setBusyId(type.id);
-
-    try {
-      const response = await fetch("/api/personal-catalog/" + type.id, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          label: draft.label,
-          description: draft.description,
-          category: type.category || "Mi catálogo",
-        }),
-      });
-      const data = (await response.json().catch(() => null)) as { catalogType?: CommunityTypeOption; message?: string } | null;
-
-      if (!response.ok || !data?.catalogType) {
-        throw new Error(data?.message || "No se pudo actualizar este tipo.");
-      }
-
-      onUpdate(data.catalogType);
-      setEditingId(null);
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : "No se pudo actualizar este tipo.");
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function deleteType(type: CommunityTypeOption) {
-    const confirmed = window.confirm('Borrar "' + type.label + '" de Mi catálogo? Los documentos ya generados seguirán en Documentos.');
-
-    if (!confirmed) {
-      return;
-    }
-
-    setActionError(null);
-    setBusyId(type.id);
-
-    try {
-      const response = await fetch("/api/personal-catalog/" + type.id, { method: "DELETE" });
-      const data = (await response.json().catch(() => null)) as { message?: string } | null;
-
-      if (!response.ok) {
-        throw new Error(data?.message || "No se pudo borrar este tipo.");
-      }
-
-      onDelete(type.id);
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : "No se pudo borrar este tipo.");
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   if (communityTypes.length === 0) {
     return (
       <EmptyState
         eyebrow="Mi catálogo vacío"
-        title="Guarda tu primer tipo personalizado"
-        description="Genera un documento a medida o desde el asistente y usa Guardar en Mi catálogo para reutilizarlo después."
+        title="Todavía no tienes tipos reutilizables"
+        description="Genera un documento a medida o desde el asistente. Cuando te guste el resultado, guárdalo en Mi catálogo desde Documentos."
         variant="flat"
+        primaryAction={{ href: "/generar?mode=custom", label: "Crear a medida" }}
+        secondaryAction={{ href: "/asistente", label: "Abrir asistente" }}
       />
     );
   }
 
   return (
     <div className="grid gap-5">
-      <div className="rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-5">
+      <div className="surface-muted p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Mi catálogo</p>
-            <h2 className="font-serif-display mt-2 text-2xl font-bold">Tipos personalizados guardados</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Usa documentos que ya te funcionaron como punto de partida. Puedes renombrarlos o quitarlos sin borrar los documentos generados.
+            <p className="eyebrow">Mi catálogo</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Elige un tipo reutilizable</h2>
+            <p className="body-muted mt-2 max-w-2xl">
+              Estos no son documentos finales: son moldes guardados para crear nuevos borradores con campos propios.
             </p>
           </div>
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#2d6a4f] shadow-sm">
-            {communityTypes.length} guardados
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span className="badge badge-free">{communityTypes.length} guardados</span>
+            <Link href="/mi-catalogo" className="focus-ring btn-secondary px-3 py-2 text-xs">
+              Gestionar
+            </Link>
+          </div>
         </div>
         <label className="mt-5 block">
-          <span className="sr-only">Buscar en Mi catálogo</span>
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar en Mi catálogo</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nombre, descripción o categoría..."
-            className="focus-ring w-full rounded-md border border-[#b7e4c7] bg-white px-4 py-3 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+            placeholder="Nombre, guía o categoría..."
+            className="field-control mt-2"
           />
         </label>
-        {actionError && <p className="mt-3 text-sm font-semibold text-red-700">{actionError}</p>}
       </div>
 
       {visibleTypes.length === 0 ? (
         <EmptyState
           eyebrow="Sin resultados"
-          title="No hay tipos que coincidan con tu búsqueda"
-          description="Prueba con otra palabra o limpia el buscador para ver todo Mi catálogo."
+          title="No hay tipos con esa búsqueda"
+          description="Prueba con otra palabra o abre la gestión de Mi catálogo para revisar todos tus tipos."
           variant="flat"
+          secondaryAction={{ href: "/mi-catalogo", label: "Gestionar Mi catálogo" }}
         />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {visibleTypes.map((type) => {
             const locked = !canUseCommunityType(plan, type.required_plan);
-            const editing = editingId === type.id;
-            const busy = busyId === type.id;
 
             return (
-              <article
-                key={type.id}
-                className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/88 p-4 shadow-[0_18px_45px_rgba(31,41,51,0.05)] transition hover:border-[#2d6a4f]/50"
-              >
-                {editing ? (
-                  <div className="grid gap-3">
-                    <label>
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Nombre</span>
-                      <input
-                        value={draft.label}
-                        onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
-                        className="focus-ring mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                      />
-                    </label>
-                    <label>
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Descripción</span>
-                      <textarea
-                        value={draft.description}
-                        onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-                        rows={4}
-                        className="focus-ring mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                      />
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void saveType(type)}
-                        disabled={busy}
-                        className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {busy ? "Guardando..." : "Guardar cambios"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                        className="focus-ring btn-ghost px-3 py-2 text-xs"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
+              <article key={type.id} className="surface-flat interactive-subtle p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                      {type.category || "Mi catálogo"}
+                    </p>
+                    <h3 className="font-serif-display mt-2 text-xl font-bold leading-7 text-[#1f2933]">{type.label}</h3>
                   </div>
-                ) : (
-                  <>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
-                          {type.category || "Mi catálogo"}
-                        </p>
-                        <h3 className="font-serif-display mt-2 text-xl font-bold text-[#1f2933]">{type.label}</h3>
-                      </div>
-                      <span className={locked ? "badge badge-pro" : "badge badge-free"}>
-                        {locked ? type.required_plan : "Listo"}
-                      </span>
-                    </div>
-                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{type.description}</p>
-                    <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#d8f3dc] pt-4">
-                      <button
-                        type="button"
-                        onClick={() => onSelect(type.id)}
-                        className="focus-ring btn-primary px-3 py-2 text-xs"
-                      >
-                        {locked ? "Ver plan requerido" : "Usar"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingId(type.id);
-                          setDraft({ label: type.label, description: type.description });
-                        }}
-                        className="focus-ring btn-secondary px-3 py-2 text-xs"
-                      >
-                        Renombrar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void deleteType(type)}
-                        disabled={busy}
-                        className="focus-ring rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {busy ? "Borrando..." : "Borrar"}
-                      </button>
-                    </div>
-                  </>
-                )}
+                  <span className={locked ? "badge badge-pro" : "badge badge-free"}>{locked ? type.required_plan : "Listo"}</span>
+                </div>
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{type.description}</p>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[#d8f3dc] pt-4">
+                  <span className="text-xs font-semibold text-slate-500">{type.suggested_fields.length} campos</span>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(type.id)}
+                    className="focus-ring btn-primary px-4 py-2 text-xs"
+                  >
+                    {locked ? "Ver plan" : "Usar"}
+                  </button>
+                </div>
               </article>
             );
           })}
@@ -2265,4 +1506,5 @@ function canUseCommunityType(userPlan: "free" | "pro" | "empresa", requiredPlan:
 
   return rank[userPlan] >= rank[requiredPlan];
 }
+
 
