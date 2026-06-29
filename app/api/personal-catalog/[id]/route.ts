@@ -2,10 +2,19 @@
 import { z } from "zod";
 import { createSupabaseServiceClient, requireUser, type CommunityDocumentTypeRow } from "@/lib/supabase-server";
 
+const catalogFieldSchema = z.object({
+  name: z.string().trim().min(2).max(60).regex(/^[a-z0-9_]+$/),
+  label: z.string().trim().min(2).max(90),
+  type: z.enum(["text", "textarea", "date", "email", "number"]),
+  required: z.boolean().optional().default(false),
+  helpText: z.string().trim().max(180).optional().nullable(),
+});
+
 const updateCatalogSchema = z.object({
   label: z.string().trim().min(3).max(120),
   description: z.string().trim().min(10).max(500),
   category: z.string().trim().max(80).optional().nullable(),
+  suggested_fields: z.array(catalogFieldSchema).min(1).max(18).optional(),
 });
 
 const errorResponse = (status: number, error: string, message: string) =>
@@ -38,6 +47,7 @@ export async function PATCH(request: Request, { params }: Params) {
         label: payload.label,
         description: payload.description,
         category: payload.category || "Mi catálogo",
+        ...(payload.suggested_fields ? { suggested_fields: payload.suggested_fields } : {}),
       })
       .eq("id", params.id)
       .eq("created_by", user.id)
@@ -52,7 +62,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ catalogType: data });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return errorResponse(400, "invalid_payload", "Revisa el nombre y la descripción del tipo guardado.");
+      return errorResponse(400, "invalid_payload", "Revisa el nombre, la descripción y los campos del tipo guardado.");
     }
 
     console.error("personal_catalog_update_unhandled", error);

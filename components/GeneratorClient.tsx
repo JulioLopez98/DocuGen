@@ -938,6 +938,9 @@ export function GeneratorClient({
           <CommunityForm
             communityType={selectedCommunityType}
             disabled={loading}
+            onUpdate={(updatedType) => {
+              setPersonalCatalogTypes((current) => current.map((type) => (type.id === updatedType.id ? updatedType : type)));
+            }}
             onSubmit={(formData) => submitCommunity({ communityTypeId: selectedCommunityType.id, formData })}
           />
         ) : generatorMode === "community" ? (
@@ -1827,16 +1830,83 @@ function CommunityChoicePanel({
   );
 }
 
+type CommunityFieldOption = CommunityTypeOption["suggested_fields"][number];
+
 function CommunityForm({
   communityType,
   disabled,
   onSubmit,
+  onUpdate,
 }: {
   communityType: CommunityTypeOption;
   disabled: boolean;
   onSubmit: (formData: Record<string, string>) => void;
+  onUpdate: (type: CommunityTypeOption) => void;
 }) {
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [fields, setFields] = useState<CommunityFieldOption[]>(communityType.suggested_fields);
+  const [editingFields, setEditingFields] = useState(false);
+  const [savingFields, setSavingFields] = useState(false);
+  const [fieldMessage, setFieldMessage] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+
+  async function saveFields() {
+    const normalizedFields = fields.map(normalizeCommunityField).filter((field) => field.name && field.label);
+
+    if (normalizedFields.length === 0) {
+      setFieldError("Añade al menos un campo para este tipo.");
+      return;
+    }
+
+    setSavingFields(true);
+    setFieldError(null);
+    setFieldMessage(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + communityType.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: communityType.label,
+          description: communityType.description,
+          category: communityType.category || "Mi catálogo",
+          suggested_fields: normalizedFields,
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as { catalogType?: CommunityTypeOption; message?: string } | null;
+
+      if (!response.ok || !data?.catalogType) {
+        throw new Error(data?.message || "No se pudieron guardar los campos.");
+      }
+
+      setFields(data.catalogType.suggested_fields);
+      onUpdate(data.catalogType);
+      setEditingFields(false);
+      setFieldMessage("Campos guardados.");
+    } catch (error) {
+      setFieldError(error instanceof Error ? error.message : "No se pudieron guardar los campos.");
+    } finally {
+      setSavingFields(false);
+    }
+  }
+
+  function updateField(index: number, patch: Partial<CommunityFieldOption>) {
+    setFields((current) => current.map((field, fieldIndex) => (fieldIndex === index ? { ...field, ...patch } : field)));
+  }
+
+  function moveField(index: number, direction: -1 | 1) {
+    setFields((current) => {
+      const target = index + direction;
+      if (target < 0 || target >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      const field = next.splice(index, 1)[0];
+      next.splice(target, 0, field);
+      return next;
+    });
+  }
 
   return (
     <form
@@ -1847,40 +1917,170 @@ function CommunityForm({
       }}
     >
       <p className="rounded-md bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">{communityType.description}</p>
-      {communityType.suggested_fields.map((field) => (
-        <label key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            {field.label}
-            {field.required && <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold uppercase text-[#2d6a4f]">Obligatorio</span>}
-          </span>
-          {field.helpText && <span className="mt-1 block text-xs leading-5 text-slate-500">{field.helpText}</span>}
-          {field.type === "textarea" ? (
-            <textarea
-              value={formData[field.name] || ""}
-              onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
-              required={field.required}
-              rows={4}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
-            />
-          ) : (
-            <input
-              type={getCommunityFieldInputType(field.type)}
-              value={formData[field.name] || ""}
-              onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
-              required={field.required}
-              className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
-            />
-          )}
-        </label>
-      ))}
-      <p className="rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
-        Este tipo pertenece a Mi catálogo. El resultado sigue siendo un borrador generado con IA.
-      </p>
+      <div className="grid gap-5 md:grid-cols-2">
+        {fields.map((field) => (
+          <label key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              {field.label}
+              {field.required && <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold uppercase text-[#2d6a4f]">Obligatorio</span>}
+            </span>
+            {field.helpText && <span className="mt-1 block text-xs leading-5 text-slate-500">{field.helpText}</span>}
+            {field.type === "textarea" ? (
+              <textarea
+                value={formData[field.name] || ""}
+                onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+                required={field.required}
+                rows={4}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+              />
+            ) : (
+              <input
+                type={getCommunityFieldInputType(field.type)}
+                value={formData[field.name] || ""}
+                onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+                required={field.required}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+              />
+            )}
+          </label>
+        ))}
+      </div>
+
+      <div className="rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span>Este tipo pertenece a Mi catálogo. Puedes generar directamente o ajustar campos si lo necesitas.</span>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingFields((current) => !current);
+              setFieldError(null);
+              setFieldMessage(null);
+            }}
+            className="focus-ring btn-ghost px-2 py-1 text-xs"
+          >
+            {editingFields ? "Ocultar campos" : "Editar campos"}
+          </button>
+        </div>
+        {fieldMessage && <p className="mt-2 font-semibold text-[#2d6a4f]">{fieldMessage}</p>}
+        {fieldError && <p className="mt-2 font-semibold text-red-700">{fieldError}</p>}
+        {editingFields && (
+          <div className="mt-4 grid gap-3 border-t border-[#d8f3dc] pt-4">
+            {fields.map((field, index) => (
+              <div key={field.name + "-" + index} className="rounded-md border border-[#d8f3dc] bg-[#fffdf8] p-3">
+                <div className="grid gap-3 md:grid-cols-[1fr_1fr_130px]">
+                  <label>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Etiqueta</span>
+                    <input
+                      value={field.label}
+                      onChange={(event) => updateField(index, { label: event.target.value, name: sanitizeCommunityFieldName(event.target.value) })}
+                      className="field-control mt-1"
+                    />
+                  </label>
+                  <label>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Ayuda</span>
+                    <input
+                      value={field.helpText || ""}
+                      onChange={(event) => updateField(index, { helpText: event.target.value })}
+                      className="field-control mt-1"
+                      placeholder="Texto breve opcional"
+                    />
+                  </label>
+                  <label>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Tipo</span>
+                    <select
+                      value={field.type}
+                      onChange={(event) => updateField(index, { type: event.target.value as CommunityFieldOption["type"] })}
+                      className="field-control mt-1"
+                    >
+                      <option value="text">Texto</option>
+                      <option value="textarea">Texto largo</option>
+                      <option value="date">Fecha</option>
+                      <option value="email">Email</option>
+                      <option value="number">Número</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(field.required)}
+                      onChange={(event) => updateField(index, { required: event.target.checked })}
+                    />
+                    Obligatorio
+                  </label>
+                  <button type="button" onClick={() => moveField(index, -1)} className="focus-ring btn-ghost px-2 py-1 text-xs" disabled={index === 0}>
+                    Subir
+                  </button>
+                  <button type="button" onClick={() => moveField(index, 1)} className="focus-ring btn-ghost px-2 py-1 text-xs" disabled={index === fields.length - 1}>
+                    Bajar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFields((current) => current.filter((_, fieldIndex) => fieldIndex !== index))}
+                    className="focus-ring rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-bold text-red-700"
+                  >
+                    Borrar
+                  </button>
+                </div>
+              </div>
+            ))}
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFields((current) => [...current, createEmptyCommunityField(current.length + 1)])}
+                className="focus-ring btn-secondary px-3 py-2 text-xs"
+              >
+                Añadir campo
+              </button>
+              <button
+                type="button"
+                onClick={() => void saveFields()}
+                disabled={savingFields}
+                className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingFields ? "Guardando..." : "Guardar campos"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <button type="submit" disabled={disabled} className="focus-ring btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
         {disabled ? "Generando..." : "Generar desde Mi catálogo"}
       </button>
     </form>
   );
+}
+
+function createEmptyCommunityField(index: number): CommunityFieldOption {
+  return {
+    name: "campo_" + index,
+    label: "Campo " + index,
+    type: "text",
+    required: false,
+    helpText: "",
+  };
+}
+
+function normalizeCommunityField(field: CommunityFieldOption): CommunityFieldOption {
+  return {
+    name: sanitizeCommunityFieldName(field.name || field.label),
+    label: field.label.trim() || "Campo",
+    type: field.type,
+    required: Boolean(field.required),
+    helpText: field.helpText?.trim() || undefined,
+  };
+}
+
+function sanitizeCommunityFieldName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 60) || "campo";
 }
 
 function getCommunityFieldInputType(type: CommunityTypeOption["suggested_fields"][number]["type"]) {
