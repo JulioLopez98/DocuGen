@@ -26,7 +26,9 @@ export default async function HistoryDetailPage({ params }: Props) {
 
   const config = getDocumentConfig(document.doc_type);
   const isCustom = document.doc_type === "custom";
+  const isAssistant = document.doc_type === "assistant";
   const isCommunity = document.doc_type.startsWith("community:");
+  const canSaveToCatalog = isCustom || isAssistant;
   const createdAt = new Date(document.created_at);
   const { data: brandSettings } =
     profile.plan !== "free"
@@ -47,12 +49,14 @@ export default async function HistoryDetailPage({ params }: Props) {
         </Link>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
           <div>
-            <p className="eyebrow">{isCustom ? "Documento a medida" : isCommunity ? "Documento de Mi catálogo" : config?.category || "Documento"}</p>
+            <p className="eyebrow">{isCustom ? "Documento a medida" : isAssistant ? "Documento del asistente" : isCommunity ? "Documento de Mi catálogo" : config?.category || "Documento"}</p>
             <h1 className="font-serif-display mt-3 text-4xl font-bold">{document.doc_label}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
               {isCustom
-                ? "Documento personalizado guardado en Documentos. Puedes exportarlo, copiarlo o regenerarlo desde la lista."
-                : isCommunity
+                ? "Documento personalizado guardado en Documentos. Puedes exportarlo, copiarlo o guardarlo en Mi catálogo si quieres reutilizarlo."
+                : isAssistant
+                  ? "Documento creado desde el asistente. Si te sirve como formato recurrente, puedes guardarlo en Mi catálogo."
+                  : isCommunity
                   ? "Documento generado desde Mi catálogo. Puedes exportarlo o crear otro desde el generador."
                 : "Documento guardado en Documentos. Puedes exportarlo, copiarlo o reutilizar sus datos como plantilla."}
             </p>
@@ -69,7 +73,7 @@ export default async function HistoryDetailPage({ params }: Props) {
                 label="Hora"
                 value={createdAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
               />
-              <MetaLine label="Tipo" value={isCustom ? "A medida" : isCommunity ? "Mi catálogo" : config?.label || document.doc_type} />
+              <MetaLine label="Tipo" value={isCustom ? "A medida" : isAssistant ? "Asistente" : isCommunity ? "Mi catálogo" : config?.label || document.doc_type} />
               <MetaLine label="Modelo" value={document.model_used || "No registrado"} />
               <MetaLine label="Word" value={profile.plan !== "free" ? "Disponible" : "Solo Pro"} />
               {document.reference_template_id && (
@@ -78,9 +82,9 @@ export default async function HistoryDetailPage({ params }: Props) {
               {document.template_usage_mode && <MetaLine label="Modo" value={templateUsageLabels[document.template_usage_mode]} />}
             </div>
             <div className="mt-5 grid gap-2">
-              {isCustom ? (
-                <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
-                  Crear otro a medida
+              {isCustom || isAssistant ? (
+                <Link href={isAssistant ? "/asistente" : "/generar?mode=custom"} className="focus-ring btn-primary px-4 py-3 text-sm">
+                  {isAssistant ? "Abrir asistente" : "Crear otro a medida"}
                 </Link>
               ) : isCommunity ? (
                 <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
@@ -145,6 +149,7 @@ export default async function HistoryDetailPage({ params }: Props) {
         includesSignatures={config?.includesSignatures ?? false}
         canExportDocx={profile.plan !== "free"}
         brandSettings={brandSettings || null}
+        canSaveToCatalog={canSaveToCatalog}
       />
     </section>
   );

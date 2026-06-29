@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SaveToCatalogCard } from "@/components/SaveToCatalogCard";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
 import type { DocumentVersionRow } from "@/lib/supabase-server";
@@ -13,6 +14,7 @@ type EditableDocumentResultProps = {
   includesSignatures?: boolean;
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
+  canSaveToCatalog?: boolean;
 };
 
 type SaveResponse = {
@@ -120,6 +122,7 @@ export function EditableDocumentResult({
   includesSignatures,
   canExportDocx = false,
   brandSettings,
+  canSaveToCatalog = false,
 }: EditableDocumentResultProps) {
   const [content, setContent] = useState(initialContent);
   const [savedContent, setSavedContent] = useState(initialContent);
@@ -306,6 +309,7 @@ export function EditableDocumentResult({
 
   return (
     <section className="grid gap-5">
+      {canSaveToCatalog && <SaveToCatalogCard documentId={documentId} title={title} />}
       <div className="surface rounded-md p-5">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-4">
           <div>

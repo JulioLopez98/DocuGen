@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import { PlanFirstSteps } from "@/components/PlanFirstSteps";
+import { SaveToCatalogCard } from "@/components/SaveToCatalogCard";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
@@ -43,7 +44,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   const workspaceById = useMemo(() => new Map(workspaces.map((workspace) => [workspace.id, workspace])), [workspaces]);
 
   async function deleteDocument(id: string) {
-    if (!window.confirm("¿Borrar este documento? Esta acción no se puede deshacer.")) {
+    if (!window.confirm("Â¿Borrar este documento? Esta acciÃ³n no se puede deshacer.")) {
       return;
     }
 
@@ -61,14 +62,14 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con DocuGen. Comprueba tu conexión e inténtalo de nuevo.");
+      setError("No se pudo conectar con DocuGen. Comprueba tu conexiÃ³n e intÃ©ntalo de nuevo.");
     } finally {
       setBusyId(null);
     }
   }
 
   async function clearHistory() {
-    if (!window.confirm("¿Borrar todos tus documentos? Esta acción no se puede deshacer.")) {
+    if (!window.confirm("Â¿Borrar todos tus documentos? Esta acciÃ³n no se puede deshacer.")) {
       return;
     }
 
@@ -86,7 +87,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con DocuGen. Comprueba tu conexión e inténtalo de nuevo.");
+      setError("No se pudo conectar con DocuGen. Comprueba tu conexiÃ³n e intÃ©ntalo de nuevo.");
     } finally {
       setBusyId(null);
     }
@@ -103,7 +104,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       if (community && !communityPayload) {
         setError(
-          "Este documento de Mi catálogo no se puede regenerar desde el historial porque falta su referencia interna. Abre Mi catálogo y vuelve a elegir el tipo.",
+          "Este documento de Mi catÃ¡logo no se puede regenerar desde el historial porque falta su referencia interna. Abre Mi catÃ¡logo y vuelve a elegir el tipo.",
         );
         return;
       }
@@ -138,21 +139,21 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   if (documents.length === 0) {
     return (
       <EmptyState
-        eyebrow="Biblioteca vacía"
-        title="Tus documentos aparecerán aquí"
-        description="Cuando generes tu primer borrador, podrás abrirlo, descargarlo, reutilizarlo como base o borrarlo desde esta pantalla."
+        eyebrow="Biblioteca vacÃ­a"
+        title="Tus documentos aparecerÃ¡n aquÃ­"
+        description="Cuando generes tu primer borrador, podrÃ¡s abrirlo, descargarlo, reutilizarlo como base o borrarlo desde esta pantalla."
         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
         steps={
           plan === "free"
             ? ["Crea uno de los tipos incluidos en Free.", "Revisa el aviso de IA y completa datos pendientes.", "Descarga PDF/TXT o mejora a Pro cuando necesites Word."]
-            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando esté listo."]
+            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando estÃ© listo."]
         }
       >
         <div className="grid gap-4">
           <PlanFirstSteps plan={plan} context="documents" />
           <div className="grid gap-3 sm:grid-cols-3">
-          {["Contrato freelance", "Presupuesto comercial", "Carta de presentación"].map((item) => (
+          {["Contrato freelance", "Presupuesto comercial", "Carta de presentaciÃ³n"].map((item) => (
             <div key={item} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4 text-sm font-semibold">
               {item}
             </div>
@@ -171,7 +172,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
             <p className="eyebrow">Buscar y filtrar</p>
             <h2 className="mt-2 text-xl font-bold">{documents.length} documentos guardados</h2>
             <p className="body-muted mt-1 text-xs">
-              Busca por título, contenido o tipo. Abre cada documento solo cuando quieras verlo.
+              Busca por tÃ­tulo, contenido o tipo. Abre cada documento solo cuando quieras verlo.
             </p>
           </div>
           <button
@@ -191,7 +192,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="field-control mt-2"
-              placeholder="Título, texto o tipo..."
+              placeholder="TÃ­tulo, texto o tipo..."
             />
           </label>
 
@@ -204,6 +205,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
             >
               <option value="all">Todos</option>
               <option value="custom">A medida</option>
+              <option value="assistant">Asistente</option>
               {documentTypes.map((doc) => (
                 <option key={doc.type} value={doc.type}>
                   {doc.label}
@@ -219,8 +221,8 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               onChange={(event) => setSortMode(event.target.value as SortMode)}
               className="field-control mt-2"
             >
-              <option value="newest">Más recientes</option>
-              <option value="oldest">Más antiguos</option>
+              <option value="newest">MÃ¡s recientes</option>
+              <option value="oldest">MÃ¡s antiguos</option>
               <option value="type">Por tipo</option>
             </select>
           </label>
@@ -273,6 +275,8 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               const config = getDocumentConfig(doc.doc_type);
               const custom = isCustomDocument(doc);
               const community = isCommunityDocument(doc);
+              const assistant = isAssistantDocument(doc);
+              const canSaveToPersonalCatalog = canSaveDocumentToPersonalCatalog(doc);
               const createdAt = new Date(doc.created_at);
               const preview = doc.content.length > 900 ? `${doc.content.slice(0, 900)}...` : doc.content;
               const isBusy = busyId === doc.id;
@@ -284,10 +288,11 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-bold">{doc.doc_label}</h3>
                         <span className="badge badge-free">
-                          {custom ? "A medida" : config?.category || "Documento"}
+                          {custom ? "A medida" : assistant ? "Asistente" : config?.category || "Documento"}
                         </span>
                         {custom && <span className="badge badge-pro">Personalizado</span>}
-                        {community && <span className="badge badge-pro">Mi catálogo</span>}
+                        {assistant && <span className="badge badge-pro">Chat</span>}
+                        {community && <span className="badge badge-pro">Mi catÃ¡logo</span>}
                         {doc.reference_template_id && (
                           <span className="badge badge-pro">
                             Con plantilla
@@ -305,7 +310,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                       </p>
                       {doc.reference_template_id && (
                         <p className="mt-1 text-xs text-slate-500">
-                          Referencia: {doc.reference_template_name || "Plantilla"} ·{" "}
+                          Referencia: {doc.reference_template_name || "Plantilla"} Â·{" "}
                           {doc.template_usage_mode ? templateUsageLabels[doc.template_usage_mode] : "Modo no registrado"}
                         </p>
                       )}
@@ -323,7 +328,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                       <Link href={`/historial/${doc.id}`} className="focus-ring btn-primary px-3 py-2 text-sm">
                         Ver detalle
                       </Link>
-                      {!custom && !community && (
+                      {!custom && !assistant && !community && (
                         <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
                           Reutilizar datos
                         </Link>
@@ -340,6 +345,9 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         <Link href={`/plantillas/${doc.reference_template_id}`} className="focus-ring btn-ghost px-3 py-2 text-sm">
                           Ver plantilla
                         </Link>
+                      )}
+                      {canSaveToPersonalCatalog && (
+                        <SaveToCatalogCard documentId={doc.id} title={doc.doc_label} variant="button" />
                       )}
                       <button
                         type="button"
@@ -387,7 +395,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                             ? "focus-ring btn-ghost px-3 py-2 text-sm"
                             : "focus-ring rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
                         }
-                        title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
+                        title={canExportDocx ? "Descargar Word" : "Word solo estÃ¡ disponible en el plan Pro"}
                       >
                         {canExportDocx ? "Word" : "Word Pro"}
                       </button>
@@ -421,7 +429,7 @@ function filterAndSortDocuments(documents: DocumentRow[], query: string, typeFil
       const matchesType = typeFilter === "all" || doc.doc_type === typeFilter;
       const searchable = `${doc.doc_label} ${doc.content} ${config?.label || ""} ${config?.category || ""} ${
         isCustomDocument(doc) ? "custom a medida personalizado documento" : ""
-      }`.toLowerCase();
+      } ${isAssistantDocument(doc) ? "assistant asistente chat a medida personalizado" : ""}`.toLowerCase();
       const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
 
       return matchesType && matchesQuery;
@@ -461,6 +469,14 @@ function stripInternalFormData(formData: Record<string, string>) {
 
 function isCustomDocument(doc: DocumentRow) {
   return doc.doc_type === "custom";
+}
+
+function isAssistantDocument(doc: DocumentRow) {
+  return doc.doc_type === "assistant";
+}
+
+function canSaveDocumentToPersonalCatalog(doc: DocumentRow) {
+  return isCustomDocument(doc) || isAssistantDocument(doc);
 }
 
 function isCommunityDocument(doc: DocumentRow) {
@@ -528,3 +544,4 @@ function parseCommunityReference(value?: string) {
     return null;
   }
 }
+
