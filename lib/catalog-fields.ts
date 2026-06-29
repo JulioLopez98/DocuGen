@@ -1,6 +1,6 @@
 ﻿import { z } from "zod";
 import { DEFAULT_MODEL, getOpenAIClient } from "@/lib/openai";
-import type { DocumentRow } from "@/lib/supabase-server";
+import type { CommunityDocumentTypeRow, DocumentRow } from "@/lib/supabase-server";
 
 export type CatalogFieldType = "text" | "textarea" | "date" | "email" | "number";
 
@@ -62,6 +62,49 @@ export async function inferCatalogFields(document: DocumentRow, label: string, d
   } catch (error) {
     console.error("catalog_fields_inference_error", error);
     return buildFallbackCatalogFields(document);
+  }
+}
+
+export async function inferCatalogFieldsFromType(
+  catalogType: Pick<CommunityDocumentTypeRow, "label" | "description" | "prompt_brief" | "suggested_fields">,
+): Promise<CatalogField[]> {
+  const openai = getOpenAIClient();
+
+  if (!openai) {
+    return catalogType.suggested_fields.length > 0 ? catalogType.suggested_fields : buildGenericCatalogFields();
+  }
+
+  try {
+    const response = await openai.responses.create({
+      model: process.env.OPENAI_MODEL_DEFAULT || DEFAULT_MODEL,
+      instructions: [
+        "Eres un analista de documentos profesionales para España.",
+        "Tu tarea es recalcular los campos de formulario de un tipo documental reutilizable.",
+        "Devuelve solo JSON válido, sin markdown ni explicaciones.",
+        "No inventes valores concretos; define únicamente los campos que el usuario debe rellenar.",
+        "Prioriza campos claros, accionables y no redundantes.",
+        "Usa nombres snake_case, labels claros en español y helpText breve cuando aporte contexto.",
+        "Tipos permitidos: text, textarea, date, email, number.",
+      ].join("\n"),
+      input: [
+        `Tipo guardado: ${catalogType.label}`,
+        `Guía visible: ${catalogType.description}`,
+        "Instrucciones internas actuales:",
+        catalogType.prompt_brief.slice(0, 5000),
+        "Campos actuales, para mejorar o sustituir si procede:",
+        JSON.stringify(catalogType.suggested_fields).slice(0, 2200),
+        "Formato exacto esperado:",
+        '{"fields":[{"name":"cliente","label":"Cliente","type":"text","required":true,"helpText":"Nombre o razón social del cliente"}]}',
+      ].join("\n\n"),
+      temperature: 0.1,
+      max_output_tokens: 1200,
+    });
+
+    const parsed = parseCatalogFieldResponse(response.output_text || "");
+    return parsed.length > 0 ? parsed : catalogType.suggested_fields.length > 0 ? catalogType.suggested_fields : buildGenericCatalogFields();
+  } catch (error) {
+    console.error("catalog_type_fields_recalculation_error", error);
+    return catalogType.suggested_fields.length > 0 ? catalogType.suggested_fields : buildGenericCatalogFields();
   }
 }
 
@@ -156,6 +199,40 @@ function dedupeFields(fields: CatalogField[]) {
   }
 
   return result.slice(0, 14);
+}
+
+
+function buildGenericCatalogFields(): CatalogField[] {
+  return [
+    {
+      name: "contexto",
+      label: "Contexto del documento",
+      type: "textarea",
+      required: true,
+      helpText: "Explica el caso concreto y el objetivo del documento.",
+    },
+    {
+      name: "partes_implicadas",
+      label: "Partes implicadas",
+      type: "textarea",
+      required: true,
+      helpText: "Personas, empresas u organismos que intervienen.",
+    },
+    {
+      name: "datos_clave",
+      label: "Datos clave",
+      type: "textarea",
+      required: true,
+      helpText: "Fechas, importes, documentos, servicios o hechos relevantes.",
+    },
+    {
+      name: "condiciones",
+      label: "Condiciones o instrucciones",
+      type: "textarea",
+      required: false,
+      helpText: "Añade límites, plazos, tono o requisitos especiales.",
+    },
+  ];
 }
 
 function stripInternalFormData(formData: Record<string, unknown>) {

@@ -17,6 +17,7 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
   const [draft, setDraft] = useState({ label: "", description: "" });
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const isPaid = plan === "pro" || plan === "empresa";
   const normalizedQuery = query.trim().toLowerCase();
   const visibleTypes = useMemo(
@@ -34,6 +35,7 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
   async function updateType(type: CommunityDocumentTypeRow) {
     setBusyId(type.id);
     setError(null);
+    setMessage(null);
 
     try {
       const response = await fetch("/api/personal-catalog/" + type.id, {
@@ -61,6 +63,33 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
     }
   }
 
+  async function recalculateFields(type: CommunityDocumentTypeRow) {
+    if (!window.confirm('Recalcular campos de "' + type.label + '" con IA? Se sustituirá el formulario sugerido, pero no se borrará ningún documento.')) {
+      return;
+    }
+
+    setBusyId(type.id);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + type.id + "/recalculate-fields", { method: "POST" });
+      const payload = (await response.json().catch(() => null)) as { catalogType?: CommunityDocumentTypeRow; message?: string } | null;
+
+      if (!response.ok || !payload?.catalogType) {
+        setError(payload?.message || "No se pudieron recalcular los campos.");
+        return;
+      }
+
+      setTypes((current) => current.map((currentType) => (currentType.id === payload.catalogType?.id ? payload.catalogType : currentType)));
+      setMessage('Campos recalculados para "' + payload.catalogType.label + '".');
+    } catch {
+      setError("No se pudo conectar con DocuGen. Inténtalo de nuevo en unos segundos.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function deleteType(type: CommunityDocumentTypeRow) {
     if (!window.confirm('Borrar "' + type.label + '" de Mi catálogo? Los documentos generados no se borrarán.')) {
       return;
@@ -68,6 +97,7 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
 
     setBusyId(type.id);
     setError(null);
+    setMessage(null);
 
     try {
       const response = await fetch("/api/personal-catalog/" + type.id, { method: "DELETE" });
@@ -138,6 +168,7 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
           )}
         </div>
         {error && <p className="status-error mt-4">{error}</p>}
+        {message && <p className="mt-4 rounded-md border border-[#b7e4c7] bg-[#f4fbf5] p-3 text-sm font-semibold text-[#2d6a4f]">{message}</p>}
       </section>
 
       {types.length === 0 ? (
@@ -217,6 +248,15 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
                         className="focus-ring btn-secondary px-3 py-2 text-xs"
                       >
                         Editar guía
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void recalculateFields(type)}
+                        disabled={busy || !isPaid}
+                        title={isPaid ? "Recalcular formulario sugerido" : "Disponible en Pro y Empresa"}
+                        className="focus-ring btn-ghost px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {busy ? "Recalculando..." : "Recalcular campos"}
                       </button>
                       <button
                         type="button"
