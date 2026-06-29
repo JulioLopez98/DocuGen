@@ -38,6 +38,26 @@ export default async function AssistantPage({ searchParams }: Props) {
     .limit(20)
     .returns<ChatSessionRow[]>();
 
+  const sessionIds = (sessions || []).map((session) => session.id);
+  const { data: sessionTitleMessages } = sessionIds.length
+    ? await supabase
+        .from("chat_messages")
+        .select("session_id,content,created_at")
+        .in("session_id", sessionIds)
+        .eq("role", "user")
+        .order("created_at", { ascending: true })
+        .returns<Array<Pick<ChatMessageRow, "session_id" | "content" | "created_at">>>()
+    : { data: [] as Array<Pick<ChatMessageRow, "session_id" | "content" | "created_at">> };
+  const sessionTitles = Object.fromEntries(
+    (sessionTitleMessages || []).reduce<Array<[string, string]>>((items, message) => {
+      if (!items.some(([sessionId]) => sessionId === message.session_id)) {
+        items.push([message.session_id, message.content]);
+      }
+
+      return items;
+    }, []),
+  );
+
   const activeSession = requestedSessionId
     ? (sessions || []).find((session) => session.id === requestedSessionId) || null
     : null;
@@ -64,6 +84,7 @@ export default async function AssistantPage({ searchParams }: Props) {
         initialSessionId={activeSession?.id || null}
         initialMessages={messages || []}
         sessions={sessions || []}
+        sessionTitles={sessionTitles}
       />
     </section>
   );

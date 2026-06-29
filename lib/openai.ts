@@ -320,59 +320,67 @@ ${input.template.extractedText.slice(0, 14000)}`;
 export function buildAssistantChatPrompt(messages: AssistantChatMessage[]) {
   const conversation = messages
     .slice(-12)
-    .map((message) => `${message.role === "user" ? "Usuario" : "DocuGen"}: ${message.content}`)
+    .map((message) => (message.role === "user" ? "Usuario" : "DocuGen") + ": " + message.content)
     .join("\n\n");
 
-  return `Actua como asistente conversacional de DocuGen para usuarios Pro.
-
-Objetivo:
-Ayudar al usuario a definir un documento profesional para Espana cuando no sabe que tipo elegir o cuando no existe aun en el catalogo.
-
-Comportamiento:
-- Haz preguntas concretas para completar informacion faltante.
-- Sugiere el tipo documental mas parecido si existe.
-- Si parece un documento a medida, orienta al usuario para reunir datos antes de generarlo.
-- No des asesoramiento legal definitivo.
-- No prometas validez legal.
-- No generes aun un documento completo salvo que el usuario lo pida explicitamente; en esta fase prioriza aclarar requisitos.
-- Si el documento puede tener efectos legales, laborales, fiscales, inmobiliarios, societarios o de proteccion de datos, recuerda revision profesional.
-- Mantente breve, profesional y util.
-- Cuando tengas suficiente informacion, resume en una lista:
-  1. Tipo de documento recomendado.
-  2. Datos disponibles.
-  3. Datos que faltan.
-  4. Siguiente accion recomendada.
-
-Conversacion:
-${conversation}`;
+  return [
+    "Actúa como asistente conversacional de DocuGen para usuarios Pro.",
+    "",
+    "Objetivo:",
+    "Ayudar al usuario a definir un documento profesional para España cuando no sabe qué tipo elegir o cuando no existe aún en el catálogo.",
+    "",
+    "Comportamiento:",
+    "- Sé breve, claro y práctico. Evita respuestas largas si basta una pregunta concreta.",
+    "- Primero identifica intención, tipo de documento probable, partes implicadas, fechas, datos económicos, jurisdicción o destinatario si aplica.",
+    "- Haz como máximo 3 preguntas por turno, priorizando las que bloquean la generación.",
+    "- Si el usuario ya aportó información suficiente, no sigas interrogando: resume y di que ya puede pulsar \"Generar documento\".",
+    "- Sugiere el tipo documental más parecido si existe, pero permite continuar como documento a medida.",
+    "- Si parece un documento recurrente, menciona de forma natural que después podrá guardarlo en Mi catálogo.",
+    "- No des asesoramiento legal definitivo.",
+    "- No prometas validez legal.",
+    "- No generes aún el documento completo salvo que el usuario lo pida explícitamente; en esta fase prioriza aclarar requisitos.",
+    "- Si el documento puede tener efectos legales, laborales, fiscales, inmobiliarios, societarios o de protección de datos, recuerda revisión profesional.",
+    "",
+    "Cuando tengas suficiente información, responde con esta estructura:",
+    "1. Documento recomendado.",
+    "2. Datos que ya tengo.",
+    "3. Datos que faltan, si falta alguno.",
+    "4. Siguiente paso: \"Puedes pulsar Generar documento\".",
+    "",
+    "Conversación:",
+    conversation,
+  ].join("\n");
 }
 
 export function buildAssistantDocumentPrompt(messages: AssistantChatMessage[]) {
   const conversation = messages
     .slice(-18)
-    .map((message) => `${message.role === "user" ? "Usuario" : "DocuGen"}: ${message.content}`)
+    .map((message) => (message.role === "user" ? "Usuario" : "DocuGen") + ": " + message.content)
     .join("\n\n");
 
-  return `Genera el documento final a partir de esta conversacion guiada de DocuGen.
-
-Objetivo:
-Crear un borrador profesional completo para Espana usando exclusivamente la informacion aportada en la conversacion.
-
-Reglas obligatorias:
-- Devuelve solo el documento final, sin explicar el proceso.
-- Elige el formato natural que corresponda: carta, autorizacion, email, contrato, acuerdo, politica, acta, propuesta u otro.
-- No inventes datos no proporcionados.
-- Si falta informacion necesaria, usa exactamente [PENDIENTE DE COMPLETAR].
-- No incluyas metadatos internos como "tipo recomendado", "datos disponibles" o "siguiente accion".
-- Si el documento es carta o email, no uses clausulas contractuales.
-- Si el documento es contrato o acuerdo, usa apartados claros y clausulas numeradas cuando proceda.
-- Si aplica, incluye bloque de firmas proporcionado y prudente.
-- Mantiene lenguaje profesional, claro y adaptado a Espana.
-- No prometas validez legal ni sustituyas revision profesional.
-- Incluye al final un aviso breve indicando que el documento es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
-
-Conversacion:
-${conversation}`;
+  return [
+    "Genera el documento final a partir de esta conversación guiada de DocuGen.",
+    "",
+    "Objetivo:",
+    "Crear un borrador profesional completo para España usando exclusivamente la información aportada en la conversación.",
+    "",
+    "Reglas obligatorias:",
+    "- Devuelve solo el documento final, sin explicar el proceso.",
+    "- Elige el formato natural que corresponda: carta, autorización, email, contrato, acuerdo, política, acta, propuesta u otro.",
+    "- No inventes datos no proporcionados.",
+    "- Si falta información necesaria, usa exactamente [PENDIENTE DE COMPLETAR].",
+    "- No incluyas metadatos internos como \"tipo recomendado\", \"datos disponibles\" o \"siguiente acción\".",
+    "- Si el documento es carta, autorización o email, usa formato natural de comunicación: encabezado, cuerpo, cierre y firma si procede. No lo conviertas en contrato.",
+    "- Si el documento es contrato o acuerdo, usa apartados claros y cláusulas numeradas cuando proceda.",
+    "- Si el documento es acta o documento operativo, usa estructura accionable y evita cláusulas legales innecesarias.",
+    "- Si aplica, incluye bloque de firmas prudente.",
+    "- Mantén lenguaje profesional, claro y adaptado a España.",
+    "- No prometas validez legal ni sustituyas revisión profesional.",
+    "- Incluye al final un aviso breve indicando que el documento es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.",
+    "",
+    "Conversación:",
+    conversation,
+  ].join("\n");
 }
 
 export function buildRefinementPrompt({

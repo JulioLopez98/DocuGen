@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ type AssistantChatClientProps = {
   initialSessionId: string | null;
   initialMessages: ChatMessageRow[];
   sessions: ChatSessionRow[];
+  sessionTitles: Record<string, string>;
 };
 
 type ApiError = {
@@ -34,7 +35,7 @@ const starterPrompts = [
   "Tengo que responder formalmente a una reclamación de un cliente.",
 ];
 
-export function AssistantChatClient({ initialSessionId, initialMessages, sessions }: AssistantChatClientProps) {
+export function AssistantChatClient({ initialSessionId, initialMessages, sessions, sessionTitles }: AssistantChatClientProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId);
   const [messages, setMessages] = useState<ChatMessageRow[]>(initialMessages);
@@ -45,6 +46,8 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const [generatedDocument, setGeneratedDocument] = useState<GeneratedAssistantDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const canGenerate = Boolean(sessionId && messages.length > 0 && !loading && !generating);
+  const currentSessionTitle = sessionId ? formatSessionTitle(sessionTitles[sessionId]) : "Nuevo documento";
 
   function startNewChat() {
     setSessionId(null);
@@ -182,15 +185,15 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         <div className="border-b border-[#d8f3dc] bg-[#fffdf8]/74 px-5 py-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-[#2d6a4f]">Describe el documento. DocuGen te guía.</p>
+              <p className="text-sm font-bold text-[#2d6a4f]">Asistente guiado</p>`r`n              <h2 className="mt-1 text-lg font-bold text-[#1f2933]">{currentSessionTitle}</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Incluye objetivo, partes implicadas, fechas, importes y condiciones importantes. Evita datos sensibles innecesarios.
+                Cuéntale el caso, responde a sus preguntas y genera el borrador cuando esté claro.
               </p>
             </div>
             <button
               type="button"
               onClick={generateFromChat}
-              disabled={generating || loading || messages.length === 0}
+              disabled={!canGenerate}
               className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60"
             >
               {generating ? "Generando..." : "Generar documento"}
@@ -203,7 +206,12 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
             <div className="mx-auto max-w-2xl rounded-xl border border-[#d8f3dc] bg-[#faf9f6]/85 p-5 text-center">
               <p className="eyebrow">Empieza con una frase</p>
               <h2 className="mt-3 text-2xl font-bold">No necesitas saber el nombre del documento</h2>
-              <p className="body-muted mt-2">Cuéntale al asistente qué quieres conseguir y él ordenará el caso.</p>
+              <p className="body-muted mt-2">No necesitas saber el nombre exacto. Explica la situación y DocuGen te pedirá los datos importantes.</p>
+              <div className="mt-5 grid gap-2 text-left sm:grid-cols-3">
+                <AssistantStep number="1" title="Describe" text="Cuenta objetivo, partes y contexto." />
+                <AssistantStep number="2" title="Aclara" text="Responde solo lo que falte." />
+                <AssistantStep number="3" title="Genera" text="Crea el borrador y guárdalo si se repite." />
+              </div>
               <div className="mt-5 grid gap-2 text-left">
                 {starterPrompts.map((prompt) => (
                   <button
@@ -308,7 +316,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
                 >
                   <div className="flex items-start gap-2">
                     <Link href={`/asistente?sessionId=${session.id}`} className="focus-ring min-w-0 flex-1 rounded-md px-2 py-1 text-sm">
-                      <span className="block truncate font-semibold">Conversación</span>
+                      <span className="block truncate font-semibold">{formatSessionTitle(sessionTitles[session.id])}</span>
                       <span className="mt-1 block text-xs text-slate-500">{new Date(session.updated_at).toLocaleString("es-ES")}</span>
                     </Link>
                     <button
@@ -330,6 +338,12 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
 
       {generatedDocument && (
         <div className="order-3 xl:col-span-2">
+          <div className="mb-4 rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4">
+            <p className="text-sm font-bold text-[#2d6a4f]">Documento generado desde el asistente</p>
+            <p className="mt-1 text-xs leading-5 text-slate-600">
+              Si este formato te va a servir más veces, usa “Guardar en Mi catálogo” en el resultado. Así podrás repetirlo desde Crear sin volver a explicar todo el caso.
+            </p>
+          </div>
           {generatedDocument.proposal && (
             <div className="status-success mb-4">
               <p className="text-sm font-bold text-[#2d6a4f]">Propuesta enviada al admin</p>
@@ -354,3 +368,23 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
     </div>
   );
 }
+function AssistantStep({ number, title, text }: { number: string; title: string; text: string }) {
+  return (
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/82 p-3">
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#d8f3dc] text-xs font-bold text-[#2d6a4f]">{number}</span>
+      <p className="mt-2 text-sm font-bold text-[#1f2933]">{title}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-500">{text}</p>
+    </div>
+  );
+}
+
+function formatSessionTitle(value?: string) {
+  const clean = value?.trim().replace(/\s+/g, " ");
+
+  if (!clean) {
+    return "Conversación nueva";
+  }
+
+  return clean.length > 52 ? clean.slice(0, 49) + "..." : clean;
+}
+
