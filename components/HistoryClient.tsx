@@ -45,6 +45,19 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   const groupedByMonth = useMemo(() => groupDocumentsByMonth(filteredDocuments), [filteredDocuments]);
   const hasFilters = query.trim().length > 0 || typeFilter !== "all" || sortMode !== "newest";
   const workspaceById = useMemo(() => new Map(workspaces.map((workspace) => [workspace.id, workspace])), [workspaces]);
+  const catalogTypeBySourceDocumentId = useMemo(() => {
+    const map = new Map<string, CommunityDocumentTypeRow>();
+
+    for (const type of catalogTypes) {
+      const sourceDocumentId = getCatalogSourceDocumentId(type);
+
+      if (sourceDocumentId) {
+        map.set(sourceDocumentId, type);
+      }
+    }
+
+    return map;
+  }, [catalogTypes]);
 
   async function deleteDocument(id: string) {
     if (!window.confirm("¿Borrar este documento? Esta acción no se puede deshacer.")) {
@@ -286,6 +299,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               const community = isCommunityDocument(doc);
               const assistant = isAssistantDocument(doc);
               const canSaveToPersonalCatalog = canSaveDocumentToPersonalCatalog(doc);
+              const savedCatalogType = catalogTypeBySourceDocumentId.get(doc.id) || null;
               const createdAt = new Date(doc.created_at);
               const preview = doc.content.length > 900 ? `${doc.content.slice(0, 900)}...` : doc.content;
               const isBusy = busyId === doc.id;
@@ -324,7 +338,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       {canSaveToPersonalCatalog && (
-                        <SaveToCatalogCard documentId={doc.id} title={doc.doc_label} variant="button" />
+                        <SaveToCatalogCard documentId={doc.id} title={doc.doc_label} variant="button" initialCatalogType={savedCatalogType} />
                       )}
                       <button
                         type="button"
@@ -642,6 +656,11 @@ function PersonalCatalogShelf({
       )}
     </section>
   );
+}
+
+function getCatalogSourceDocumentId(type: CommunityDocumentTypeRow) {
+  const match = type.admin_notes?.match(/documento ([0-9a-f-]{36})/i) || type.admin_notes?.match(/document ([0-9a-f-]{36})/i);
+  return match?.[1] || null;
 }
 
 function filterAndSortDocuments(documents: DocumentRow[], query: string, typeFilter: string, sortMode: SortMode) {

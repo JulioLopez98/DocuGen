@@ -15,6 +15,7 @@ type EditableDocumentResultProps = {
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
   canSaveToCatalog?: boolean;
+  savedCatalogType?: { id: string; label: string } | null;
 };
 
 type SaveResponse = {
@@ -123,6 +124,7 @@ export function EditableDocumentResult({
   canExportDocx = false,
   brandSettings,
   canSaveToCatalog = false,
+  savedCatalogType = null,
 }: EditableDocumentResultProps) {
   const [content, setContent] = useState(initialContent);
   const [savedContent, setSavedContent] = useState(initialContent);
@@ -309,7 +311,7 @@ export function EditableDocumentResult({
 
   return (
     <section className="grid gap-5">
-      {canSaveToCatalog && <SaveToCatalogCard documentId={documentId} title={title} />}
+      {canSaveToCatalog && <SaveToCatalogCard documentId={documentId} title={title} initialCatalogType={savedCatalogType} />}
       <div className="surface rounded-md p-5">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8f3dc] pb-4">
           <div>

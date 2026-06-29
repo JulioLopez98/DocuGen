@@ -62,6 +62,17 @@ export async function POST(request: Request) {
     const promptBrief = buildPromptBrief(document, label, description);
     const suggestedFields = await inferCatalogFields(document, label, description);
 
+    const { data: existingFromDocument } = await db
+      .from("community_document_types")
+      .select("*")
+      .eq("created_by", user.id)
+      .ilike("admin_notes", "%document " + document.id + "%")
+      .maybeSingle<CommunityDocumentTypeRow>();
+
+    if (existingFromDocument) {
+      return NextResponse.json({ catalogType: existingFromDocument, alreadyExists: true });
+    }
+
     const { data: existing } = await db
       .from("community_document_types")
       .select("*")

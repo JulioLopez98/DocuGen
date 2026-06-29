@@ -7,10 +7,12 @@ type SaveToCatalogCardProps = {
   documentId: string;
   title: string;
   variant?: "card" | "button";
+  initialCatalogType?: { id: string; label: string } | null;
 };
 
-export function SaveToCatalogCard({ documentId, title, variant = "card" }: SaveToCatalogCardProps) {
-  const [state, setState] = useState<"idle" | "saving" | "saved" | "exists">("idle");
+export function SaveToCatalogCard({ documentId, title, variant = "card", initialCatalogType = null }: SaveToCatalogCardProps) {
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "exists">(initialCatalogType ? "exists" : "idle");
+  const [catalogType, setCatalogType] = useState(initialCatalogType);
   const [error, setError] = useState<string | null>(null);
 
   async function saveToCatalog() {
@@ -27,12 +29,17 @@ export function SaveToCatalogCard({ documentId, title, variant = "card" }: SaveT
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentId, label: title }),
       });
-      const data = (await response.json().catch(() => null)) as { message?: string; alreadyExists?: boolean } | null;
+      const data = (await response.json().catch(() => null)) as {
+        message?: string;
+        alreadyExists?: boolean;
+        catalogType?: { id: string; label: string };
+      } | null;
 
       if (!response.ok) {
         throw new Error(data?.message || "No se pudo guardar en Mi catálogo.");
       }
 
+      setCatalogType(data?.catalogType || null);
       setState(data?.alreadyExists ? "exists" : "saved");
     } catch (saveError) {
       setState("idle");
@@ -41,6 +48,7 @@ export function SaveToCatalogCard({ documentId, title, variant = "card" }: SaveT
   }
 
   const saved = state === "saved" || state === "exists";
+  const openCatalogHref = catalogType ? "/generar?mode=community&communityTypeId=" + catalogType.id : "/generar?mode=community";
 
   if (variant === "button") {
     return (
@@ -54,7 +62,7 @@ export function SaveToCatalogCard({ documentId, title, variant = "card" }: SaveT
           {state === "saving" ? "Guardando..." : saved ? "En Mi catálogo" : "Guardar en Mi catálogo"}
         </button>
         {saved && (
-          <Link href="/generar?mode=community" className="focus-ring btn-ghost px-3 py-2 text-sm">
+          <Link href={openCatalogHref} className="focus-ring btn-ghost px-3 py-2 text-sm">
             Abrir
           </Link>
         )}
@@ -88,7 +96,7 @@ export function SaveToCatalogCard({ documentId, title, variant = "card" }: SaveT
             {state === "saving" ? "Guardando..." : saved ? "Guardado" : "Guardar en Mi catálogo"}
           </button>
           {saved && (
-            <Link href="/generar?mode=community" className="focus-ring btn-secondary px-3 py-2 text-xs">
+            <Link href={openCatalogHref} className="focus-ring btn-secondary px-3 py-2 text-xs">
               Abrir Mi catálogo
             </Link>
           )}

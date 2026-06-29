@@ -2,7 +2,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EditableDocumentResult } from "@/components/EditableDocumentResult";
 import { getDocumentConfig } from "@/lib/document-types";
-import { getCurrentProfile, type BrandSettings, type DocumentRow, type DocumentVersionRow } from "@/lib/supabase-server";
+import {
+  getCurrentProfile,
+  type BrandSettings,
+  type CommunityDocumentTypeRow,
+  type DocumentRow,
+  type DocumentVersionRow,
+} from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 type Props = {
@@ -40,6 +46,14 @@ export default async function HistoryDetailPage({ params }: Props) {
     .eq("document_id", document.id)
     .order("version_number", { ascending: false })
     .returns<DocumentVersionRow[]>();
+  const { data: savedCatalogType } = canSaveToCatalog
+    ? await supabase
+        .from("community_document_types")
+        .select("id,label")
+        .eq("created_by", profile.id)
+        .ilike("admin_notes", "%document " + document.id + "%")
+        .maybeSingle<Pick<CommunityDocumentTypeRow, "id" | "label">>()
+    : { data: null };
 
   return (
     <section className="container-page py-10">
@@ -150,6 +164,7 @@ export default async function HistoryDetailPage({ params }: Props) {
         canExportDocx={profile.plan !== "free"}
         brandSettings={brandSettings || null}
         canSaveToCatalog={canSaveToCatalog}
+        savedCatalogType={savedCatalogType || null}
       />
     </section>
   );
