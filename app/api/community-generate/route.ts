@@ -43,11 +43,11 @@ export async function POST(request: Request) {
 
     if (typeError || !communityType) {
       console.error("community_type_not_found", typeError);
-      return errorResponse(404, "community_type_not_found", "Este documento comunitario no está disponible.");
+      return errorResponse(404, "community_type_not_found", "Este documento de Mi catálogo no está disponible.");
     }
 
     if (!canUseCommunityType(profile.plan, communityType.required_plan)) {
-      return errorResponse(403, "plan_required", "Este documento comunitario requiere un plan superior.");
+      return errorResponse(403, "plan_required", "Este documento de Mi catálogo requiere un plan superior.");
     }
 
     if (profile.plan === "free" && profile.docs_this_month >= 3) {
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
       severity: "high",
       message: getErrorMessage(error),
     });
-    return errorResponse(500, "generation_failed", "No se pudo generar el documento comunitario.");
+    return errorResponse(500, "generation_failed", "No se pudo generar el documento de Mi catálogo.");
   }
 }
 

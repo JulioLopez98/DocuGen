@@ -366,7 +366,7 @@ export function GeneratorClient({
       const data = (await response.json()) as GeneratedDocument & { message?: string };
 
       if (!response.ok) {
-        setError(data.message || "No se pudo generar el documento comunitario.");
+        setError(data.message || "No se pudo generar el documento de Mi catálogo.");
         return;
       }
 
@@ -433,9 +433,9 @@ export function GeneratorClient({
             />
             <CreationModeCard
               active={generatorMode === "community"}
-              eyebrow={`${communityTypes.length} aprobados`}
-              title="Tipos aprobados"
-              text="Documentos nuevos revisados por el equipo."
+              eyebrow={`${communityTypes.length} guardados`}
+              title="Mi catálogo"
+              text="Documentos personalizados que guardes para reutilizar."
               onClick={selectCommunityMode}
               disabled={communityTypes.length === 0}
             />
@@ -518,11 +518,11 @@ export function GeneratorClient({
           <section className="surface-flat p-5">
             <p className="eyebrow">Modo activo</p>
             <h2 className="mt-2 text-lg font-bold">
-              {generatorMode === "community" ? "Tipos de la comunidad" : "Documento a medida"}
+              {generatorMode === "community" ? "Mi catálogo" : "Documento a medida"}
             </h2>
             <p className="body-muted mt-2 text-xs">
               {generatorMode === "community"
-                ? "Elige un tipo aprobado en el panel principal y después completa sus campos."
+                ? "Elige un tipo guardado y después completa sus campos."
                 : "Describe el documento que necesitas y DocuGen preparará un borrador personalizado."}
             </p>
             <button type="button" onClick={() => selectCatalogIntent("all")} className="focus-ring btn-secondary mt-4 w-full px-4 py-3 text-sm">
@@ -848,7 +848,7 @@ export function GeneratorClient({
                   ? config.category
                   : "Paso 2"
                 : generatorMode === "community"
-                  ? selectedCommunityType?.category || "Comunidad"
+                  ? selectedCommunityType?.category || "Mi catálogo"
                   : "Documento a medida"}
             </p>
             <h1 className="panel-title mt-1">
@@ -860,8 +860,8 @@ export function GeneratorClient({
                     : `Elige documento para ${selectedIntent.label.toLowerCase()}`
                 : generatorMode === "community"
                   ? communityTypeConfirmed
-                    ? selectedCommunityType?.label || "Tipos de la comunidad"
-                    : "Elige un tipo de la comunidad"
+                    ? selectedCommunityType?.label || "Mi catálogo"
+                    : "Elige un tipo de Mi catálogo"
                   : "No encuentro mi documento"}
             </h1>
             <p className="body-muted mt-2 max-w-2xl">
@@ -871,8 +871,8 @@ export function GeneratorClient({
                 ? "Completa los datos principales. DocuGen no inventará información no aportada y usará marcadores si falta algo."
                 : generatorMode === "community"
                   ? communityTypeConfirmed
-                    ? "Completa los campos sugeridos por una definición comunitaria aprobada por el equipo."
-                    : "Estos tipos nacen de solicitudes reales y pasan una revisión antes de poder usarse."
+                    ? "Completa los campos sugeridos por este tipo personalizado."
+                    : "Aquí aparecerán los documentos personalizados que guardes desde A medida o el Asistente."
                   : "Explica qué documento necesitas. Lo guardaremos como solicitud interna para detectar nuevos tipos útiles."}
             </p>
             {generatorMode === "catalog" && selectedDocumentConfirmed && (
@@ -914,8 +914,7 @@ export function GeneratorClient({
             <p className="eyebrow">Plan requerido</p>
             <h2 className="font-serif-display mt-3 text-3xl font-bold">Desbloquea {selectedCommunityType.label.toLowerCase()}</h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Este tipo comunitario requiere el plan {selectedCommunityType.required_plan}. Los documentos aprobados por la comunidad
-              pueden tener instrucciones más avanzadas que los tipos gratuitos.
+              Este tipo de Mi catálogo requiere el plan {selectedCommunityType.required_plan}. Los tipos personalizados pueden tener instrucciones más avanzadas que los tipos gratuitos.
             </p>
             <Link href="/precios" className="focus-ring btn-primary mt-6 inline-flex px-5 py-3 text-sm">
               Ver planes
@@ -929,9 +928,9 @@ export function GeneratorClient({
           />
         ) : generatorMode === "community" ? (
           <EmptyState
-            eyebrow="Sin documentos comunitarios"
-            title="Aún no hay tipos comunitarios disponibles"
-            description="Cuando el equipo publique candidatos aprobados, aparecerán aquí para generar documentos."
+            eyebrow="Sin documentos de Mi catálogo"
+            title="Aún no hay tipos de Mi catálogo disponibles"
+            description="Cuando guardes documentos a medida o del asistente como tipos reutilizables, aparecerán aquí."
             variant="flat"
           />
         ) : generatorMode === "custom" && customProLocked ? (
@@ -1597,9 +1596,9 @@ function CommunityChoicePanel({
   if (communityTypes.length === 0) {
     return (
       <EmptyState
-        eyebrow="Sin documentos comunitarios"
-        title="Aún no hay tipos comunitarios disponibles"
-        description="Cuando el equipo publique candidatos aprobados, aparecerán aquí para generar documentos."
+        eyebrow="Sin documentos de Mi catálogo"
+        title="Aún no hay tipos de Mi catálogo disponibles"
+        description="Cuando guardes documentos a medida o del asistente como tipos reutilizables, aparecerán aquí."
         variant="flat"
       />
     );
@@ -1610,14 +1609,14 @@ function CommunityChoicePanel({
       <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Catalogo comunitario</p>
-            <h2 className="font-serif-display mt-2 text-2xl font-bold">Documentos creados desde solicitudes reales</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Mi catálogo</p>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Tus documentos reutilizables</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Elige primero el tipo comunitario. Despues cargaremos solo los campos necesarios para ese documento.
+              Elige primero un tipo guardado. Después cargaremos solo los campos necesarios para ese documento.
             </p>
           </div>
           <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
-            {communityTypes.length} aprobados
+            {communityTypes.length} guardados
           </span>
         </div>
       </div>
@@ -1640,10 +1639,10 @@ function CommunityChoicePanel({
                 </span>
                 <span className="flex shrink-0 flex-wrap items-center gap-2">
                   <span className="rounded-full bg-[#faf9f6] px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">
-                    {type.category || "Comunidad"}
+                    {type.category || "Mi catálogo"}
                   </span>
                   <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                    {locked ? type.required_plan : "Aprobado"}
+                    {locked ? type.required_plan : "Guardado"}
                   </span>
                 </span>
               </span>
@@ -1699,10 +1698,10 @@ function CommunityForm({
         </label>
       ))}
       <p className="rounded-md bg-[#faf9f6] p-3 text-xs leading-5 text-slate-600">
-        Este tipo procede del catálogo comunitario revisado. El resultado sigue siendo un borrador generado con IA.
+        Este tipo pertenece a Mi catálogo. El resultado sigue siendo un borrador generado con IA.
       </p>
       <button type="submit" disabled={disabled} className="focus-ring btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
-        {disabled ? "Generando..." : "Generar documento comunitario"}
+        {disabled ? "Generando..." : "Generar desde Mi catálogo"}
       </button>
     </form>
   );

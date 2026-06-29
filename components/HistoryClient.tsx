@@ -103,7 +103,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       if (community && !communityPayload) {
         setError(
-          "Este documento comunitario no se puede regenerar desde el historial porque falta su referencia interna. Abre Comunidad y vuelve a elegir el tipo.",
+          "Este documento de Mi catálogo no se puede regenerar desde el historial porque falta su referencia interna. Abre Mi catálogo y vuelve a elegir el tipo.",
         );
         return;
       }
@@ -287,7 +287,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                           {custom ? "A medida" : config?.category || "Documento"}
                         </span>
                         {custom && <span className="badge badge-pro">Personalizado</span>}
-                        {community && <span className="badge badge-pro">Comunidad</span>}
+                        {community && <span className="badge badge-pro">Mi catálogo</span>}
                         {doc.reference_template_id && (
                           <span className="badge badge-pro">
                             Con plantilla

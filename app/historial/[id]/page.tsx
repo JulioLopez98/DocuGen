@@ -47,13 +47,13 @@ export default async function HistoryDetailPage({ params }: Props) {
         </Link>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
           <div>
-            <p className="eyebrow">{isCustom ? "Documento a medida" : isCommunity ? "Documento comunitario" : config?.category || "Documento"}</p>
+            <p className="eyebrow">{isCustom ? "Documento a medida" : isCommunity ? "Documento de Mi catálogo" : config?.category || "Documento"}</p>
             <h1 className="font-serif-display mt-3 text-4xl font-bold">{document.doc_label}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
               {isCustom
                 ? "Documento personalizado guardado en Documentos. Puedes exportarlo, copiarlo o regenerarlo desde la lista."
                 : isCommunity
-                  ? "Documento generado desde un tipo comunitario aprobado. Puedes exportarlo o crear otro desde el generador."
+                  ? "Documento generado desde Mi catálogo. Puedes exportarlo o crear otro desde el generador."
                 : "Documento guardado en Documentos. Puedes exportarlo, copiarlo o reutilizar sus datos como plantilla."}
             </p>
           </div>
@@ -69,7 +69,7 @@ export default async function HistoryDetailPage({ params }: Props) {
                 label="Hora"
                 value={createdAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
               />
-              <MetaLine label="Tipo" value={isCustom ? "A medida" : isCommunity ? "Comunidad" : config?.label || document.doc_type} />
+              <MetaLine label="Tipo" value={isCustom ? "A medida" : isCommunity ? "Mi catálogo" : config?.label || document.doc_type} />
               <MetaLine label="Modelo" value={document.model_used || "No registrado"} />
               <MetaLine label="Word" value={profile.plan !== "free" ? "Disponible" : "Solo Pro"} />
               {document.reference_template_id && (
@@ -84,7 +84,7 @@ export default async function HistoryDetailPage({ params }: Props) {
                 </Link>
               ) : isCommunity ? (
                 <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
-                  Crear otro comunitario
+                  Crear otro desde Mi catálogo
                 </Link>
               ) : (
                 <>

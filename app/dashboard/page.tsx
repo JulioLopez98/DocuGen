@@ -502,7 +502,7 @@ function uniqueDocuments(documents: DashboardDocumentConfig[]) {
 }
 
 function getDocumentCategory(doc: DocumentRow) {
-  return getDocumentConfig(doc.doc_type)?.category || (doc.doc_type.startsWith("community:") ? "Comunitario" : "Documento");
+  return getDocumentConfig(doc.doc_type)?.category || (doc.doc_type.startsWith("community:") ? "Mi catálogo" : "Documento");
 }
 
 function getBrandHelper({ hasBrand, isPaid }: { hasBrand: boolean; isPaid: boolean }) {
