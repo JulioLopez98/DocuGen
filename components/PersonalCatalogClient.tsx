@@ -63,6 +63,33 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
     }
   }
 
+  async function duplicateType(type: CommunityDocumentTypeRow) {
+    if (!window.confirm('Duplicar "' + type.label + '"? Se creará una copia editable sin cambiar el original.')) {
+      return;
+    }
+
+    setBusyId(type.id);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + type.id + "/duplicate", { method: "POST" });
+      const payload = (await response.json().catch(() => null)) as { catalogType?: CommunityDocumentTypeRow; message?: string } | null;
+
+      if (!response.ok || !payload?.catalogType) {
+        setError(payload?.message || "No se pudo duplicar este tipo guardado.");
+        return;
+      }
+
+      setTypes((current) => [payload.catalogType as CommunityDocumentTypeRow, ...current]);
+      setMessage('Tipo duplicado como "' + payload.catalogType.label + '".');
+    } catch {
+      setError("No se pudo conectar con DocuGen. Inténtalo de nuevo en unos segundos.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function recalculateFields(type: CommunityDocumentTypeRow) {
     if (!window.confirm('Recalcular campos de "' + type.label + '" con IA? Se sustituirá el formulario sugerido, pero no se borrará ningún documento.')) {
       return;
@@ -248,6 +275,15 @@ export function PersonalCatalogClient({ initialTypes, plan }: PersonalCatalogCli
                         className="focus-ring btn-secondary px-3 py-2 text-xs"
                       >
                         Editar guía
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void duplicateType(type)}
+                        disabled={busy || !isPaid}
+                        title={isPaid ? "Crear una copia editable" : "Disponible en Pro y Empresa"}
+                        className="focus-ring btn-ghost px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {busy ? "Duplicando..." : "Duplicar"}
                       </button>
                       <button
                         type="button"
