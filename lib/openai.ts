@@ -519,7 +519,7 @@ export function buildCommunityDocumentPrompt(input: CommunityDocumentPromptInput
     .map((field) => `- ${field.label} (${field.name}): ${input.formData[field.name] || "[PENDIENTE DE COMPLETAR]"}`)
     .join("\n");
 
-  return `Genera un borrador profesional para España usando una definición personalizada aprobada por DocuGen.
+  return `Genera un borrador profesional para España usando un tipo personalizado guardado por el usuario.
 
 Tipo de Mi catálogo:
 ${input.type.label}
@@ -530,7 +530,7 @@ ${input.type.category || "A medida"}
 Descripción editorial:
 ${input.type.description}
 
-Prompt base revisado por admin:
+Instrucciones base del tipo guardado:
 ${input.type.prompt_brief}
 
 Reglas obligatorias:
@@ -545,7 +545,7 @@ Reglas obligatorias:
 - Mantén un tono profesional, claro y proporcionado.
 - Si el documento tiene impacto legal, laboral, fiscal, societario, inmobiliario o de protección de datos, redacta con prudencia y recomienda revisión profesional.
 - No prometas validez legal ni sustituyas asesoramiento profesional.
-- Respeta la intención del tipo de Mi catálogo, pero no copies texto de solicitudes anteriores.
+- Respeta la intención del tipo de Mi catálogo, pero no copies datos concretos del documento que sirvió como referencia.
 - Incluye al final un aviso breve indicando que es un borrador generado con IA y debe revisarse por un profesional si se va a usar con efectos legales o profesionales relevantes.
 - Devuelve solo el documento final.
 

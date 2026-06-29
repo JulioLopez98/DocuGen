@@ -1012,6 +1012,7 @@ export function GeneratorClient({
             canExportDocx={canExportDocx}
             brandSettings={brandSettings}
             templateTrace={generated.templateTrace || null}
+            canSaveToCatalog={generated.docType === "custom"}
             onRegenerate={regenerateGenerated}
             onRefine={getDocumentConfig(generated.docType) ? refineGenerated : undefined}
             refiningMode={refiningMode}

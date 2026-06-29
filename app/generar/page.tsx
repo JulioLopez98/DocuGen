@@ -106,6 +106,7 @@ export default async function GeneratePage({ searchParams }: Props) {
       ? await supabase
           .from("community_document_types")
           .select("*")
+          .eq("created_by", profile.id)
           .in("status", ["approved", "published"])
           .order("created_at", { ascending: false })
           .returns<CommunityDocumentTypeRow[]>()

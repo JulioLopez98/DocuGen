@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       .from("community_document_types")
       .select("*")
       .eq("id", payload.communityTypeId)
+      .eq("created_by", user.id)
       .in("status", ["approved", "published"])
       .single<CommunityDocumentTypeRow>();
 

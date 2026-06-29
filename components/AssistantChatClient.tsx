@@ -346,6 +346,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
             title={generatedDocument.docLabel}
             content={generatedDocument.content}
             canExportDocx
+            canSaveToCatalog={generatedDocument.docType === "assistant"}
             onRegenerate={generateFromChat}
           />
         </div>

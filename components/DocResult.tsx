@@ -22,6 +22,7 @@ type DocResultProps = {
   canExportDocx?: boolean;
   brandSettings?: PdfBrandSettings | null;
   templateTrace?: DocumentTemplateTrace | null;
+  canSaveToCatalog?: boolean;
   onRegenerate?: () => void;
   onRefine?: (mode: RefinementMode) => void;
   refiningMode?: RefinementMode | null;
@@ -36,17 +37,47 @@ export function DocResult({
   canExportDocx = false,
   brandSettings,
   templateTrace = null,
+  canSaveToCatalog = false,
   onRegenerate,
   onRefine,
   refiningMode = null,
 }: DocResultProps) {
   const [copied, setCopied] = useState(false);
+  const [catalogSaveState, setCatalogSaveState] = useState<"idle" | "saving" | "saved" | "exists">("idle");
+  const [catalogSaveError, setCatalogSaveError] = useState<string | null>(null);
   const refinementModes = Object.entries(refinementLabels) as [RefinementMode, string][];
 
   async function copyText() {
     await navigator.clipboard.writeText(content);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function saveToCatalog() {
+    if (!documentId || catalogSaveState === "saving") {
+      return;
+    }
+
+    setCatalogSaveError(null);
+    setCatalogSaveState("saving");
+
+    try {
+      const response = await fetch("/api/personal-catalog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentId, label: title }),
+      });
+      const data = (await response.json().catch(() => null)) as { message?: string; alreadyExists?: boolean } | null;
+
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo guardar en Mi catálogo.");
+      }
+
+      setCatalogSaveState(data?.alreadyExists ? "exists" : "saved");
+    } catch (error) {
+      setCatalogSaveState("idle");
+      setCatalogSaveError(error instanceof Error ? error.message : "No se pudo guardar en Mi catálogo.");
+    }
   }
 
   return (
@@ -106,6 +137,39 @@ export function DocResult({
           )}
         </div>
       </div>
+      {canSaveToCatalog && documentId && (
+        <div className="mt-5 rounded-md border border-[#2d6a4f]/30 bg-[#f4fbf5] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[#2d6a4f]">Guardar como tipo reutilizable</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Si este documento te sirve como formato recurrente, guardalo en Mi catálogo para crearlo de nuevo desde Crear.
+              </p>
+              {catalogSaveError && <p className="mt-2 text-xs font-semibold text-red-700">{catalogSaveError}</p>}
+              {(catalogSaveState === "saved" || catalogSaveState === "exists") && (
+                <p className="mt-2 text-xs font-semibold text-[#2d6a4f]">
+                  {catalogSaveState === "exists" ? "Ya estaba guardado en Mi catálogo." : "Guardado en Mi catálogo."}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => void saveToCatalog()}
+                disabled={catalogSaveState === "saving" || catalogSaveState === "saved" || catalogSaveState === "exists"}
+                className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {catalogSaveState === "saving" ? "Guardando..." : catalogSaveState === "saved" || catalogSaveState === "exists" ? "Guardado" : "Guardar en Mi catálogo"}
+              </button>
+              {(catalogSaveState === "saved" || catalogSaveState === "exists") && (
+                <Link href="/generar?mode=community" className="focus-ring btn-secondary px-3 py-2 text-xs">
+                  Abrir Mi catálogo
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {templateTrace && (
         <div className="mt-5 rounded-md border border-[#2d6a4f] bg-[#f4fbf5] p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
