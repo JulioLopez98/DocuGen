@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -40,7 +40,7 @@ type GenerateRequestPayload = {
 type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite" | "workspace_id">;
 type CommunityTypeOption = Pick<
   CommunityDocumentTypeRow,
-  "id" | "label" | "description" | "category" | "required_plan" | "suggested_fields" | "status" | "created_at"
+  "id" | "label" | "description" | "category" | "required_plan" | "prompt_brief" | "suggested_fields" | "status" | "created_at"
 >;
 type CommunityGeneratePayload = {
   communityTypeId: string;
@@ -936,6 +936,7 @@ export function GeneratorClient({
           </div>
         ) : generatorMode === "community" && selectedCommunityType ? (
           <CommunityForm
+            key={selectedCommunityType.id}
             communityType={selectedCommunityType}
             disabled={loading}
             onUpdate={(updatedType) => {
@@ -1849,6 +1850,11 @@ function CommunityForm({
   const [savingFields, setSavingFields] = useState(false);
   const [fieldMessage, setFieldMessage] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [promptBrief, setPromptBrief] = useState(communityType.prompt_brief);
+  const [savingPrompt, setSavingPrompt] = useState(false);
+  const [promptMessage, setPromptMessage] = useState<string | null>(null);
+  const [promptError, setPromptError] = useState<string | null>(null);
 
   async function saveFields() {
     const normalizedFields = fields.map(normalizeCommunityField).filter((field) => field.name && field.label);
@@ -1887,6 +1893,43 @@ function CommunityForm({
       setFieldError(error instanceof Error ? error.message : "No se pudieron guardar los campos.");
     } finally {
       setSavingFields(false);
+    }
+  }
+
+  async function savePromptBrief() {
+    if (promptBrief.trim().length < 20) {
+      setPromptError("Añade instrucciones un poco más concretas antes de guardar.");
+      return;
+    }
+
+    setSavingPrompt(true);
+    setPromptError(null);
+    setPromptMessage(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + communityType.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: communityType.label,
+          description: communityType.description,
+          category: communityType.category || "Mi catálogo",
+          prompt_brief: promptBrief,
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as { catalogType?: CommunityTypeOption; message?: string } | null;
+
+      if (!response.ok || !data?.catalogType) {
+        throw new Error(data?.message || "No se pudieron guardar las instrucciones.");
+      }
+
+      setPromptBrief(data.catalogType.prompt_brief);
+      onUpdate(data.catalogType);
+      setPromptMessage("Instrucciones guardadas.");
+    } catch (error) {
+      setPromptError(error instanceof Error ? error.message : "No se pudieron guardar las instrucciones.");
+    } finally {
+      setSavingPrompt(false);
     }
   }
 
@@ -1963,6 +2006,45 @@ function CommunityForm({
         </div>
         {fieldMessage && <p className="mt-2 font-semibold text-[#2d6a4f]">{fieldMessage}</p>}
         {fieldError && <p className="mt-2 font-semibold text-red-700">{fieldError}</p>}
+        <div className="mt-3 border-t border-[#d8f3dc] pt-3">
+          <button
+            type="button"
+            onClick={() => {
+              setShowAdvanced((current) => !current);
+              setPromptError(null);
+              setPromptMessage(null);
+            }}
+            className="focus-ring btn-ghost px-2 py-1 text-xs"
+          >
+            {showAdvanced ? "Ocultar ajustes avanzados" : "Ajustes avanzados"}
+          </button>
+          {showAdvanced && (
+            <div className="mt-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8] p-3">
+              <label>
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Instrucciones internas</span>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">
+                  Define cómo debe redactarse este tipo. Úsalo solo si quieres afinar tono, estructura o reglas concretas.
+                </span>
+                <textarea
+                  value={promptBrief}
+                  onChange={(event) => setPromptBrief(event.target.value)}
+                  rows={7}
+                  className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+                />
+              </label>
+              {promptMessage && <p className="mt-2 text-xs font-semibold text-[#2d6a4f]">{promptMessage}</p>}
+              {promptError && <p className="mt-2 text-xs font-semibold text-red-700">{promptError}</p>}
+              <button
+                type="button"
+                onClick={() => void savePromptBrief()}
+                disabled={savingPrompt}
+                className="focus-ring btn-secondary mt-3 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingPrompt ? "Guardando..." : "Guardar instrucciones"}
+              </button>
+            </div>
+          )}
+        </div>
         {editingFields && (
           <div className="mt-4 grid gap-3 border-t border-[#d8f3dc] pt-4">
             {fields.map((field, index) => (
@@ -2100,3 +2182,4 @@ function canUseCommunityType(userPlan: "free" | "pro" | "empresa", requiredPlan:
 
   return rank[userPlan] >= rank[requiredPlan];
 }
+

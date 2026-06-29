@@ -15,6 +15,7 @@ const updateCatalogSchema = z.object({
   description: z.string().trim().min(10).max(500),
   category: z.string().trim().max(80).optional().nullable(),
   suggested_fields: z.array(catalogFieldSchema).min(1).max(18).optional(),
+  prompt_brief: z.string().trim().min(20).max(6000).optional(),
 });
 
 const errorResponse = (status: number, error: string, message: string) =>
@@ -48,6 +49,7 @@ export async function PATCH(request: Request, { params }: Params) {
         description: payload.description,
         category: payload.category || "Mi catálogo",
         ...(payload.suggested_fields ? { suggested_fields: payload.suggested_fields } : {}),
+        ...(payload.prompt_brief ? { prompt_brief: payload.prompt_brief } : {}),
       })
       .eq("id", params.id)
       .eq("created_by", user.id)
@@ -62,7 +64,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ catalogType: data });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return errorResponse(400, "invalid_payload", "Revisa el nombre, la descripción y los campos del tipo guardado.");
+      return errorResponse(400, "invalid_payload", "Revisa el nombre, la descripción, los campos y las instrucciones del tipo guardado.");
     }
 
     console.error("personal_catalog_update_unhandled", error);
