@@ -9,7 +9,7 @@ import { SaveToCatalogCard } from "@/components/SaveToCatalogCard";
 import { downloadDocumentDocx } from "@/lib/docx";
 import { getDocumentConfig, documentTypes } from "@/lib/document-types";
 import { downloadDocumentPdf, downloadDocumentTxt, type PdfBrandSettings } from "@/lib/pdf";
-import type { DocumentRequestTone, DocumentRow, WorkspaceRow } from "@/lib/supabase-server";
+import type { CommunityDocumentTypeRow, DocumentRequestTone, DocumentRow, WorkspaceRow } from "@/lib/supabase-server";
 import { templateUsageLabels } from "@/lib/template-usage";
 
 type HistoryClientProps = {
@@ -18,6 +18,7 @@ type HistoryClientProps = {
   plan: "free" | "pro" | "empresa";
   brandSettings?: PdfBrandSettings | null;
   workspaces?: WorkspaceRow[];
+  personalCatalogTypes?: CommunityDocumentTypeRow[];
 };
 
 type GenerateResponse = {
@@ -27,13 +28,14 @@ type GenerateResponse = {
 
 type SortMode = "newest" | "oldest" | "type";
 
-export function HistoryClient({ documents, canExportDocx, plan, brandSettings, workspaces = [] }: HistoryClientProps) {
+export function HistoryClient({ documents, canExportDocx, plan, brandSettings, workspaces = [], personalCatalogTypes = [] }: HistoryClientProps) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
+  const [catalogTypes, setCatalogTypes] = useState(personalCatalogTypes);
 
   const filteredDocuments = useMemo(
     () => filterAndSortDocuments(documents, query, typeFilter, sortMode),
@@ -44,7 +46,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   const workspaceById = useMemo(() => new Map(workspaces.map((workspace) => [workspace.id, workspace])), [workspaces]);
 
   async function deleteDocument(id: string) {
-    if (!window.confirm("Â¿Borrar este documento? Esta acciÃ³n no se puede deshacer.")) {
+    if (!window.confirm("¿Borrar este documento? Esta acción no se puede deshacer.")) {
       return;
     }
 
@@ -62,14 +64,14 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con DocuGen. Comprueba tu conexiÃ³n e intÃ©ntalo de nuevo.");
+      setError("No se pudo conectar con DocuGen. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setBusyId(null);
     }
   }
 
   async function clearHistory() {
-    if (!window.confirm("Â¿Borrar todos tus documentos? Esta acciÃ³n no se puede deshacer.")) {
+    if (!window.confirm("¿Borrar todos tus documentos? Esta acción no se puede deshacer.")) {
       return;
     }
 
@@ -87,7 +89,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       router.refresh();
     } catch {
-      setError("No se pudo conectar con DocuGen. Comprueba tu conexiÃ³n e intÃ©ntalo de nuevo.");
+      setError("No se pudo conectar con DocuGen. Comprueba tu conexión e inténtalo de nuevo.");
     } finally {
       setBusyId(null);
     }
@@ -104,7 +106,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
       if (community && !communityPayload) {
         setError(
-          "Este documento de Mi catÃ¡logo no se puede regenerar desde el historial porque falta su referencia interna. Abre Mi catÃ¡logo y vuelve a elegir el tipo.",
+          "Este documento de Mi catálogo no se puede regenerar desde el historial porque falta su referencia interna. Abre Mi catálogo y vuelve a elegir el tipo.",
         );
         return;
       }
@@ -139,21 +141,21 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   if (documents.length === 0) {
     return (
       <EmptyState
-        eyebrow="Biblioteca vacÃ­a"
-        title="Tus documentos aparecerÃ¡n aquÃ­"
-        description="Cuando generes tu primer borrador, podrÃ¡s abrirlo, descargarlo, reutilizarlo como base o borrarlo desde esta pantalla."
+        eyebrow="Biblioteca vacía"
+        title="Tus documentos aparecerán aquí"
+        description="Cuando generes tu primer borrador, podrás abrirlo, descargarlo, reutilizarlo como base o borrarlo desde esta pantalla."
         primaryAction={{ href: "/generar", label: "Crear primer documento" }}
         secondaryAction={{ href: "/catalogo", label: "Ver tipos de documento" }}
         steps={
           plan === "free"
             ? ["Crea uno de los tipos incluidos en Free.", "Revisa el aviso de IA y completa datos pendientes.", "Descarga PDF/TXT o mejora a Pro cuando necesites Word."]
-            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando estÃ© listo."]
+            : ["Crea un documento o reutiliza uno anterior.", "Usa plantillas propias si quieres estructura o tono.", "Exporta Word/PDF/TXT cuando esté listo."]
         }
       >
         <div className="grid gap-4">
           <PlanFirstSteps plan={plan} context="documents" />
           <div className="grid gap-3 sm:grid-cols-3">
-          {["Contrato freelance", "Presupuesto comercial", "Carta de presentaciÃ³n"].map((item) => (
+          {["Contrato freelance", "Presupuesto comercial", "Carta de presentación"].map((item) => (
             <div key={item} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4 text-sm font-semibold">
               {item}
             </div>
@@ -166,13 +168,19 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
   return (
     <div className="grid gap-5">
+      <PersonalCatalogShelf
+        types={catalogTypes}
+        onUpdate={(updatedType) => setCatalogTypes((current) => current.map((type) => (type.id === updatedType.id ? updatedType : type)))}
+        onDelete={(typeId) => setCatalogTypes((current) => current.filter((type) => type.id !== typeId))}
+      />
+
       <section className="surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="eyebrow">Buscar y filtrar</p>
             <h2 className="mt-2 text-xl font-bold">{documents.length} documentos guardados</h2>
             <p className="body-muted mt-1 text-xs">
-              Busca por tÃ­tulo, contenido o tipo. Abre cada documento solo cuando quieras verlo.
+              Busca por título, contenido o tipo. Abre cada documento solo cuando quieras verlo.
             </p>
           </div>
           <button
@@ -192,7 +200,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="field-control mt-2"
-              placeholder="TÃ­tulo, texto o tipo..."
+              placeholder="Título, texto o tipo..."
             />
           </label>
 
@@ -221,8 +229,8 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               onChange={(event) => setSortMode(event.target.value as SortMode)}
               className="field-control mt-2"
             >
-              <option value="newest">MÃ¡s recientes</option>
-              <option value="oldest">MÃ¡s antiguos</option>
+              <option value="newest">Más recientes</option>
+              <option value="oldest">Más antiguos</option>
               <option value="type">Por tipo</option>
             </select>
           </label>
@@ -292,7 +300,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         </span>
                         {custom && <span className="badge badge-pro">Personalizado</span>}
                         {assistant && <span className="badge badge-pro">Chat</span>}
-                        {community && <span className="badge badge-pro">Mi catÃ¡logo</span>}
+                        {community && <span className="badge badge-pro">Mi catálogo</span>}
                         {doc.reference_template_id && (
                           <span className="badge badge-pro">
                             Con plantilla
@@ -310,7 +318,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                       </p>
                       {doc.reference_template_id && (
                         <p className="mt-1 text-xs text-slate-500">
-                          Referencia: {doc.reference_template_name || "Plantilla"} Â·{" "}
+                          Referencia: {doc.reference_template_name || "Plantilla"} ·{" "}
                           {doc.template_usage_mode ? templateUsageLabels[doc.template_usage_mode] : "Modo no registrado"}
                         </p>
                       )}
@@ -395,7 +403,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                             ? "focus-ring btn-ghost px-3 py-2 text-sm"
                             : "focus-ring rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
                         }
-                        title={canExportDocx ? "Descargar Word" : "Word solo estÃ¡ disponible en el plan Pro"}
+                        title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
                       >
                         {canExportDocx ? "Word" : "Word Pro"}
                       </button>
@@ -417,6 +425,206 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
         ))
       )}
     </div>
+  );
+}
+
+function PersonalCatalogShelf({
+  types,
+  onUpdate,
+  onDelete,
+}: {
+  types: CommunityDocumentTypeRow[];
+  onUpdate: (type: CommunityDocumentTypeRow) => void;
+  onDelete: (typeId: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState({ label: "", description: "" });
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleTypes = types.filter((type) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    return (type.label + " " + type.description + " " + (type.category || "")).toLowerCase().includes(normalizedQuery);
+  });
+
+  async function updateType(type: CommunityDocumentTypeRow) {
+    setBusyId(type.id);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + type.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: draft.label,
+          description: draft.description,
+          category: type.category || "Mi catálogo",
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as { catalogType?: CommunityDocumentTypeRow; message?: string } | null;
+
+      if (!response.ok || !payload?.catalogType) {
+        setError(payload?.message || "No se pudo actualizar este tipo guardado.");
+        return;
+      }
+
+      onUpdate(payload.catalogType);
+      setEditingId(null);
+    } catch {
+      setError("No se pudo conectar con DocuGen. Inténtalo de nuevo en unos segundos.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deleteType(type: CommunityDocumentTypeRow) {
+    if (!window.confirm('Borrar "' + type.label + '" de Mi catálogo? Los documentos generados no se borrarán.')) {
+      return;
+    }
+
+    setBusyId(type.id);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + type.id, { method: "DELETE" });
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        setError(payload?.message || "No se pudo borrar este tipo guardado.");
+        return;
+      }
+
+      onDelete(type.id);
+    } catch {
+      setError("No se pudo conectar con DocuGen. Inténtalo de nuevo en unos segundos.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <section className="surface p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">Mi catálogo</p>
+          <h2 className="mt-2 text-xl font-bold">Tipos guardados para reutilizar</h2>
+          <p className="body-muted mt-1 max-w-2xl text-xs">
+            Aquí viven los moldes que guardas desde documentos a medida o desde el asistente. No son archivos: son puntos de partida para crear nuevos documentos.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <span className="badge badge-free">{types.length} tipos</span>
+          <Link href="/generar?mode=custom" className="focus-ring btn-secondary px-3 py-2 text-sm">
+            Crear a medida
+          </Link>
+        </div>
+      </div>
+
+      {types.length === 0 ? (
+        <div className="mt-5 rounded-md border border-dashed border-[#b7e4c7] bg-[#f4fbf5] p-5">
+          <p className="font-semibold text-[#2d6a4f]">Todavía no tienes tipos guardados</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            Cuando generes algo a medida o desde el asistente, usa Guardar en Mi catálogo para poder crearlo otra vez sin partir de cero.
+          </p>
+        </div>
+      ) : (
+        <>
+          <label className="mt-5 block">
+            <span className="sr-only">Buscar en Mi catálogo</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar tipo guardado..."
+              className="field-control"
+            />
+          </label>
+          {error && <p className="status-error mt-4">{error}</p>}
+          <div className="mt-5 grid gap-3 lg:grid-cols-3">
+            {visibleTypes.map((type) => {
+              const editing = editingId === type.id;
+              const busy = busyId === type.id;
+
+              return (
+                <article key={type.id} className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/88 p-4">
+                  {editing ? (
+                    <div className="grid gap-3">
+                      <label>
+                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Nombre</span>
+                        <input
+                          value={draft.label}
+                          onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
+                          className="field-control mt-2"
+                        />
+                      </label>
+                      <label>
+                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Descripción</span>
+                        <textarea
+                          value={draft.description}
+                          onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+                          rows={3}
+                          className="field-control mt-2"
+                        />
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void updateType(type)}
+                          disabled={busy}
+                          className="focus-ring btn-primary px-3 py-2 text-xs disabled:opacity-60"
+                        >
+                          {busy ? "Guardando..." : "Guardar"}
+                        </button>
+                        <button type="button" onClick={() => setEditingId(null)} className="focus-ring btn-ghost px-3 py-2 text-xs">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{type.category || "Mi catálogo"}</p>
+                      <h3 className="font-serif-display mt-2 text-lg font-bold leading-6">{type.label}</h3>
+                      <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{type.description}</p>
+                      <div className="mt-4 flex flex-wrap gap-2 border-t border-[#d8f3dc] pt-4">
+                        <Link href="/generar?mode=community" className="focus-ring btn-primary px-3 py-2 text-xs">
+                          Usar
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingId(type.id);
+                            setDraft({ label: type.label, description: type.description });
+                          }}
+                          className="focus-ring btn-secondary px-3 py-2 text-xs"
+                        >
+                          Renombrar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteType(type)}
+                          disabled={busy}
+                          className="focus-ring rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                        >
+                          {busy ? "Borrando..." : "Borrar"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+          {visibleTypes.length === 0 && (
+            <p className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm text-slate-600">
+              No hay tipos guardados que coincidan con esa búsqueda.
+            </p>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 
@@ -544,4 +752,5 @@ function parseCommunityReference(value?: string) {
     return null;
   }
 }
+
 

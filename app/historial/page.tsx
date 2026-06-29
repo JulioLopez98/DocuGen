@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import { HistoryClient } from "@/components/HistoryClient";
-import { getCurrentProfile, type BrandSettings, type DocumentRow, type WorkspaceRow } from "@/lib/supabase-server";
+import { getCurrentProfile, type BrandSettings, type CommunityDocumentTypeRow, type DocumentRow, type WorkspaceRow } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Documentos",
@@ -29,6 +29,13 @@ export default async function HistoryPage() {
     profile.plan !== "free"
       ? await supabase.from("brand_settings").select("*").eq("user_id", profile.id).maybeSingle<BrandSettings>()
       : { data: null };
+  const { data: personalCatalogTypes } = await supabase
+    .from("community_document_types")
+    .select("*")
+    .eq("created_by", profile.id)
+    .in("status", ["approved", "published"])
+    .order("created_at", { ascending: false })
+    .returns<CommunityDocumentTypeRow[]>();
   const workspaceIds = Array.from(new Set((documents || []).map((document) => document.workspace_id).filter((id): id is string => Boolean(id))));
   const { data: workspaces } = workspaceIds.length
     ? await supabase.from("workspaces").select("*").in("id", workspaceIds).returns<WorkspaceRow[]>()
@@ -80,6 +87,7 @@ export default async function HistoryPage() {
         plan={profile.plan}
         brandSettings={brandSettings || null}
         workspaces={workspaces || []}
+        personalCatalogTypes={personalCatalogTypes || []}
       />
     </section>
   );
