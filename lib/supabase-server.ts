@@ -210,7 +210,7 @@ export type CommunityDocumentTypeRow = {
   status: CommunityDocumentTypeStatus;
   required_plan: "free" | "pro" | "empresa";
   prompt_brief: string;
-  suggested_fields: Array<{ name: string; label: string; type: "text" | "textarea" | "date" | "email" }>;
+  suggested_fields: Array<{ name: string; label: string; type: "text" | "textarea" | "date" | "email" | "number"; required?: boolean; helpText?: string }>;
   admin_notes: string | null;
   created_at: string;
   updated_at: string;

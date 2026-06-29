@@ -1848,20 +1848,26 @@ function CommunityForm({
     >
       <p className="rounded-md bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">{communityType.description}</p>
       {communityType.suggested_fields.map((field) => (
-        <label key={field.name}>
-          <span className="text-sm font-semibold">{field.label}</span>
+        <label key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
+          <span className="flex items-center gap-2 text-sm font-semibold">
+            {field.label}
+            {field.required && <span className="rounded-full bg-[#d8f3dc] px-2 py-0.5 text-[10px] font-bold uppercase text-[#2d6a4f]">Obligatorio</span>}
+          </span>
+          {field.helpText && <span className="mt-1 block text-xs leading-5 text-slate-500">{field.helpText}</span>}
           {field.type === "textarea" ? (
             <textarea
               value={formData[field.name] || ""}
               onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+              required={field.required}
               rows={4}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
             />
           ) : (
             <input
-              type={field.type === "email" || field.type === "date" ? field.type : "text"}
+              type={getCommunityFieldInputType(field.type)}
               value={formData[field.name] || ""}
               onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+              required={field.required}
               className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8]/92 px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
             />
           )}
@@ -1875,6 +1881,14 @@ function CommunityForm({
       </button>
     </form>
   );
+}
+
+function getCommunityFieldInputType(type: CommunityTypeOption["suggested_fields"][number]["type"]) {
+  if (type === "email" || type === "date" || type === "number") {
+    return type;
+  }
+
+  return "text";
 }
 
 function canUseCommunityType(userPlan: "free" | "pro" | "empresa", requiredPlan: "free" | "pro" | "empresa") {

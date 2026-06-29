@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { inferCatalogFields } from "@/lib/catalog-fields";
 import { createSupabaseServiceClient, requireUser, type CommunityDocumentTypeRow, type DocumentRow, type Profile } from "@/lib/supabase-server";
 
 const saveCatalogSchema = z.object({
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
     const label = normalizeLabel(payload.label || document.doc_label || "Documento personalizado");
     const description = payload.description?.trim() || buildDescription(document);
     const promptBrief = buildPromptBrief(document, label, description);
+    const suggestedFields = await inferCatalogFields(document, label, description);
 
     const { data: existing } = await db
       .from("community_document_types")
@@ -84,7 +86,7 @@ export async function POST(request: Request) {
         status: "published",
         required_plan: "pro",
         prompt_brief: promptBrief,
-        suggested_fields: buildSuggestedFields(document),
+        suggested_fields: suggestedFields,
         admin_notes: `Creado por el usuario desde el documento ${document.id}.`,
       })
       .select("*")
@@ -137,30 +139,6 @@ function buildPromptBrief(document: DocumentRow, label: string, description: str
   ].join("\n");
 }
 
-function buildSuggestedFields(document: DocumentRow) {
-  const fields = [
-    { name: "contexto", label: "Contexto del documento", type: "textarea" },
-    { name: "partes_implicadas", label: "Partes implicadas", type: "textarea" },
-    { name: "datos_clave", label: "Datos clave", type: "textarea" },
-    { name: "condiciones", label: "Condiciones o puntos importantes", type: "textarea" },
-    { name: "fecha", label: "Fecha", type: "date" },
-    { name: "observaciones", label: "Observaciones adicionales", type: "textarea" },
-  ] as const;
-
-  const existingKeys = new Set(Object.keys(document.form_data || {}));
-  const extraFields = Array.from(existingKeys)
-    .filter((key) => key && !key.startsWith("__") && !fields.some((field) => field.name === key))
-    .slice(0, 4)
-    .map((key) => ({ name: key, label: toFieldLabel(key), type: "textarea" as const }));
-
-  return [...fields, ...extraFields];
-}
-
-function toFieldLabel(key: string) {
-  return key
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 async function buildUniqueSlug(db: SupabaseClient, label: string) {
   const base = label
