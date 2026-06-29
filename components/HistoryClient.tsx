@@ -36,6 +36,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [catalogTypes, setCatalogTypes] = useState(personalCatalogTypes);
+  const [openDocumentIds, setOpenDocumentIds] = useState<Set<string>>(new Set());
 
   const filteredDocuments = useMemo(
     () => filterAndSortDocuments(documents, query, typeFilter, sortMode),
@@ -289,10 +290,12 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               const preview = doc.content.length > 900 ? `${doc.content.slice(0, 900)}...` : doc.content;
               const isBusy = busyId === doc.id;
 
+              const expanded = openDocumentIds.has(doc.id);
+
               return (
-                <details key={doc.id} className="surface-flat interactive-subtle group">
-                  <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-4 p-5">
-                    <div className="min-w-0">
+                <article key={doc.id} className="surface-flat interactive-subtle">
+                  <div className="flex flex-wrap items-start justify-between gap-4 p-5">
+                    <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-bold">{doc.doc_label}</h3>
                         <span className="badge badge-free">
@@ -301,11 +304,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         {custom && <span className="badge badge-pro">Personalizado</span>}
                         {assistant && <span className="badge badge-pro">Chat</span>}
                         {community && <span className="badge badge-pro">Mi catálogo</span>}
-                        {doc.reference_template_id && (
-                          <span className="badge badge-pro">
-                            Con plantilla
-                          </span>
-                        )}
+                        {doc.reference_template_id && <span className="badge badge-pro">Con plantilla</span>}
                         {doc.workspace_id && (
                           <span className="badge bg-[#1f2933] text-white">
                             {workspaceById.get(doc.workspace_id)?.name || "Equipo"}
@@ -323,102 +322,119 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         </p>
                       )}
                     </div>
-                    <span className="badge badge-free group-open:hidden">Desplegar</span>
-                    <span className="badge badge-free hidden group-open:inline">Plegar</span>
-                  </summary>
-
-                  <div className="border-t border-[#d8f3dc] p-4">
-                    <article className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm leading-7">
-                      {preview}
-                    </article>
-                    <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
-                      <div className="flex flex-wrap gap-2">
-                      <Link href={`/historial/${doc.id}`} className="focus-ring btn-primary px-3 py-2 text-sm">
-                        Ver detalle
-                      </Link>
-                      {!custom && !assistant && !community && (
-                        <Link href={`/generar?templateId=${doc.id}`} className="focus-ring btn-secondary px-3 py-2 text-sm">
-                          Reutilizar datos
-                        </Link>
-                      )}
-                      {doc.reference_template_id && (
-                        <Link
-                          href={buildSameTemplateUrl(doc)}
-                          className="focus-ring btn-secondary px-3 py-2 text-sm"
-                        >
-                          Nuevo con misma plantilla
-                        </Link>
-                      )}
-                      {doc.reference_template_id && (
-                        <Link href={`/plantillas/${doc.reference_template_id}`} className="focus-ring btn-ghost px-3 py-2 text-sm">
-                          Ver plantilla
-                        </Link>
-                      )}
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       {canSaveToPersonalCatalog && (
                         <SaveToCatalogCard documentId={doc.id} title={doc.doc_label} variant="button" />
                       )}
                       <button
                         type="button"
-                        onClick={() => regenerate(doc)}
-                        disabled={isBusy}
-                        className="focus-ring btn-secondary px-3 py-2 text-sm disabled:opacity-60"
+                        onClick={() => {
+                          setOpenDocumentIds((current) => {
+                            const next = new Set(current);
+                            if (next.has(doc.id)) {
+                              next.delete(doc.id);
+                            } else {
+                              next.add(doc.id);
+                            }
+                            return next;
+                          });
+                        }}
+                        className="focus-ring badge badge-free px-3 py-1.5"
+                        aria-expanded={expanded}
                       >
-                        {isBusy ? "Regenerando..." : "Regenerar"}
+                        {expanded ? "Plegar" : "Desplegar"}
                       </button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 lg:justify-end">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void downloadDocumentPdf({
-                            title: doc.doc_label,
-                            content: doc.content,
-                            includesSignatures: config?.includesSignatures ?? false,
-                            brandSettings,
-                          })
-                        }
-                        className="focus-ring btn-ghost px-3 py-2 text-sm"
-                      >
-                        PDF
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => downloadDocumentTxt(doc.doc_label, doc.content)}
-                        className="focus-ring btn-ghost px-3 py-2 text-sm"
-                      >
-                        TXT
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          downloadDocumentDocx({
-                            title: doc.doc_label,
-                            content: doc.content,
-                            includesSignatures: config?.includesSignatures ?? false,
-                            canExportDocx,
-                          })
-                        }
-                        className={
-                          canExportDocx
-                            ? "focus-ring btn-ghost px-3 py-2 text-sm"
-                            : "focus-ring rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
-                        }
-                        title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
-                      >
-                        {canExportDocx ? "Word" : "Word Pro"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteDocument(doc.id)}
-                        disabled={isBusy}
-                        className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
-                      >
-                        {isBusy ? "Borrando..." : "Borrar"}
-                      </button>
-                      </div>
                     </div>
                   </div>
-                </details>
+
+                  {expanded && (
+                    <div className="border-t border-[#d8f3dc] p-4">
+                      <article className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm leading-7">
+                        {preview}
+                      </article>
+                      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+                        <div className="flex flex-wrap gap-2">
+                          <Link href={"/historial/" + doc.id} className="focus-ring btn-primary px-3 py-2 text-sm">
+                            Ver detalle
+                          </Link>
+                          {!custom && !assistant && !community && (
+                            <Link href={"/generar?templateId=" + doc.id} className="focus-ring btn-secondary px-3 py-2 text-sm">
+                              Reutilizar datos
+                            </Link>
+                          )}
+                          {doc.reference_template_id && (
+                            <Link href={buildSameTemplateUrl(doc)} className="focus-ring btn-secondary px-3 py-2 text-sm">
+                              Nuevo con misma plantilla
+                            </Link>
+                          )}
+                          {doc.reference_template_id && (
+                            <Link href={"/plantillas/" + doc.reference_template_id} className="focus-ring btn-ghost px-3 py-2 text-sm">
+                              Ver plantilla
+                            </Link>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => regenerate(doc)}
+                            disabled={isBusy}
+                            className="focus-ring btn-secondary px-3 py-2 text-sm disabled:opacity-60"
+                          >
+                            {isBusy ? "Regenerando..." : "Regenerar"}
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 lg:justify-end">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void downloadDocumentPdf({
+                                title: doc.doc_label,
+                                content: doc.content,
+                                includesSignatures: config?.includesSignatures ?? false,
+                                brandSettings,
+                              })
+                            }
+                            className="focus-ring btn-ghost px-3 py-2 text-sm"
+                          >
+                            PDF
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadDocumentTxt(doc.doc_label, doc.content)}
+                            className="focus-ring btn-ghost px-3 py-2 text-sm"
+                          >
+                            TXT
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              downloadDocumentDocx({
+                                title: doc.doc_label,
+                                content: doc.content,
+                                includesSignatures: config?.includesSignatures ?? false,
+                                canExportDocx,
+                              })
+                            }
+                            className={
+                              canExportDocx
+                                ? "focus-ring btn-ghost px-3 py-2 text-sm"
+                                : "focus-ring rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-200"
+                            }
+                            title={canExportDocx ? "Descargar Word" : "Word solo está disponible en el plan Pro"}
+                          >
+                            {canExportDocx ? "Word" : "Word Pro"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteDocument(doc.id)}
+                            disabled={isBusy}
+                            className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                          >
+                            {isBusy ? "Borrando..." : "Borrar"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </article>
               );
             })}
           </section>
@@ -589,7 +605,7 @@ function PersonalCatalogShelf({
                       <h3 className="font-serif-display mt-2 text-lg font-bold leading-6">{type.label}</h3>
                       <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{type.description}</p>
                       <div className="mt-4 flex flex-wrap gap-2 border-t border-[#d8f3dc] pt-4">
-                        <Link href="/generar?mode=community" className="focus-ring btn-primary px-3 py-2 text-xs">
+                        <Link href={"/generar?mode=community&communityTypeId=" + type.id} className="focus-ring btn-primary px-3 py-2 text-xs">
                           Usar
                         </Link>
                         <button

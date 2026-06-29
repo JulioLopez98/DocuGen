@@ -30,6 +30,7 @@ type Props = {
     templateUsageMode?: string;
     type?: string;
     mode?: string;
+    communityTypeId?: string;
   };
 };
 
@@ -37,6 +38,7 @@ export default async function GeneratePage({ searchParams }: Props) {
   const templateId = searchParams?.templateId;
   let requestedReferenceTemplateId = searchParams?.referenceTemplateId;
   let requestedTemplateUsageMode = getTemplateUsageMode(searchParams?.templateUsageMode);
+  const requestedCommunityTypeId = searchParams?.communityTypeId;
   const initialMode =
     searchParams?.mode === "custom" || searchParams?.mode === "community" || searchParams?.mode === "catalog"
       ? searchParams.mode
@@ -141,6 +143,7 @@ export default async function GeneratePage({ searchParams }: Props) {
           initialReferenceTemplateId={requestedReferenceTemplateId}
           initialTemplateUsageMode={requestedTemplateUsageMode}
           initialMode={initialMode}
+          initialCommunityTypeId={requestedCommunityTypeId}
         />
       </Suspense>
       <div className="mt-8">

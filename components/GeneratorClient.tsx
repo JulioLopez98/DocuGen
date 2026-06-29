@@ -60,6 +60,7 @@ type GeneratorClientProps = {
   initialReferenceTemplateId?: string;
   initialTemplateUsageMode?: TemplateUsageMode;
   initialMode?: "catalog" | "community" | "custom";
+  initialCommunityTypeId?: string;
 };
 
 type GeneratorIntentId = "popular" | "sell" | "hire" | "protect" | "web" | "claim" | "operations" | "home" | "all";
@@ -159,6 +160,7 @@ export function GeneratorClient({
   initialReferenceTemplateId,
   initialTemplateUsageMode,
   initialMode = "catalog",
+  initialCommunityTypeId,
 }: GeneratorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -183,8 +185,9 @@ export function GeneratorClient({
   const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
   const [personalCatalogTypes, setPersonalCatalogTypes] = useState(communityTypes);
-  const [selectedCommunityId, setSelectedCommunityId] = useState(communityTypes[0]?.id || "");
-  const [communityTypeConfirmed, setCommunityTypeConfirmed] = useState(false);
+  const initialCommunityTypeExists = Boolean(initialCommunityTypeId && communityTypes.some((type) => type.id === initialCommunityTypeId));
+  const [selectedCommunityId, setSelectedCommunityId] = useState(initialCommunityTypeExists ? initialCommunityTypeId || "" : communityTypes[0]?.id || "");
+  const [communityTypeConfirmed, setCommunityTypeConfirmed] = useState(initialMode === "community" && initialCommunityTypeExists);
   const [referenceTemplateId, setReferenceTemplateId] = useState(
     referenceTemplates.some((template) => template.id === initialReferenceTemplateId) ? initialReferenceTemplateId || "" : "",
   );
