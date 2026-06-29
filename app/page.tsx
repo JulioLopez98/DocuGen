@@ -21,56 +21,54 @@ export const metadata: Metadata = {
   },
 };
 
-const useCases = [
-  {
-    title: "Profesionales independientes",
-    text: "Contratos freelance, propuestas y presupuestos con estructura profesional para clientes en España.",
-  },
-  {
-    title: "Pequeñas empresas",
-    text: "Borradores rápidos para operaciones habituales: colaboraciones, NDAs, documentación web y cartas.",
-  },
-  {
-    title: "Equipos que documentan mucho",
-    text: "Documentos guardados, regeneración, exportaciones y base preparada para marca, Word y equipo.",
-  },
-];
-
-const workflow = [
-  ["1", "Elige el documento", "Selecciona el tipo exacto y DocuGen adapta el formulario a ese caso."],
-  ["2", "Completa los datos", "Rellena campos claros. Si falta información, el borrador deja marcadores pendientes."],
-  ["3", "Revisa y exporta", "Obtienes un texto editable que puedes copiar, descargar en PDF/TXT o exportar a Word con Pro."],
+const primaryCapabilities = [
+  "Contratos, acuerdos y documentos laborales",
+  "Presupuestos, propuestas y documentos comerciales",
+  "Avisos legales, privacidad, web y ecommerce",
+  "Cartas, reclamaciones, actas y certificados",
 ];
 
 const productPaths = [
   {
-    title: "Tipos guiados",
+    title: "Catálogo guiado",
     badge: "Free y Pro",
-    text: "Elige entre documentos organizados por categoría: laboral, comercial, legal, web, inmobiliario y más.",
-    href: "/catalogo",
-    action: "Ver tipos",
+    text: "Elige un tipo documental, completa campos claros y genera un borrador estructurado.",
+    href: "/generar",
+    action: "Crear con catálogo",
+  },
+  {
+    title: "Asistente",
+    badge: "Pro",
+    text: "Si no sabes qué documento necesitas, conversa con DocuGen y deja que te guíe.",
+    href: "/asistente",
+    action: "Abrir asistente",
   },
   {
     title: "Documento a medida",
     badge: "Pro",
-    text: "Describe un documento que no existe en los tipos disponibles y DocuGen prepara un borrador personalizado.",
+    text: "Describe un documento que no existe en el catálogo y recibe un borrador personalizado.",
     href: "/generar?mode=custom",
-    action: "Ir al generador",
+    action: "Pedir a medida",
   },
   {
-    title: "Plantillas propias",
-    badge: "Pro",
-    text: "Sube documentos de referencia para orientar estructura y tono sin copiar datos sensibles.",
-    href: "/plantillas",
-    action: "Ver plantillas",
+    title: "Plantillas y Mi catálogo",
+    badge: "Pro y Empresa",
+    text: "Guarda tipos propios o usa documentos de referencia para repetir formatos sin empezar de cero.",
+    href: "/mi-catalogo",
+    action: "Ver reutilización",
   },
-  {
-    title: "Documentos editables",
-    badge: "Incluido",
-    text: "Guarda, edita, compara versiones, mejora con IA y exporta cada documento cuando lo tengas listo.",
-    href: "/historial",
-    action: "Abrir Documentos",
-  },
+];
+
+const workflow = [
+  ["1", "Elige cómo empezar", "Catálogo, asistente, documento a medida o una plantilla propia."],
+  ["2", "Aporta los datos", "DocuGen te pide la información importante y marca lo que falte como pendiente."],
+  ["3", "Revisa y exporta", "Edita el borrador, guarda versiones y descarga PDF, TXT o Word en Pro."],
+];
+
+const trustPoints = [
+  "Borradores generados con IA, no documentos definitivos.",
+  "Aviso de revisión profesional incluido en cada documento.",
+  "Adaptado al contexto español y a un tono profesional claro.",
 ];
 
 export default async function HomePage() {
@@ -81,74 +79,78 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="border-b border-[#d8f3dc]/80">
-        <div className="container-page grid min-h-[calc(100vh-4rem)] items-center gap-10 py-12 lg:grid-cols-[1.03fr_0.97fr] lg:py-16">
+      <section className="border-b border-[#d8f3dc]/80 bg-[linear-gradient(135deg,#fffdf8_0%,#faf9f6_48%,#eef8ef_100%)]">
+        <div className="container-page grid min-h-[calc(100vh-4rem)] items-center gap-10 py-12 lg:grid-cols-[1.02fr_0.98fr] lg:py-16">
           <div>
             <p className="eyebrow">Documentos profesionales con IA</p>
             <h1 className="font-serif-display mt-5 max-w-4xl text-5xl font-bold leading-[0.98] tracking-tight md:text-7xl">
-              Convierte una idea en un borrador listo para revisar
+              Genera borradores profesionales sin empezar desde cero
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">
-              DocuGen ayuda a crear contratos, presupuestos, propuestas, NDAs, cartas y documentos web adaptados al
-              contexto español. No sustituye a un profesional: acelera el primer borrador para que empieces con una base
-              clara.
+              DocuGen convierte tus datos en contratos, presupuestos, propuestas, cartas y documentos web adaptados al contexto español. Tú revisas, editas y decides cómo usar el resultado.
             </p>
+
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href={user ? "/generar" : "/auth"} className="focus-ring btn-primary px-6 py-3 text-sm">
                 {user ? "Crear documento" : "Empezar gratis"}
               </Link>
-              {user && (
-                <Link href="/dashboard" className="focus-ring btn-secondary px-6 py-3 text-sm">
-                  Ir al panel
-                </Link>
-              )}
-              <Link href="/precios" className="focus-ring btn-secondary px-6 py-3 text-sm">
-                Ver precios
+              <Link href="/catalogo" className="focus-ring btn-secondary px-6 py-3 text-sm">
+                Ver qué puedo crear
+              </Link>
+              <Link href="/precios" className="focus-ring btn-ghost px-6 py-3 text-sm">
+                Ver planes
               </Link>
             </div>
+
             <div className="mt-8 grid max-w-2xl gap-3 text-sm sm:grid-cols-3">
-              {[
-                [documentTypes.length.toString(), "tipos de documento"],
-                ["3", "gratis al mes"],
-                ["PDF", "TXT y Word Pro"],
-              ].map(([value, label]) => (
-                <div key={value} className="surface-flat rounded-md p-4">
-                  <p className="font-serif-display text-2xl font-bold text-[#2d6a4f]">{value}</p>
-                  <p className="mt-1 text-xs text-slate-600">{label}</p>
-                </div>
-              ))}
+              <HeroMetric value={documentTypes.length.toString()} label="tipos guiados" />
+              <HeroMetric value="3" label="documentos gratis al mes" />
+              <HeroMetric value="PDF · TXT · Word" label="exportaciones" />
             </div>
           </div>
 
-          <div className="surface interactive rounded-md p-6">
-            <div className="flex items-center justify-between gap-3 border-b border-[#d8f3dc] pb-4">
-              <p className="text-sm font-semibold text-[#2d6a4f]">Vista de borrador</p>
-              <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#1f2933]">IA + revisión</span>
+          <div className="surface interactive overflow-hidden p-0">
+            <div className="border-b border-[#d8f3dc] bg-[#2d6a4f] px-6 py-5 text-white">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d8f3dc]">Ejemplo de resultado</p>
+              <h2 className="mt-2 font-serif-display text-3xl font-bold">Propuesta de proyecto</h2>
             </div>
-            <div className="mt-5 space-y-4 text-sm leading-6">
-              <h2 className="font-serif-display text-2xl font-bold">Propuesta de proyecto</h2>
-              <p>Fecha: {new Date().toLocaleDateString("es-ES")}</p>
-              <p>
-                Proveedor: [PENDIENTE DE COMPLETAR]
-                <br />
-                Cliente: [PENDIENTE DE COMPLETAR]
-              </p>
+            <div className="space-y-5 p-6 text-sm leading-6">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <PreviewField label="Cliente" value="[PENDIENTE DE COMPLETAR]" />
+                <PreviewField label="Fecha" value={new Date().toLocaleDateString("es-ES")} />
+              </div>
               <div className="rounded-md bg-[#d8f3dc] p-4">
                 <strong>1. Objetivo.</strong>
-                <p className="mt-1">Definir el alcance, entregables, plazos y condiciones del proyecto solicitado.</p>
+                <p className="mt-1">Definir alcance, entregables, plazos, precio y próximos pasos del proyecto.</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Exporta</p>
-                  <p className="mt-1">PDF, TXT y Word Pro</p>
-                </div>
-                <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Guarda</p>
-                  <p className="mt-1">Documentos y regeneración</p>
-                </div>
+                <PreviewTag title="Editable" text="Copia, corrige y versiona" />
+                <PreviewTag title="Exportable" text="PDF, TXT y Word Pro" />
               </div>
-              <p className="text-xs text-slate-500">Documento generado con IA. Revisar antes de su uso legal.</p>
+              <p className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 text-xs text-slate-600">
+                Documento generado con IA. Revisar antes de su uso legal o profesional relevante.
+              </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#d8f3dc]/80 py-14">
+        <div className="container-page grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+          <div>
+            <p className="eyebrow">Qué hace DocuGen</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Una herramienta para preparar documentos, no para sustituir asesoramiento</h2>
+            <p className="body-muted mt-4">
+              La app te ayuda a pasar de una necesidad concreta a un borrador claro, editable y ordenado. Después puedes revisarlo tú o llevarlo a un profesional cuando el uso lo requiera.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {primaryCapabilities.map((item) => (
+              <div key={item} className="surface-flat p-5">
+                <span className="badge badge-free">Incluido</span>
+                <p className="mt-3 font-bold">{item}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -156,21 +158,16 @@ export default async function HomePage() {
       <section className="border-b border-[#d8f3dc]/80 bg-[#f2efe8]/64 py-16">
         <div className="container-page">
           <div className="mb-8 max-w-3xl">
-            <p className="eyebrow">Qué puedes hacer</p>
-            <h2 className="font-serif-display mt-3 text-4xl font-bold">Cuatro caminos claros, según lo que necesites</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Si sabes el documento exacto, usa Tipos de documento. Si tienes tus propios modelos, usa plantillas. Si no existe
-              en DocuGen, el modo a medida permite pedirlo por escrito.
+            <p className="eyebrow">Formas de trabajar</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Empieza por donde tenga sentido para ti</h2>
+            <p className="body-muted mt-3">
+              Para usuarios nuevos, el catálogo guiado es el camino más sencillo. Pro añade asistente, documentos a medida, plantillas y tipos guardados en Mi catálogo.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {productPaths.map((item) => (
-              <Link
-                key={item.title}
-                href={user ? item.href : item.href === "/historial" || item.href === "/plantillas" ? "/auth" : item.href}
-                className="surface-flat interactive rounded-md p-5"
-              >
-                <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">{item.badge}</span>
+              <Link key={item.title} href={user ? item.href : item.href === "/generar" || item.href === "/catalogo" ? item.href : "/auth"} className="surface-flat interactive p-5">
+                <span className="badge badge-pro">{item.badge}</span>
                 <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{item.text}</p>
                 <span className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">{item.action}</span>
@@ -180,32 +177,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#f2efe8]/64 py-16">
+      <section className="border-b border-[#d8f3dc]/80 py-16">
         <div className="container-page grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="eyebrow">Qué resuelve</p>
-            <h2 className="font-serif-display mt-3 text-4xl font-bold">Menos pantalla en blanco, más documento útil</h2>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {useCases.map((item) => (
-              <article key={item.title} className="surface-flat interactive rounded-md p-5">
-                <h3 className="text-lg font-bold">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-[#d8f3dc]/80 py-16">
-        <div className="container-page">
-          <div className="mb-8 max-w-2xl">
             <p className="eyebrow">Cómo funciona</p>
-            <h2 className="font-serif-display mt-3 text-4xl font-bold">Un flujo sencillo para trabajar rápido</h2>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Tres pasos, sin pantalla en blanco</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {workflow.map(([step, title, text]) => (
-              <div key={step} className="surface-flat interactive rounded-md p-6">
+              <div key={step} className="surface-flat interactive p-6">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2d6a4f] text-sm font-bold text-white">
                   {step}
                 </span>
@@ -219,9 +199,70 @@ export default async function HomePage() {
 
       <DocumentGallery />
 
+      <section className="border-y border-[#d8f3dc]/80 bg-[#f2efe8]/64 py-16">
+        <div className="container-page grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div>
+            <p className="eyebrow">Uso responsable</p>
+            <h2 className="font-serif-display mt-3 text-4xl font-bold">Claro, profesional y prudente</h2>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {trustPoints.map((point) => (
+              <div key={point} className="surface-flat p-5">
+                <p className="text-sm font-semibold leading-6">{point}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container-page py-16">
+        <div className="surface flex flex-wrap items-center justify-between gap-5 p-6 lg:p-8">
+          <div className="max-w-2xl">
+            <p className="eyebrow">Empieza ahora</p>
+            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea tu primer borrador gratis y comprueba si te ahorra tiempo</h2>
+            <p className="body-muted mt-3">No necesitas tarjeta para probar el flujo básico. Puedes actualizar a Pro cuando necesites Word, plantillas o documentos a medida.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href={user ? "/generar" : "/auth"} className="focus-ring btn-primary px-6 py-3 text-sm">
+              {user ? "Crear documento" : "Registrarme gratis"}
+            </Link>
+            <Link href="/precios" className="focus-ring btn-secondary px-6 py-3 text-sm">
+              Comparar planes
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="container-page">
         <LegalDisclaimer />
       </section>
     </>
+  );
+}
+
+function HeroMetric({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="surface-flat p-4">
+      <p className="font-serif-display text-2xl font-bold text-[#2d6a4f]">{value}</p>
+      <p className="mt-1 text-xs text-slate-600">{label}</p>
+    </div>
+  );
+}
+
+function PreviewField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
+      <p className="mt-1">{value}</p>
+    </div>
+  );
+}
+
+function PreviewTag({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{title}</p>
+      <p className="mt-1">{text}</p>
+    </div>
   );
 }
