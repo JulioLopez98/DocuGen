@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ContextualHelp } from "@/components/ContextualHelp";
 import { HistoryClient } from "@/components/HistoryClient";
 import { getCurrentProfile, type BrandSettings, type CommunityDocumentTypeRow, type DocumentRow, type WorkspaceRow } from "@/lib/supabase-server";
 
@@ -45,40 +44,22 @@ export default async function HistoryPage() {
     <section className="container-page py-8 lg:py-10">
       <div className="surface mb-5 p-6 lg:p-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
-          <div>
-            <p className="eyebrow">Biblioteca</p>
-            <h1 className="section-title mt-3">Tus documentos, ordenados para revisar y reutilizar</h1>
-            <p className="body-muted mt-4 max-w-3xl">
-              Consulta borradores, abre versiones editables, exporta archivos y usa documentos anteriores como punto de partida.
-              Todo aparece plegado para mantener la pantalla ligera.
+          <div className="max-w-3xl">
+            <p className="eyebrow">Documentos</p>
+            <h1 className="section-title mt-3">Tu biblioteca de borradores</h1>
+            <p className="body-muted mt-4">
+              Abre documentos para revisar, editar, exportar, versionar o reutilizar. La lista aparece plegada para que puedas moverte rápido aunque tengas muchos archivos.
             </p>
           </div>
-          <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
-            Nuevo documento
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/generar" className="focus-ring btn-primary px-5 py-3 text-sm">
+              Nuevo documento
+            </Link>
+            <Link href="/mi-catalogo" className="focus-ring btn-secondary px-5 py-3 text-sm">
+              Mi catálogo
+            </Link>
+          </div>
         </div>
-      </div>
-
-      <div className="mb-5 grid gap-4 lg:grid-cols-3">
-        <ContextualHelp
-          eyebrow="Uso diario"
-          title="Revisar"
-          description="Abre un documento para editarlo, mejorar con IA, comparar versiones o restaurar cambios."
-          items={["Detalle editable.", "Historial de versiones.", "Exportación PDF/TXT/Word."]}
-        />
-        <ContextualHelp
-          eyebrow="Productividad"
-          title="Reutilizar"
-          description="Convierte documentos anteriores en base para nuevos borradores sin volver a rellenar todo."
-          items={["Reutiliza datos.", "Regenera variantes.", "Mantén plantilla si aplica."]}
-          secondaryAction={{ href: "/generar", label: "Crear nuevo" }}
-        />
-        <ContextualHelp
-          eyebrow="Orden"
-          title="Limpiar"
-          description="Filtra por tipo, busca contenido y borra documentos que ya no necesites."
-          items={["Búsqueda por texto.", "Agrupación por mes.", "Borrado individual o completo."]}
-        />
       </div>
 
       <HistoryClient

@@ -185,23 +185,23 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
       <section className="surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="eyebrow">Buscar y filtrar</p>
-            <h2 className="mt-2 text-xl font-bold">{documents.length} documentos guardados</h2>
-            <p className="body-muted mt-1 text-xs">
-              Busca por título, contenido o tipo. Abre cada documento solo cuando quieras verlo.
-            </p>
-            <Link href="/mi-catalogo" className="focus-ring btn-ghost mt-3 inline-flex px-0 py-2 text-sm">
-              Gestionar Mi catálogo
-            </Link>
+            <p className="eyebrow">Biblioteca</p>
+            <h2 className="mt-2 text-xl font-bold">{filteredDocuments.length} de {documents.length} documentos</h2>
+            <p className="body-muted mt-1 text-xs">Busca por título, contenido o tipo. Despliega solo el documento que quieras ver.</p>
           </div>
-          <button
-            type="button"
-            onClick={clearHistory}
-            disabled={busyId === "all"}
-            className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
-          >
-            {busyId === "all" ? "Borrando..." : "Borrar todo"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/generar" className="focus-ring btn-secondary px-4 py-2 text-sm">
+              Crear
+            </Link>
+            <button
+              type="button"
+              onClick={clearHistory}
+              disabled={busyId === "all"}
+              className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+            >
+              {busyId === "all" ? "Borrando..." : "Borrar todo"}
+            </button>
+          </div>
         </div>
 
         <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_220px_180px_auto]">
@@ -304,7 +304,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
               const expanded = openDocumentIds.has(doc.id);
 
               return (
-                <article key={doc.id} className="surface-flat interactive-subtle">
+                <article key={doc.id} className={"surface-flat interactive-subtle " + (expanded ? "border-[#2d6a4f] bg-[#f4fbf5]" : "")}>
                   <div className="flex flex-wrap items-start justify-between gap-4 p-5">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -323,8 +323,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                         )}
                       </div>
                       <p className="mt-1 text-xs text-slate-500">
-                        Creado el {createdAt.toLocaleDateString("es-ES")} a las{" "}
-                        {createdAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                        {createdAt.toLocaleDateString("es-ES")} · {createdAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       {doc.reference_template_id && (
                         <p className="mt-1 text-xs text-slate-500">
@@ -350,32 +349,32 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
                             return next;
                           });
                         }}
-                        className="focus-ring badge badge-free px-3 py-1.5"
+                        className="focus-ring btn-secondary px-3 py-2 text-xs"
                         aria-expanded={expanded}
                       >
-                        {expanded ? "Plegar" : "Desplegar"}
+                        {expanded ? "Ocultar" : "Ver acciones"}
                       </button>
                     </div>
                   </div>
 
                   {expanded && (
                     <div className="border-t border-[#d8f3dc] p-4">
-                      <article className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm leading-7">
+                      <article className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-[#d8f3dc] bg-[#fffdf8] p-4 text-sm leading-7 shadow-inner">
                         {preview}
                       </article>
                       <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
                         <div className="flex flex-wrap gap-2">
                           <Link href={"/historial/" + doc.id} className="focus-ring btn-primary px-3 py-2 text-sm">
-                            Ver detalle
+                            Abrir editor
                           </Link>
                           {!custom && !assistant && !community && (
                             <Link href={"/generar?templateId=" + doc.id} className="focus-ring btn-secondary px-3 py-2 text-sm">
-                              Reutilizar datos
+                              Usar como base
                             </Link>
                           )}
                           {doc.reference_template_id && (
                             <Link href={buildSameTemplateUrl(doc)} className="focus-ring btn-secondary px-3 py-2 text-sm">
-                              Nuevo con misma plantilla
+                              Usar misma plantilla
                             </Link>
                           )}
                           {doc.reference_template_id && (
