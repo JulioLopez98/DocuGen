@@ -40,7 +40,7 @@ type GenerateRequestPayload = {
 type TemplateOption = Pick<DocumentTemplateRow, "id" | "name" | "category" | "summary" | "created_at" | "is_favorite" | "workspace_id">;
 type CommunityTypeOption = Pick<
   CommunityDocumentTypeRow,
-  "id" | "label" | "description" | "category" | "required_plan" | "suggested_fields" | "status"
+  "id" | "label" | "description" | "category" | "required_plan" | "suggested_fields" | "status" | "created_at"
 >;
 type CommunityGeneratePayload = {
   communityTypeId: string;
@@ -182,6 +182,7 @@ export function GeneratorClient({
   const [templateQuery, setTemplateQuery] = useState("");
   const [templateView, setTemplateView] = useState<"all" | "favorites" | "used" | "recent">("all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
+  const [personalCatalogTypes, setPersonalCatalogTypes] = useState(communityTypes);
   const [selectedCommunityId, setSelectedCommunityId] = useState(communityTypes[0]?.id || "");
   const [communityTypeConfirmed, setCommunityTypeConfirmed] = useState(false);
   const [referenceTemplateId, setReferenceTemplateId] = useState(
@@ -212,7 +213,7 @@ export function GeneratorClient({
   );
   const selectedReferenceTemplate = referenceTemplates.find((template) => template.id === referenceTemplateId);
   const selectedWorkspace = workspaces.find((workspace) => workspace.id === workspaceId);
-  const selectedCommunityType = communityTypes.find((type) => type.id === selectedCommunityId);
+  const selectedCommunityType = personalCatalogTypes.find((type) => type.id === selectedCommunityId);
   const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
   const isFreePlan = plan === "free";
 
@@ -433,11 +434,11 @@ export function GeneratorClient({
             />
             <CreationModeCard
               active={generatorMode === "community"}
-              eyebrow={`${communityTypes.length} guardados`}
+              eyebrow={`${personalCatalogTypes.length} guardados`}
               title="Mi catálogo"
               text="Documentos personalizados que guardes para reutilizar."
               onClick={selectCommunityMode}
-              disabled={communityTypes.length === 0}
+              disabled={personalCatalogTypes.length === 0}
             />
             <CreationModeCard
               active={generatorMode === "custom"}
@@ -900,8 +901,18 @@ export function GeneratorClient({
           />
         ) : generatorMode === "community" && !communityTypeConfirmed ? (
           <CommunityChoicePanel
-            communityTypes={communityTypes}
+            communityTypes={personalCatalogTypes}
             plan={plan}
+            onUpdate={(updatedType) => {
+              setPersonalCatalogTypes((current) => current.map((type) => (type.id === updatedType.id ? updatedType : type)));
+            }}
+            onDelete={(typeId) => {
+              setPersonalCatalogTypes((current) => current.filter((type) => type.id !== typeId));
+              if (selectedCommunityId === typeId) {
+                setSelectedCommunityId("");
+                setCommunityTypeConfirmed(false);
+              }
+            }}
             onSelect={(typeId) => {
               setSelectedCommunityId(typeId);
               setCommunityTypeConfirmed(true);
@@ -1589,17 +1600,90 @@ function CommunityChoicePanel({
   communityTypes,
   plan,
   onSelect,
+  onUpdate,
+  onDelete,
 }: {
   communityTypes: CommunityTypeOption[];
   plan: "free" | "pro" | "empresa";
   onSelect: (typeId: string) => void;
+  onUpdate: (type: CommunityTypeOption) => void;
+  onDelete: (typeId: string) => void;
 }) {
+  const [query, setQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState({ label: "", description: "" });
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleTypes = communityTypes.filter((type) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    return (type.label + " " + type.description + " " + (type.category || "")).toLowerCase().includes(normalizedQuery);
+  });
+
+  async function saveType(type: CommunityTypeOption) {
+    setActionError(null);
+    setBusyId(type.id);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + type.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: draft.label,
+          description: draft.description,
+          category: type.category || "Mi catálogo",
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as { catalogType?: CommunityTypeOption; message?: string } | null;
+
+      if (!response.ok || !data?.catalogType) {
+        throw new Error(data?.message || "No se pudo actualizar este tipo.");
+      }
+
+      onUpdate(data.catalogType);
+      setEditingId(null);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "No se pudo actualizar este tipo.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deleteType(type: CommunityTypeOption) {
+    const confirmed = window.confirm('Borrar "' + type.label + '" de Mi catálogo? Los documentos ya generados seguirán en Documentos.');
+
+    if (!confirmed) {
+      return;
+    }
+
+    setActionError(null);
+    setBusyId(type.id);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + type.id, { method: "DELETE" });
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo borrar este tipo.");
+      }
+
+      onDelete(type.id);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "No se pudo borrar este tipo.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   if (communityTypes.length === 0) {
     return (
       <EmptyState
-        eyebrow="Sin documentos de Mi catálogo"
-        title="Aún no hay tipos de Mi catálogo disponibles"
-        description="Cuando guardes documentos a medida o del asistente como tipos reutilizables, aparecerán aquí."
+        eyebrow="Mi catálogo vacío"
+        title="Guarda tu primer tipo personalizado"
+        description="Genera un documento a medida o desde el asistente y usa Guardar en Mi catálogo para reutilizarlo después."
         variant="flat"
       />
     );
@@ -1607,53 +1691,135 @@ function CommunityChoicePanel({
 
   return (
     <div className="grid gap-5">
-      <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-5">
+      <div className="rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Mi catálogo</p>
-            <h2 className="font-serif-display mt-2 text-2xl font-bold">Tus documentos reutilizables</h2>
+            <h2 className="font-serif-display mt-2 text-2xl font-bold">Tipos personalizados guardados</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Elige primero un tipo guardado. Después cargaremos solo los campos necesarios para ese documento.
+              Usa documentos que ya te funcionaron como punto de partida. Puedes renombrarlos o quitarlos sin borrar los documentos generados.
             </p>
           </div>
-          <span className="rounded-full bg-[#d8f3dc] px-3 py-1 text-xs font-bold text-[#2d6a4f]">
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#2d6a4f] shadow-sm">
             {communityTypes.length} guardados
           </span>
         </div>
+        <label className="mt-5 block">
+          <span className="sr-only">Buscar en Mi catálogo</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar por nombre, descripción o categoría..."
+            className="focus-ring w-full rounded-md border border-[#b7e4c7] bg-white px-4 py-3 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+          />
+        </label>
+        {actionError && <p className="mt-3 text-sm font-semibold text-red-700">{actionError}</p>}
       </div>
 
-      <div className="grid gap-3">
-        {communityTypes.map((type) => {
-          const locked = !canUseCommunityType(plan, type.required_plan);
+      {visibleTypes.length === 0 ? (
+        <EmptyState
+          eyebrow="Sin resultados"
+          title="No hay tipos que coincidan con tu búsqueda"
+          description="Prueba con otra palabra o limpia el buscador para ver todo Mi catálogo."
+          variant="flat"
+        />
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {visibleTypes.map((type) => {
+            const locked = !canUseCommunityType(plan, type.required_plan);
+            const editing = editingId === type.id;
+            const busy = busyId === type.id;
 
-          return (
-            <button
-              key={type.id}
-              type="button"
-              onClick={() => onSelect(type.id)}
-              className="focus-ring rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 p-5 text-left transition hover:border-[#2d6a4f] hover:bg-[#faf9f6]"
-            >
-              <span className="flex flex-wrap items-start justify-between gap-3">
-                <span>
-                  <span className="font-serif-display block text-xl font-bold text-[#1f2933]">{type.label}</span>
-                  <span className="mt-2 block text-sm leading-6 text-slate-600">{type.description}</span>
-                </span>
-                <span className="flex shrink-0 flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-[#faf9f6] px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">
-                    {type.category || "Mi catálogo"}
-                  </span>
-                  <span className="rounded-full bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                    {locked ? type.required_plan : "Guardado"}
-                  </span>
-                </span>
-              </span>
-              <span className="mt-4 inline-flex text-sm font-bold text-[#2d6a4f]">
-                {locked ? "Ver plan requerido" : "Usar este documento"}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <article
+                key={type.id}
+                className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/88 p-4 shadow-[0_18px_45px_rgba(31,41,51,0.05)] transition hover:border-[#2d6a4f]/50"
+              >
+                {editing ? (
+                  <div className="grid gap-3">
+                    <label>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Nombre</span>
+                      <input
+                        value={draft.label}
+                        onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
+                        className="focus-ring mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      />
+                    </label>
+                    <label>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Descripción</span>
+                      <textarea
+                        value={draft.description}
+                        onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+                        rows={4}
+                        className="focus-ring mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                      />
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void saveType(type)}
+                        disabled={busy}
+                        className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {busy ? "Guardando..." : "Guardar cambios"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                        className="focus-ring btn-ghost px-3 py-2 text-xs"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                          {type.category || "Mi catálogo"}
+                        </p>
+                        <h3 className="font-serif-display mt-2 text-xl font-bold text-[#1f2933]">{type.label}</h3>
+                      </div>
+                      <span className={locked ? "badge badge-pro" : "badge badge-free"}>
+                        {locked ? type.required_plan : "Listo"}
+                      </span>
+                    </div>
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{type.description}</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#d8f3dc] pt-4">
+                      <button
+                        type="button"
+                        onClick={() => onSelect(type.id)}
+                        className="focus-ring btn-primary px-3 py-2 text-xs"
+                      >
+                        {locked ? "Ver plan requerido" : "Usar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingId(type.id);
+                          setDraft({ label: type.label, description: type.description });
+                        }}
+                        className="focus-ring btn-secondary px-3 py-2 text-xs"
+                      >
+                        Renombrar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void deleteType(type)}
+                        disabled={busy}
+                        className="focus-ring rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {busy ? "Borrando..." : "Borrar"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
