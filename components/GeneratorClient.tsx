@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -389,12 +389,12 @@ export function GeneratorClient({
   return (
     <div className="grid gap-6">
       <section className="surface overflow-hidden p-5 md:p-6">
-        <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr] xl:items-start">
+        <div className="grid gap-5 xl:grid-cols-[0.78fr_1.22fr] xl:items-start">
           <div>
             <p className="eyebrow">Crear documento</p>
-            <h1 className="panel-title mt-3">Empieza por el camino correcto</h1>
+            <h1 className="panel-title mt-3">Elige una forma de empezar</h1>
             <p className="body-muted mt-3 max-w-2xl">
-              Primero elige si quieres partir del catálogo oficial, de tus tipos guardados o de una petición libre. Después solo verás el formulario necesario.
+              La opción recomendada es el catálogo oficial. Si no encuentras lo que necesitas, usa A medida o el Asistente.
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
@@ -402,89 +402,25 @@ export function GeneratorClient({
               active={generatorMode === "catalog"}
               eyebrow={documentTypes.length + " tipos"}
               title="Catálogo oficial"
-              text="Documentos guiados y ordenados por categoría."
+              text="La forma más rápida y guiada."
               onClick={() => selectCatalogIntent("all")}
             />
             <CreationModeCard
               active={generatorMode === "community"}
               eyebrow={personalCatalogTypes.length + " guardados"}
               title="Mi catálogo"
-              text={personalCatalogTypes.length > 0 ? "Tus tipos reutilizables, listos para generar." : "Guarda documentos a medida para reutilizarlos aquí."}
+              text={personalCatalogTypes.length > 0 ? "Formatos propios reutilizables." : "Aparecerá cuando guardes tipos propios."}
               onClick={selectCommunityMode}
             />
             <CreationModeCard
               active={generatorMode === "custom"}
               eyebrow={customProLocked ? "Pro" : "Incluido"}
               title="A medida"
-              text="Describe lo que necesitas si no existe en el catálogo."
+              text="Para documentos que no están en la lista."
               onClick={selectCustomMode}
             />
           </div>
         </div>
-
-        <div className="mt-5 rounded-xl border border-[#d8f3dc] bg-[#faf9f6]/80 p-3">
-          <div className="grid gap-2 md:grid-cols-4">
-            <StepChip label="1. Camino" value={getGeneratorModeLabel(generatorMode)} active />
-            <StepChip
-              label="2. Documento"
-              value={
-                generatorMode === "catalog"
-                  ? selectedDocumentConfirmed
-                    ? config.label
-                    : selectedIntent.id === "all"
-                      ? "Por elegir"
-                      : selectedIntent.label
-                  : generatorMode === "community"
-                    ? communityTypeConfirmed
-                      ? selectedCommunityType?.label || "Mi catálogo"
-                      : "Por elegir"
-                    : "Libre"
-              }
-              active={generatorMode !== "catalog" || selectedDocumentConfirmed}
-            />
-            <StepChip
-              label="3. Datos"
-              value={generated ? "Generado" : selectedDocumentConfirmed || generatorMode !== "catalog" ? "Completar" : "Pendiente"}
-              active={Boolean(generated || selectedDocumentConfirmed || generatorMode !== "catalog")}
-            />
-            <StepChip
-              label="Opcional"
-              value={referenceTemplateId ? "Con plantilla" : generatorMode === "community" ? "Gestionar aparte" : "Sin plantilla"}
-              active={Boolean(referenceTemplateId)}
-            />
-          </div>
-        </div>
-
-        {generatorMode === "catalog" && !selectedDocumentConfirmed && (
-          <div className="mt-5 border-t border-[#d8f3dc] pt-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Objetivo</p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">Filtra solo si quieres acotar. Si no, explora por categorías.</p>
-              </div>
-              <button type="button" onClick={() => selectCatalogIntent("all")} className="focus-ring btn-ghost px-3 py-2 text-xs">
-                Ver todo
-              </button>
-            </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {generatorIntents.map((intent) => (
-                <button
-                  key={intent.id}
-                  type="button"
-                  onClick={() => selectCatalogIntent(intent.id)}
-                  className={
-                    "focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition " +
-                    (selectedIntentId === intent.id
-                      ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
-                      : "border-[#d8f3dc] bg-[#fffdf8]/82 text-slate-600 hover:border-[#2d6a4f]")
-                  }
-                >
-                  {intent.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {generatorMode === "community" && (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/78 p-4">
@@ -554,9 +490,11 @@ export function GeneratorClient({
           <DocumentChoicePanel
             groupedDocuments={groupedDocuments}
             selectedIntent={selectedIntent}
+            selectedIntentId={selectedIntentId}
             documentQuery={documentQuery}
             onQueryChange={setDocumentQuery}
             onSelectDocument={selectDocument}
+            onSelectIntent={selectCatalogIntent}
             onShowAll={() => selectCatalogIntent("all")}
           />
         ) : generatorMode === "community" && !communityTypeConfirmed ? (
@@ -723,27 +661,6 @@ function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
   }));
 }
 
-function getGeneratorModeLabel(mode: "catalog" | "community" | "custom") {
-  if (mode === "community") {
-    return "Mi catálogo";
-  }
-
-  if (mode === "custom") {
-    return "A medida";
-  }
-
-  return "Catálogo oficial";
-}
-
-function StepChip({ label, value, active = false }: { label: string; value: string; active?: boolean }) {
-  return (
-    <div className={`rounded-lg border px-3 py-3 ${active ? "border-[#2d6a4f] bg-[#d8f3dc]/55" : "border-[#d8f3dc] bg-[#fffdf8]/76"}`}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{label}</p>
-      <p className="mt-1 truncate text-sm font-bold text-[#1f2933]">{value}</p>
-    </div>
-  );
-}
-
 function CreationModeCard({
   active,
   eyebrow,
@@ -778,16 +695,20 @@ function CreationModeCard({
 function DocumentChoicePanel({
   groupedDocuments,
   selectedIntent,
+  selectedIntentId,
   documentQuery,
   onQueryChange,
   onSelectDocument,
+  onSelectIntent,
   onShowAll,
 }: {
   groupedDocuments: Array<{ category: string; documents: typeof documentTypes[number][] }>;
   selectedIntent: GeneratorIntent;
+  selectedIntentId: GeneratorIntentId;
   documentQuery: string;
   onQueryChange: (value: string) => void;
   onSelectDocument: (type: DocumentType) => void;
+  onSelectIntent: (intentId: GeneratorIntentId) => void;
   onShowAll: () => void;
 }) {
   const hasSearch = documentQuery.trim().length > 0;
@@ -800,60 +721,72 @@ function DocumentChoicePanel({
       <div className="surface-muted p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="eyebrow">Catálogo de documentos</p>
+            <p className="eyebrow">Catálogo oficial</p>
             <h2 className="mt-2 font-serif-display text-2xl font-bold">
-              {isFiltered ? selectedIntent.label : "Elige por categoría"}
+              {isFiltered ? selectedIntent.label : "Busca o abre una categoría"}
             </h2>
             <p className="body-muted mt-2 max-w-2xl">
               {isFiltered
                 ? selectedIntent.description
-                : "Todas las opciones están agrupadas para que puedas explorar sin bajar por una lista interminable. Abre una categoría y elige el documento exacto."}
+                : "Empieza con un objetivo, busca por palabra o abre una categoría. Al elegir un documento, solo verás sus campos."}
             </p>
           </div>
-          <span className="badge badge-free">
-            {visibleDocuments.length} tipos
-          </span>
+          <span className="badge badge-free">{visibleDocuments.length} tipos</span>
         </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+
+        <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_0.9fr] lg:items-end">
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar documento</span>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Buscar</span>
             <input
               value={documentQuery}
               onChange={(event) => onQueryChange(event.target.value)}
               className="field-control mt-2"
-              placeholder="Reclamación, carta, contrato, privacidad..."
+              placeholder="Contrato, reclamación, privacidad..."
             />
           </label>
-          {isFiltered && (
-            <button type="button" onClick={onShowAll} className="focus-ring btn-secondary px-4 py-3 text-sm">
-              Ver todo el catálogo
-            </button>
-          )}
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Objetivo</span>
+            <select
+              value={selectedIntentId}
+              onChange={(event) => onSelectIntent(event.target.value as GeneratorIntentId)}
+              className="field-control mt-2"
+            >
+              {generatorIntents.map((intent) => (
+                <option key={intent.id} value={intent.id}>
+                  {intent.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        {categoryCount > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {groupedDocuments.map((group) => (
-              <span key={group.category} className="badge bg-[#fffdf8]/82 text-slate-600">
-                {group.category}: {group.documents.length}
-              </span>
-            ))}
+
+        {(isFiltered || hasSearch) && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
+            <p className="text-xs leading-5 text-slate-600">
+              Mostrando {visibleDocuments.length} tipos en {categoryCount} categorías.
+            </p>
+            {isFiltered && (
+              <button type="button" onClick={onShowAll} className="focus-ring btn-ghost px-3 py-2 text-xs">
+                Quitar filtro
+              </button>
+            )}
           </div>
         )}
       </div>
 
       {visibleDocuments.length > 0 ? (
         <div className="grid gap-3">
-          {groupedDocuments.map((group, index) => (
+          {groupedDocuments.map((group) => (
             <details
               key={group.category}
-              open={hasSearch || isFiltered || index === 0}
-              className="doc-accordion group rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/76 shadow-[0_8px_24px_rgba(31,41,51,0.04)]"
+              open={hasSearch || isFiltered}
+              className="doc-accordion group rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/76 shadow-[0_8px_24px_rgba(31,41,51,0.04)] open:border-[#2d6a4f] open:bg-[#f4fbf5]"
             >
-              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-4 transition hover:bg-[#faf9f6]">
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-4 transition hover:bg-[#faf9f6] group-open:bg-[#d8f3dc]/45">
                 <span>
                   <span className="block font-bold text-[#1f2933]">{group.category}</span>
                   <span className="mt-1 block text-xs text-slate-500">
-                    {group.documents.length} documentos disponibles
+                    {group.documents.length} tipos disponibles
                   </span>
                 </span>
                 <span className="flex items-center gap-3">
