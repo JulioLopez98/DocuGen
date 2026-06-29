@@ -1846,6 +1846,11 @@ function CommunityForm({
 }) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [fields, setFields] = useState<CommunityFieldOption[]>(communityType.suggested_fields);
+  const [editingGuide, setEditingGuide] = useState(false);
+  const [usageDescription, setUsageDescription] = useState(communityType.description);
+  const [savingGuide, setSavingGuide] = useState(false);
+  const [guideMessage, setGuideMessage] = useState<string | null>(null);
+  const [guideError, setGuideError] = useState<string | null>(null);
   const [editingFields, setEditingFields] = useState(false);
   const [savingFields, setSavingFields] = useState(false);
   const [fieldMessage, setFieldMessage] = useState<string | null>(null);
@@ -1855,6 +1860,43 @@ function CommunityForm({
   const [savingPrompt, setSavingPrompt] = useState(false);
   const [promptMessage, setPromptMessage] = useState<string | null>(null);
   const [promptError, setPromptError] = useState<string | null>(null);
+
+  async function saveGuide() {
+    if (usageDescription.trim().length < 10) {
+      setGuideError("Añade una guía un poco más clara antes de guardar.");
+      return;
+    }
+
+    setSavingGuide(true);
+    setGuideError(null);
+    setGuideMessage(null);
+
+    try {
+      const response = await fetch("/api/personal-catalog/" + communityType.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: communityType.label,
+          description: usageDescription,
+          category: communityType.category || "Mi catálogo",
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as { catalogType?: CommunityTypeOption; message?: string } | null;
+
+      if (!response.ok || !data?.catalogType) {
+        throw new Error(data?.message || "No se pudo guardar la guía de uso.");
+      }
+
+      setUsageDescription(data.catalogType.description);
+      onUpdate(data.catalogType);
+      setEditingGuide(false);
+      setGuideMessage("Guía de uso guardada.");
+    } catch (error) {
+      setGuideError(error instanceof Error ? error.message : "No se pudo guardar la guía de uso.");
+    } finally {
+      setSavingGuide(false);
+    }
+  }
 
   async function saveFields() {
     const normalizedFields = fields.map(normalizeCommunityField).filter((field) => field.name && field.label);
@@ -1874,7 +1916,7 @@ function CommunityForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           label: communityType.label,
-          description: communityType.description,
+          description: usageDescription,
           category: communityType.category || "Mi catálogo",
           suggested_fields: normalizedFields,
         }),
@@ -1912,7 +1954,7 @@ function CommunityForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           label: communityType.label,
-          description: communityType.description,
+          description: usageDescription,
           category: communityType.category || "Mi catálogo",
           prompt_brief: promptBrief,
         }),
@@ -1959,7 +2001,48 @@ function CommunityForm({
         onSubmit(formData);
       }}
     >
-      <p className="rounded-md bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">{communityType.description}</p>
+      <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 text-sm leading-6 text-slate-600">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <p className="max-w-3xl">{usageDescription}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingGuide((current) => !current);
+              setGuideError(null);
+              setGuideMessage(null);
+            }}
+            className="focus-ring btn-ghost px-2 py-1 text-xs"
+          >
+            {editingGuide ? "Ocultar guía" : "Editar guía"}
+          </button>
+        </div>
+        {guideMessage && <p className="mt-2 text-xs font-semibold text-[#2d6a4f]">{guideMessage}</p>}
+        {guideError && <p className="mt-2 text-xs font-semibold text-red-700">{guideError}</p>}
+        {editingGuide && (
+          <div className="mt-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8] p-3">
+            <label>
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#2d6a4f]">Guía visible para este documento</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">
+                Explica cuándo usar este tipo o añade un ejemplo breve. Esto lo ve el usuario antes de rellenar el formulario.
+              </span>
+              <textarea
+                value={usageDescription}
+                onChange={(event) => setUsageDescription(event.target.value)}
+                rows={4}
+                className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-[#1f2933] transition focus:border-[#2d6a4f]"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => void saveGuide()}
+              disabled={savingGuide}
+              className="focus-ring btn-secondary mt-3 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {savingGuide ? "Guardando..." : "Guardar guía"}
+            </button>
+          </div>
+        )}
+      </div>
       <div className="grid gap-5 md:grid-cols-2">
         {fields.map((field) => (
           <label key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
