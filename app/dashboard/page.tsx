@@ -2,8 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BillingStatusNotice } from "@/components/BillingStatusNotice";
-import { ContextualHelp } from "@/components/ContextualHelp";
-import { PlanFirstSteps } from "@/components/PlanFirstSteps";
 import { PlanBadge } from "@/components/PlanBadge";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
 import { UsageBar } from "@/components/UsageBar";
@@ -214,35 +212,6 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <div className="mt-5">
-        <PlanFirstSteps
-          plan={profile.plan}
-          context={profile.plan === "empresa" ? "team" : profile.plan === "pro" ? "templates" : "documents"}
-        />
-      </div>
-
-      <section className="mt-5 grid gap-5 lg:grid-cols-3">
-        <ContextualHelp
-          title="Crear rápido"
-          description="El camino principal: catálogo, datos, borrador y exportación."
-          items={["Elige un tipo documental.", "Completa solo los campos necesarios.", "Revisa antes de usar."]}
-          primaryAction={{ href: "/generar", label: "Crear ahora" }}
-        />
-        <ContextualHelp
-          title="Usar ejemplos propios"
-          description="Las plantillas ayudan a orientar estructura y tono sin copiar datos sensibles."
-          items={isPaid ? ["Sube DOCX/PDF.", "Procesa la plantilla.", "Úsala como referencia."] : ["Disponible en Pro.", "Ideal para mantener estilo propio."]}
-          primaryAction={{ href: isPaid ? "/plantillas" : "/precios", label: isPaid ? "Abrir plantillas" : "Ver Pro" }}
-          tone="pro"
-        />
-        <ContextualHelp
-          title="Trabajar en equipo"
-          description="Empresa añade miembros, documentos compartidos, invitaciones y actividad."
-          items={isEmpresa ? ["Invita miembros.", "Comparte documentos.", "Revisa actividad."] : ["Disponible en Empresa.", "Pensado para equipos."]}
-          primaryAction={{ href: isEmpresa ? "/workspace" : "/precios", label: isEmpresa ? "Abrir equipo" : "Ver Empresa" }}
-          tone="empresa"
-        />
-      </section>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.94fr_1.06fr]">
         <section className="surface p-6">
@@ -485,7 +454,7 @@ function getRecommendedDocuments(documents: DocumentRow[], isFree: boolean): Das
     .filter((doc): doc is DashboardDocumentConfig => Boolean(doc))
     .filter((doc) => !isFree || !requiresPro(doc));
 
-  return uniqueDocuments([...candidates, ...fallback]).slice(0, 6);
+  return uniqueDocuments([...candidates, ...fallback]).slice(0, 4);
 }
 
 function uniqueDocuments(documents: DashboardDocumentConfig[]) {
