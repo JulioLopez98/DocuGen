@@ -7,6 +7,7 @@ Disallow: /auth
 Disallow: /dashboard
 Disallow: /generar
 Disallow: /historial
+Disallow: /mi-catalogo
 Disallow: /ajustes
 Disallow: /onboarding
 Disallow: /plantillas

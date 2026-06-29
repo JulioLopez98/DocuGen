@@ -35,7 +35,7 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
-  const [catalogTypes, setCatalogTypes] = useState(personalCatalogTypes);
+  const [catalogTypes] = useState(personalCatalogTypes);
   const [openDocumentIds, setOpenDocumentIds] = useState<Set<string>>(new Set());
 
   const filteredDocuments = useMemo(
@@ -182,12 +182,6 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
 
   return (
     <div className="grid gap-5">
-      <PersonalCatalogShelf
-        types={catalogTypes}
-        onUpdate={(updatedType) => setCatalogTypes((current) => current.map((type) => (type.id === updatedType.id ? updatedType : type)))}
-        onDelete={(typeId) => setCatalogTypes((current) => current.filter((type) => type.id !== typeId))}
-      />
-
       <section className="surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -196,6 +190,9 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
             <p className="body-muted mt-1 text-xs">
               Busca por título, contenido o tipo. Abre cada documento solo cuando quieras verlo.
             </p>
+            <Link href="/mi-catalogo" className="focus-ring btn-ghost mt-3 inline-flex px-0 py-2 text-sm">
+              Gestionar Mi catálogo
+            </Link>
           </div>
           <button
             type="button"
@@ -455,206 +452,6 @@ export function HistoryClient({ documents, canExportDocx, plan, brandSettings, w
         ))
       )}
     </div>
-  );
-}
-
-function PersonalCatalogShelf({
-  types,
-  onUpdate,
-  onDelete,
-}: {
-  types: CommunityDocumentTypeRow[];
-  onUpdate: (type: CommunityDocumentTypeRow) => void;
-  onDelete: (typeId: string) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState({ label: "", description: "" });
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const normalizedQuery = query.trim().toLowerCase();
-  const visibleTypes = types.filter((type) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    return (type.label + " " + type.description + " " + (type.category || "")).toLowerCase().includes(normalizedQuery);
-  });
-
-  async function updateType(type: CommunityDocumentTypeRow) {
-    setBusyId(type.id);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/personal-catalog/" + type.id, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          label: draft.label,
-          description: draft.description,
-          category: type.category || "Mi catálogo",
-        }),
-      });
-      const payload = (await response.json().catch(() => null)) as { catalogType?: CommunityDocumentTypeRow; message?: string } | null;
-
-      if (!response.ok || !payload?.catalogType) {
-        setError(payload?.message || "No se pudo actualizar este tipo guardado.");
-        return;
-      }
-
-      onUpdate(payload.catalogType);
-      setEditingId(null);
-    } catch {
-      setError("No se pudo conectar con DocuGen. Inténtalo de nuevo en unos segundos.");
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function deleteType(type: CommunityDocumentTypeRow) {
-    if (!window.confirm('Borrar "' + type.label + '" de Mi catálogo? Los documentos generados no se borrarán.')) {
-      return;
-    }
-
-    setBusyId(type.id);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/personal-catalog/" + type.id, { method: "DELETE" });
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-
-      if (!response.ok) {
-        setError(payload?.message || "No se pudo borrar este tipo guardado.");
-        return;
-      }
-
-      onDelete(type.id);
-    } catch {
-      setError("No se pudo conectar con DocuGen. Inténtalo de nuevo en unos segundos.");
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  return (
-    <section className="surface p-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="eyebrow">Mi catálogo</p>
-          <h2 className="mt-2 text-xl font-bold">Tipos guardados para reutilizar</h2>
-          <p className="body-muted mt-1 max-w-2xl text-xs">
-            Aquí viven los moldes que guardas desde documentos a medida o desde el asistente. No son archivos: son puntos de partida para crear nuevos documentos.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="badge badge-free">{types.length} tipos</span>
-          <Link href="/generar?mode=custom" className="focus-ring btn-secondary px-3 py-2 text-sm">
-            Crear a medida
-          </Link>
-        </div>
-      </div>
-
-      {types.length === 0 ? (
-        <div className="mt-5 rounded-md border border-dashed border-[#b7e4c7] bg-[#f4fbf5] p-5">
-          <p className="font-semibold text-[#2d6a4f]">Todavía no tienes tipos guardados</p>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-            Cuando generes algo a medida o desde el asistente, usa Guardar en Mi catálogo para poder crearlo otra vez sin partir de cero.
-          </p>
-        </div>
-      ) : (
-        <>
-          <label className="mt-5 block">
-            <span className="sr-only">Buscar en Mi catálogo</span>
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar tipo guardado..."
-              className="field-control"
-            />
-          </label>
-          {error && <p className="status-error mt-4">{error}</p>}
-          <div className="mt-5 grid gap-3 lg:grid-cols-3">
-            {visibleTypes.map((type) => {
-              const editing = editingId === type.id;
-              const busy = busyId === type.id;
-
-              return (
-                <article key={type.id} className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/88 p-4">
-                  {editing ? (
-                    <div className="grid gap-3">
-                      <label>
-                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Nombre</span>
-                        <input
-                          value={draft.label}
-                          onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
-                          className="field-control mt-2"
-                        />
-                      </label>
-                      <label>
-                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Descripción</span>
-                        <textarea
-                          value={draft.description}
-                          onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-                          rows={3}
-                          className="field-control mt-2"
-                        />
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => void updateType(type)}
-                          disabled={busy}
-                          className="focus-ring btn-primary px-3 py-2 text-xs disabled:opacity-60"
-                        >
-                          {busy ? "Guardando..." : "Guardar"}
-                        </button>
-                        <button type="button" onClick={() => setEditingId(null)} className="focus-ring btn-ghost px-3 py-2 text-xs">
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">{type.category || "Mi catálogo"}</p>
-                      <h3 className="font-serif-display mt-2 text-lg font-bold leading-6">{type.label}</h3>
-                      <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{type.description}</p>
-                      <div className="mt-4 flex flex-wrap gap-2 border-t border-[#d8f3dc] pt-4">
-                        <Link href={"/generar?mode=community&communityTypeId=" + type.id} className="focus-ring btn-primary px-3 py-2 text-xs">
-                          Usar
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingId(type.id);
-                            setDraft({ label: type.label, description: type.description });
-                          }}
-                          className="focus-ring btn-secondary px-3 py-2 text-xs"
-                        >
-                          Renombrar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void deleteType(type)}
-                          disabled={busy}
-                          className="focus-ring rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
-                        >
-                          {busy ? "Borrando..." : "Borrar"}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-          {visibleTypes.length === 0 && (
-            <p className="mt-4 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-4 text-sm text-slate-600">
-              No hay tipos guardados que coincidan con esa búsqueda.
-            </p>
-          )}
-        </>
-      )}
-    </section>
   );
 }
 

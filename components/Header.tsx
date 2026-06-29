@@ -90,6 +90,12 @@ function buildUserMoreLinks({
       badge: isPaid ? undefined : "Pro",
     },
     {
+      href: "/mi-catalogo",
+      label: "Mi catálogo",
+      description: "Gestiona tus tipos reutilizables separados del historial.",
+      badge: isPaid ? undefined : "Pro",
+    },
+    {
       href: "/catalogo",
       label: "Tipos de documento",
       description: "Explora el catálogo completo por categorías.",
