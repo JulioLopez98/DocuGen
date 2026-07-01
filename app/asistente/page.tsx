@@ -75,9 +75,9 @@ export default async function AssistantPage({ searchParams }: Props) {
     <section className="container-page py-8 lg:py-10">
       <div className="mb-6 max-w-3xl">
         <p className="eyebrow">Asistente Pro</p>
-        <h1 className="section-title mt-3">Cuéntale qué documento necesitas</h1>
+        <h1 className="section-title mt-3">Describe lo que necesitas y deja que DocuGen te guíe</h1>
         <p className="body-muted mt-4">
-          Escribe el caso con tus palabras. DocuGen te hará preguntas si faltan datos y podrás generar el borrador cuando esté claro.
+          Usa el asistente cuando no sepas qué tipo elegir o cuando el documento requiera contexto. Te hará preguntas, ordenará la información y podrás generar el borrador cuando el caso esté claro.
         </p>
       </div>
       <AssistantChatClient

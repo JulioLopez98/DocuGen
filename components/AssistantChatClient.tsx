@@ -185,7 +185,8 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         <div className="border-b border-[#d8f3dc] bg-[#fffdf8]/74 px-5 py-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-[#2d6a4f]">Asistente guiado</p>`r`n              <h2 className="mt-1 text-lg font-bold text-[#1f2933]">{currentSessionTitle}</h2>
+              <p className="text-sm font-bold text-[#2d6a4f]">Asistente guiado</p>
+              <h2 className="mt-1 text-lg font-bold text-[#1f2933]">{currentSessionTitle}</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 Cuéntale el caso, responde a sus preguntas y genera el borrador cuando esté claro.
               </p>
@@ -206,7 +207,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
             <div className="mx-auto max-w-2xl rounded-xl border border-[#d8f3dc] bg-[#faf9f6]/85 p-5 text-center">
               <p className="eyebrow">Empieza con una frase</p>
               <h2 className="mt-3 text-2xl font-bold">No necesitas saber el nombre del documento</h2>
-              <p className="body-muted mt-2">No necesitas saber el nombre exacto. Explica la situación y DocuGen te pedirá los datos importantes.</p>
+              <p className="body-muted mt-2">Explica la situación con tus palabras. El asistente te ayudará a aterrizar datos, partes implicadas y objetivo del documento.</p>
               <div className="mt-5 grid gap-2 text-left sm:grid-cols-3">
                 <AssistantStep number="1" title="Describe" text="Cuenta objetivo, partes y contexto." />
                 <AssistantStep number="2" title="Aclara" text="Responde solo lo que falte." />
@@ -266,7 +267,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
             />
           </label>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">Ctrl+Enter para enviar. Genera el documento cuando el caso esté claro.</p>
+            <p className="text-xs text-slate-500">Ctrl+Enter para enviar. Cuando tengas suficiente contexto, pulsa Generar documento.</p>
             <button
               type="button"
               onClick={sendMessage}
@@ -281,29 +282,24 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
       </section>
 
       <aside className="surface-flat order-1 p-4 xl:sticky xl:top-24 xl:order-2 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
-        <button type="button" onClick={startNewChat} className="focus-ring btn-primary w-full px-4 py-3 text-sm">
-          Nuevo chat
-        </button>
-
-        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Cuándo usarlo</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Usa el asistente si no sabes qué documento elegir o necesitas que DocuGen te haga preguntas antes de redactar.
-          </p>
-          <Link href="/generar?mode=custom" className="focus-ring btn-ghost mt-3 px-0 py-2 text-sm">
-            A medida: una petición directa
+        <div className="flex gap-2">
+          <button type="button" onClick={startNewChat} className="focus-ring btn-primary flex-1 px-4 py-3 text-sm">
+            Nuevo chat
+          </button>
+          <Link href="/generar?mode=custom" className="focus-ring btn-secondary px-4 py-3 text-sm">
+            A medida
           </Link>
         </div>
 
         <div className="mt-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-[#1f2933]">Conversaciones</p>
+            <p className="text-sm font-bold text-[#1f2933]">Chats anteriores</p>
             <span className="badge badge-free">{localSessions.length}</span>
           </div>
 
           {localSessions.length === 0 ? (
             <p className="mt-3 rounded-md border border-dashed border-[#d8f3dc] bg-[#fffdf8]/74 p-3 text-sm text-slate-500">
-              Aún no hay chats guardados.
+              Cuando empieces una conversación, aparecerá aquí.
             </p>
           ) : (
             <div className="mt-3 grid gap-2">
@@ -325,8 +321,9 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
                       disabled={deletingSessionId === session.id}
                       className="focus-ring rounded-md px-2 py-1 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
                       aria-label="Borrar conversación"
+                      title="Borrar conversación"
                     >
-                      {deletingSessionId === session.id ? "..." : "Borrar"}
+                      {deletingSessionId === session.id ? "..." : "×"}
                     </button>
                   </div>
                 </div>
