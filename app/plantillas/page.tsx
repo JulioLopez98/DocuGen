@@ -99,6 +99,20 @@ export default async function TemplatesPage() {
             </p>
           </aside>
         </div>
+        <div className="grid border-t border-[#d8f3dc] bg-[#fffdf8]/70 md:grid-cols-4">
+          {[
+            ["1", "Sube archivos", "Puedes seleccionar uno o varios PDF, DOC o DOCX."],
+            ["2", "Clasifica", "Añade categoría y descripción para encontrarlas después."],
+            ["3", "Procesa", "DocuGen extrae estructura, variables y señales de calidad."],
+            ["4", "Úsalas", "Genera desde la ficha o selecciónalas como referencia en Crear."],
+          ].map(([step, title, text]) => (
+            <div key={step} className="border-t border-[#d8f3dc] p-4 md:border-l md:border-t-0 first:md:border-l-0">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#d8f3dc] text-xs font-bold text-[#2d6a4f]">{step}</span>
+              <p className="mt-3 text-sm font-bold text-[#1f2933]">{title}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">{text}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div id="subir-plantilla" className="mt-6 scroll-mt-24">

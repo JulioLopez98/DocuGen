@@ -330,6 +330,15 @@ export function TemplateLibraryClient({
           guardado como plantilla independiente y después puedes procesarlo.
         </p>
 
+        <div className="mt-5 rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4">
+          <p className="text-sm font-bold text-[#2d6a4f]">Qué ocurre al subirlas</p>
+          <div className="mt-3 grid gap-2 text-xs leading-5 text-slate-600">
+            <p><strong>Varias a la vez:</strong> cada archivo se guarda como plantilla independiente.</p>
+            <p><strong>Categoría:</strong> sirve para filtrar y encontrar plantillas por área o cliente.</p>
+            <p><strong>Uso:</strong> primero procesa la plantilla; después podrás generar desde su ficha o usarla como referencia en Crear.</p>
+          </div>
+        </div>
+
         <form onSubmit={uploadTemplate} className="mt-6 grid gap-4">
           <label className="block">
             <span className="text-sm font-bold">Nombre base opcional</span>
@@ -340,7 +349,7 @@ export function TemplateLibraryClient({
               placeholder="Plantilla contrato servicios"
             />
             <span className="mt-2 block text-xs text-slate-500">
-              Si subes varios archivos, usaremos el nombre del archivo salvo que quieras aplicar un prefijo común.
+              Si subes varios archivos, cada plantilla usará su nombre de archivo. Este texto solo aplica un nombre base si lo necesitas.
             </span>
           </label>
 
@@ -350,7 +359,7 @@ export function TemplateLibraryClient({
               value={category}
               onChange={(event) => setCategory(event.target.value)}
               className="field-control mt-2"
-              placeholder="Legal, Comercial, Laboral..."
+              placeholder="Legal, Comercial, Laboral, Cliente X..."
             />
           </label>
 
@@ -396,7 +405,7 @@ export function TemplateLibraryClient({
               className="field-control mt-2"
             />
             <span className="mt-2 block text-xs text-slate-500">
-              PDF, DOC o DOCX. Máximo 10 MB por archivo. Seleccionados: {files.length}.
+              PDF, DOC o DOCX. Máximo 10 MB por archivo. Puedes seleccionar varios. Seleccionados: {files.length}.
             </span>
           </label>
 
@@ -438,7 +447,7 @@ export function TemplateLibraryClient({
             <h2 className="panel-title mt-3">Tus plantillas</h2>
             <p className="body-muted mt-3">
               {templates.length === 0
-                ? "Aún no has subido plantillas."
+                ? "Aún no has subido plantillas. Cuando subas una, aparecerá aquí con su estado y sus acciones."
                 : `${templates.length} plantillas guardadas. ${readyCount} listas para futuras generaciones con referencia.`}
             </p>
           </div>
