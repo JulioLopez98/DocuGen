@@ -184,7 +184,7 @@ export function GeneratorClient({
 
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
-  const customProLocked = plan === "free";
+  const customModeEyebrow = plan === "free" ? "1 prueba/mes" : "Incluido";
   const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery, selectedIntentId), [documentQuery, selectedIntentId]);
   const selectedIntent = generatorIntents.find((intent) => intent.id === selectedIntentId) || generatorIntents[0];
   const selectedCommunityType = personalCatalogTypes.find((type) => type.id === selectedCommunityId);
@@ -414,9 +414,9 @@ export function GeneratorClient({
             />
             <CreationModeCard
               active={generatorMode === "custom"}
-              eyebrow={customProLocked ? "Pro" : "Incluido"}
+              eyebrow={customModeEyebrow}
               title="A medida"
-              text="Para documentos que no están en la lista."
+              text={plan === "free" ? "Prueba una solicitud libre al mes." : "Para documentos que no están en la lista."}
               onClick={selectCustomMode}
             />
           </div>
@@ -546,32 +546,15 @@ export function GeneratorClient({
             description="Cuando guardes documentos a medida o del asistente como tipos reutilizables, aparecerán aquí."
             variant="flat"
           />
-        ) : generatorMode === "custom" && customProLocked ? (
-          <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
-            <p className="eyebrow">Función Pro</p>
-            <h2 className="font-serif-display mt-3 text-3xl font-bold">Crea documentos que no están en los tipos disponibles</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              El modo a medida permite pedir documentos por escrito, con instrucciones libres, tono específico y contexto propio.
-              Lo reservamos para Pro porque usa prompts más avanzados y tiene mayor coste de generación.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
-                Desbloquear Pro
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setGeneratorMode("catalog");
-                  setSelectedDocumentConfirmed(false);
-                }}
-                className="focus-ring btn-secondary px-5 py-3 text-sm"
-              >
-                Volver a tipos
-              </button>
-            </div>
-          </div>
         ) : generatorMode === "custom" ? (
-          <CustomDocumentForm onSubmit={submitCustom} disabled={loading} />
+          <div className="grid gap-4">
+            {plan === "free" && (
+              <p className="status-note text-sm">
+                Free incluye 1 documento a medida de prueba al mes dentro del límite de 3 documentos mensuales.
+              </p>
+            )}
+            <CustomDocumentForm onSubmit={submitCustom} disabled={loading} />
+          </div>
         ) : proLocked ? (
           <div className="rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-6">
             <p className="eyebrow">Documento Pro</p>

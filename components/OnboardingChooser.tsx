@@ -152,7 +152,7 @@ export function OnboardingChooser({ plan }: OnboardingChooserProps) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm leading-6 text-slate-600">
               {isFree
-                ? "Free te permite probar el flujo con documentos esenciales. Si necesitas Word, plantillas, documentos a medida o tipos avanzados, Pro es el siguiente paso natural."
+                ? "Free te permite probar el flujo con catálogo base y 1 documento a medida al mes. Si necesitas Word, plantillas, asistente o uso recurrente, Pro es el siguiente paso natural."
                 : "Tu plan permite generar documentos ilimitados, usar documentos Pro y trabajar con plantillas o marca personalizada."}
             </p>
             <div className="flex flex-wrap gap-2">

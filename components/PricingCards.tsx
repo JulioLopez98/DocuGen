@@ -49,7 +49,8 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
       description: "Ideal para validar DocuGen, crear borradores puntuales y probar el flujo completo.",
       features: [
         "3 documentos gratis al mes",
-        "Tipos esenciales incluidos",
+        "Mayoría del catálogo base incluida",
+        "1 documento a medida de prueba/mes",
         "Historial básico",
         "Exportación PDF y TXT",
         "Avisos de revisión profesional incluidos",
@@ -70,7 +71,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
         "Exportación Word incluida",
         "Marca personalizada en PDF y Word",
         "Biblioteca de plantillas",
-        "Documentos a medida",
+        "Documentos a medida ilimitados",
         "Gestión de suscripción desde Stripe",
       ],
       action: isPro ? "Plan actual" : loading === "pro" ? "Conectando..." : isEmpresa ? "Incluido en Empresa" : "Actualizar a Pro",
@@ -121,7 +122,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
           <p className="eyebrow">Precios</p>
           <h2 className="panel-title mt-3">Empieza gratis y crece cuando lo necesites</h2>
           <p className="body-muted mt-3">
-            Free sirve para probar el flujo completo. Pro desbloquea uso intensivo, Word, marca y documentos avanzados.
+            Free sirve para probar el flujo completo con catálogo base y 1 documento a medida al mes. Pro desbloquea uso intensivo, Word, marca, asistente y plantillas.
           </p>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
-import { buildCustomDocumentPrompt, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
+import { buildCustomDocumentPrompt, DEFAULT_MODEL, documentInstructions, getOpenAIClient, PREMIUM_MODEL } from "@/lib/openai";
 import { checkActionRateLimit, checkGenerationRateLimit, recordActionRateLimitEvent, recordGenerationEvent } from "@/lib/rate-limit";
 import { sendDocumentReadyEmail } from "@/lib/resend";
 import { requireUser, type Profile } from "@/lib/supabase-server";
@@ -48,10 +48,31 @@ export async function POST(request: Request) {
       return errorResponse(404, "profile_not_found", "No se encontró tu perfil.");
     }
 
-    if (profile.plan === "free") {
-      return errorResponse(403, "pro_required", "Los documentos a medida están disponibles en DocuGen Pro.");
-    }
+    const monthStart = new Date();
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
 
+    if (profile.plan === "free") {
+      if (profile.docs_this_month >= 3) {
+        return errorResponse(403, "limit_reached", "Has alcanzado el limite de 3 documentos gratuitos este mes.");
+      }
+
+      const { count: customDocsThisMonth, error: customCountError } = await supabase
+        .from("documents")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("doc_type", "custom")
+        .gte("created_at", monthStart.toISOString());
+
+      if (customCountError) {
+        console.error("custom_free_count_error", customCountError);
+        return errorResponse(500, "custom_count_failed", "No se pudo comprobar tu prueba gratuita a medida.");
+      }
+
+      if ((customDocsThisMonth || 0) >= 1) {
+        return errorResponse(403, "custom_free_limit_reached", "El plan Free incluye 1 documento a medida de prueba al mes. Actualiza a Pro para generar documentos a medida ilimitados.");
+      }
+    }
     const rateLimit = await checkGenerationRateLimit(supabase, user.id, profile.plan);
 
     if (!rateLimit.allowed) {
@@ -84,7 +105,7 @@ export async function POST(request: Request) {
       return errorResponse(500, "openai_not_configured", "Configura OPENAI_API_KEY para generar documentos.");
     }
 
-    const model = PREMIUM_MODEL;
+    const model = profile.plan === "free" ? DEFAULT_MODEL : PREMIUM_MODEL;
     const response = await openai.responses.create({
       model,
       instructions: documentInstructions,

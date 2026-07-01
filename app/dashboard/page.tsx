@@ -166,7 +166,7 @@ export default async function DashboardPage() {
               <p className="body-muted mt-2 max-w-2xl text-sm">
                 {remaining > 0
                   ? "Crea un borrador real, exporta PDF/TXT y comprueba si el flujo te ahorra tiempo antes de pasar a Pro."
-                  : "Pro desbloquea documentos ilimitados, Word, plantillas, marca y documentos a medida."}
+                  : "Pro desbloquea documentos ilimitados, Word, plantillas, marca, asistente y documentos a medida recurrentes."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -412,7 +412,7 @@ function getOnboardingSteps({
       text: isPaid
         ? "Añade datos corporativos y logo para que tus exportaciones salgan más profesionales."
         : remaining > 0
-          ? "Pro añade Word, documentos a medida, plantillas y generaciones ilimitadas."
+          ? "Pro añade Word, asistente, plantillas, documentos a medida recurrentes y generaciones ilimitadas."
           : "Has agotado Free. Pro desbloquea documentos ilimitados.",
       href: isPaid ? "/ajustes" : "/precios",
       action: isPaid ? "Ir a ajustes" : "Ver planes",

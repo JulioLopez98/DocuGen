@@ -28,7 +28,7 @@ const comparisonRows = [
   { label: "Tipos disponibles", free: "Esenciales", pro: "Catálogo completo", empresa: "Catálogo + equipo" },
   { label: "Exportación", free: "PDF y TXT", pro: "PDF, TXT y Word", empresa: "PDF, TXT y Word" },
   { label: "Marca personalizada", free: "No incluida", pro: "Logo y datos", empresa: "Marca compartida" },
-  { label: "Documentos a medida", free: "No incluido", pro: "Incluido", empresa: "Incluido" },
+  { label: "Documentos a medida", free: "1 prueba/mes", pro: "Ilimitados", empresa: "Ilimitados" },
   { label: "Plantillas propias", free: "No incluido", pro: "Biblioteca personal", empresa: "Biblioteca de equipo" },
   { label: "Equipo y roles", free: "No incluido", pro: "Personal", empresa: "Admin, editor y lectura" },
   { label: "Auditoría y avisos", free: "No incluido", pro: "Personal", empresa: "Actividad de equipo" },
@@ -101,7 +101,7 @@ export default async function PricingPage() {
               Empieza gratis. Pasa a Pro cuando DocuGen ya te esté ahorrando tiempo.
             </h1>
             <p className="body-muted mt-5 max-w-2xl text-base">
-              Free sirve para probar el flujo completo. Pro desbloquea documentos ilimitados, Word, marca, plantillas y
+              Free sirve para probar el flujo completo con catálogo base y 1 documento a medida. Pro desbloquea documentos ilimitados, Word, marca, plantillas y
               generación a medida. Empresa añade colaboración y control para equipos.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -129,7 +129,7 @@ export default async function PricingPage() {
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {[
                   { value: documentTypes.length.toString(), label: "tipos disponibles" },
-                  { value: "3", label: "documentos gratis" },
+                  { value: "3 + 1", label: "docs Free + prueba a medida" },
                   { value: "Word", label: "incluido en Pro" },
                   { value: "0", label: "permanencia" },
                 ].map((stat) => (
@@ -150,7 +150,7 @@ export default async function PricingPage() {
         <div className="mb-5 grid gap-3 md:grid-cols-3">
           {[
             ["Free", "Para probar", "3 documentos al mes y exportación PDF/TXT."],
-            ["Pro", "Para uso frecuente", "Documentos ilimitados, Word, marca, plantillas y a medida."],
+            ["Pro", "Para uso frecuente", "Documentos ilimitados, Word, marca, asistente, plantillas y a medida."],
             ["Empresa", "Para equipos", "Workspace, roles, plantillas compartidas y actividad."],
           ].map(([plan, title, text]) => (
             <div key={plan} className="surface-flat p-4">

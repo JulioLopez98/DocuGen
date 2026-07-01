@@ -90,7 +90,7 @@ function getSteps(plan: Plan, context: Context): Step[] {
     if (plan === "free") {
       return [
         { title: "Prueba el flujo base", text: "Crea documentos con tipos esenciales antes de subir ejemplos propios.", href: "/generar", action: "Crear" },
-        { title: "Evalúa Pro", text: "Plantillas, Word y a medida se desbloquean para uso recurrente.", href: "/precios", action: "Ver Pro" },
+        { title: "Evalúa Pro", text: "Plantillas, Word, asistente y a medida recurrente se desbloquean en Pro.", href: "/precios", action: "Ver Pro" },
         { title: "Prepara archivos", text: "Ten a mano DOCX/PDF limpios con buenos ejemplos de tu empresa.", href: "/catalogo", action: "Ver tipos" },
       ];
     }

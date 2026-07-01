@@ -51,7 +51,22 @@ export type DocumentType =
   | "reconocimiento-deuda"
   | "recibo-pago"
   | "informe-incidencia"
-  | "encargo-tratamiento-datos";
+  | "encargo-tratamiento-datos"
+  | "solicitud-aplazamiento-pago"
+  | "recordatorio-pago-amistoso"
+  | "carta-cese-servicios"
+  | "email-seguimiento-presupuesto"
+  | "propuesta-colaboracion-comercial"
+  | "carta-agradecimiento-entrevista"
+  | "certificado-experiencia-laboral"
+  | "solicitud-vacaciones"
+  | "brief-creativo"
+  | "informe-entrega-proyecto"
+  | "checklist-entrega-cliente"
+  | "comunicacion-cambio-condiciones"
+  | "contrato-prestamo-particulares"
+  | "contrato-alquiler-vivienda"
+  | "carta-despido-disciplinario";
 
 export type FieldType = "text" | "email" | "number" | "date" | "textarea";
 export type PlanRequirement = "free" | "pro";
@@ -1157,14 +1172,318 @@ export const documentTypes = [
       { name: "destino_final", label: "Destino de los datos al finalizar" },
     ],
   },
+  {
+    type: "solicitud-aplazamiento-pago",
+    label: "Solicitud de aplazamiento de pago",
+    seoTitle: "Generador de solicitud de aplazamiento de pago",
+    seoDescription: "Redacta una solicitud formal para pedir aplazamiento o fraccionamiento de un pago.",
+    summary: "Carta o email para solicitar nuevo plazo, calendario de pago y motivos.",
+    category: "Profesional",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como solicitud formal y prudente de aplazamiento de pago. Incluye solicitante, destinatario, deuda o factura, motivo, propuesta de nuevo calendario, voluntad de pago, datos de contacto y cierre cordial. Evita prometer condiciones no aportadas.",
+    fields: [
+      { name: "solicitante", label: "Solicitante" },
+      { name: "destinatario", label: "Destinatario" },
+      { name: "importe", label: "Importe o deuda" },
+      { name: "referencia", label: "Factura o referencia" },
+      { name: "motivo", label: "Motivo de la solicitud", type: "textarea" },
+      { name: "propuesta_pago", label: "Propuesta de pago", type: "textarea" },
+      { name: "contacto", label: "Contacto" },
+    ],
+  },
+  {
+    type: "recordatorio-pago-amistoso",
+    label: "Recordatorio de pago amistoso",
+    seoTitle: "Generador de recordatorio de pago amistoso",
+    seoDescription: "Prepara un email cordial para recordar una factura o pago pendiente.",
+    summary: "Mensaje breve para recordar un pago pendiente sin tono agresivo.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como email cordial de recordatorio de pago. Incluye saludo, referencia, importe, fecha de vencimiento, enlace o medio de pago si se aporta y cierre amable. No lo conviertas en requerimiento legal.",
+    fields: [
+      { name: "emisor", label: "Emisor" },
+      { name: "destinatario", label: "Destinatario" },
+      { name: "importe", label: "Importe pendiente" },
+      { name: "referencia", label: "Factura o referencia" },
+      { name: "fecha_vencimiento", label: "Fecha de vencimiento", type: "date" },
+      { name: "medio_pago", label: "Medio de pago" },
+      { name: "mensaje", label: "Mensaje adicional", type: "textarea" },
+    ],
+  },
+  {
+    type: "carta-cese-servicios",
+    label: "Carta de cese de servicios",
+    seoTitle: "Generador de carta de cese de servicios",
+    seoDescription: "Redacta una comunicacion profesional para finalizar una relacion de servicios.",
+    summary: "Carta para comunicar fin de servicios, fecha efectiva y pasos de cierre.",
+    category: "Profesional",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como comunicacion profesional de cese o finalizacion de servicios. Incluye remitente, destinatario, servicio, fecha efectiva, motivo si se aporta, entregables pendientes, pagos o cierre administrativo y despedida cordial. Evita tono conflictivo.",
+    fields: [
+      { name: "remitente", label: "Remitente" },
+      { name: "destinatario", label: "Destinatario" },
+      { name: "servicio", label: "Servicio afectado", type: "textarea" },
+      { name: "fecha_efectiva", label: "Fecha efectiva", type: "date" },
+      { name: "motivo", label: "Motivo", type: "textarea" },
+      { name: "pendientes", label: "Puntos pendientes o cierre", type: "textarea" },
+    ],
+  },
+  {
+    type: "email-seguimiento-presupuesto",
+    label: "Seguimiento de presupuesto",
+    seoTitle: "Generador de email de seguimiento de presupuesto",
+    seoDescription: "Crea un email profesional para hacer seguimiento de una propuesta o presupuesto enviado.",
+    summary: "Email comercial breve para reactivar una propuesta enviada.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como email de seguimiento comercial natural. Incluye referencia al presupuesto, valor principal, disponibilidad para resolver dudas, proximo paso sugerido y cierre amable. No presiones en exceso.",
+    fields: [
+      { name: "remitente", label: "Remitente" },
+      { name: "cliente", label: "Cliente" },
+      { name: "referencia_presupuesto", label: "Referencia del presupuesto" },
+      { name: "servicio", label: "Servicio o propuesta", type: "textarea" },
+      { name: "fecha_envio", label: "Fecha de envio", type: "date" },
+      { name: "proximo_paso", label: "Proximo paso sugerido" },
+    ],
+  },
+  {
+    type: "propuesta-colaboracion-comercial",
+    label: "Propuesta de colaboracion comercial",
+    seoTitle: "Generador de propuesta de colaboracion comercial",
+    seoDescription: "Redacta una propuesta para plantear una colaboracion entre empresas o profesionales.",
+    summary: "Propuesta clara para presentar sinergias, beneficios, alcance y siguientes pasos.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como propuesta comercial de colaboracion, no como contrato. Incluye contexto, oportunidad, beneficios para ambas partes, formato de colaboracion, responsabilidades preliminares, proximo paso y cierre profesional.",
+    fields: [
+      { name: "proponente", label: "Proponente" },
+      { name: "destinatario", label: "Destinatario" },
+      { name: "objetivo", label: "Objetivo de la colaboracion", type: "textarea" },
+      { name: "beneficios", label: "Beneficios esperados", type: "textarea" },
+      { name: "formato", label: "Formato de colaboracion", type: "textarea" },
+      { name: "siguiente_paso", label: "Siguiente paso" },
+    ],
+  },
+  {
+    type: "carta-agradecimiento-entrevista",
+    label: "Agradecimiento tras entrevista",
+    seoTitle: "Generador de carta de agradecimiento tras entrevista",
+    seoDescription: "Prepara un email de agradecimiento profesional despues de una entrevista de trabajo.",
+    summary: "Email breve para reforzar interes, encaje y disponibilidad tras una entrevista.",
+    category: "Profesional",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como email natural de agradecimiento tras entrevista. Incluye agradecimiento, referencia al puesto, punto de interes de la conversacion, refuerzo de encaje, disponibilidad y cierre sencillo. No uses formato legal.",
+    fields: [
+      { name: "candidato", label: "Candidato" },
+      { name: "email", label: "Email", type: "email" },
+      { name: "empresa", label: "Empresa" },
+      { name: "puesto", label: "Puesto" },
+      { name: "entrevistador", label: "Entrevistador" },
+      { name: "detalle_conversacion", label: "Detalle a mencionar", type: "textarea" },
+    ],
+  },
+  {
+    type: "certificado-experiencia-laboral",
+    label: "Certificado de experiencia laboral",
+    seoTitle: "Generador de certificado de experiencia laboral",
+    seoDescription: "Crea un certificado para acreditar puesto, funciones y periodo trabajado.",
+    summary: "Certificado profesional con empresa, trabajador, puesto, funciones y fechas.",
+    category: "Laboral",
+    includesSignatures: true,
+    generationGuidance:
+      "Redacta como certificado de experiencia laboral. Incluye empresa emisora, trabajador, puesto, periodo, funciones principales, valoracion si se aporta, fecha y firma. No inventes valoraciones ni responsabilidades.",
+    fields: [
+      { name: "empresa", label: "Empresa emisora" },
+      { name: "cif_empresa", label: "CIF de la empresa" },
+      { name: "trabajador", label: "Trabajador" },
+      { name: "nif_trabajador", label: "NIF del trabajador" },
+      { name: "puesto", label: "Puesto" },
+      { name: "periodo", label: "Periodo trabajado" },
+      { name: "funciones", label: "Funciones", type: "textarea" },
+      { name: "firmante", label: "Persona firmante" },
+    ],
+  },
+  {
+    type: "solicitud-vacaciones",
+    label: "Solicitud de vacaciones",
+    seoTitle: "Generador de solicitud de vacaciones",
+    seoDescription: "Redacta una solicitud de vacaciones clara y profesional para empresa o RRHH.",
+    summary: "Solicitud breve con fechas, trabajador, equipo y observaciones.",
+    category: "Laboral",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como email o carta breve de solicitud de vacaciones. Incluye trabajador, empresa o responsable, fechas solicitadas, dias, motivo opcional, disponibilidad para coordinar y cierre profesional. No uses clausulas legales.",
+    fields: [
+      { name: "trabajador", label: "Trabajador" },
+      { name: "responsable", label: "Responsable o RRHH" },
+      { name: "empresa", label: "Empresa" },
+      { name: "fecha_inicio", label: "Fecha de inicio", type: "date" },
+      { name: "fecha_fin", label: "Fecha de fin", type: "date" },
+      { name: "observaciones", label: "Observaciones", type: "textarea" },
+    ],
+  },
+  {
+    type: "brief-creativo",
+    label: "Brief creativo",
+    seoTitle: "Generador de brief creativo",
+    seoDescription: "Prepara un brief para proyecto de marca, campana, web o contenido.",
+    summary: "Documento guia con objetivo, publico, tono, entregables y referencias.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como brief creativo claro y accionable. Incluye contexto, objetivo, publico, mensaje clave, tono, entregables, referencias, restricciones, plazos y criterios de exito. No lo conviertas en contrato.",
+    fields: [
+      { name: "proyecto", label: "Proyecto" },
+      { name: "cliente", label: "Cliente" },
+      { name: "objetivo", label: "Objetivo", type: "textarea" },
+      { name: "publico", label: "Publico objetivo", type: "textarea" },
+      { name: "tono", label: "Tono y estilo" },
+      { name: "entregables", label: "Entregables", type: "textarea" },
+      { name: "referencias", label: "Referencias", type: "textarea" },
+      { name: "plazo", label: "Plazo" },
+    ],
+  },
+  {
+    type: "informe-entrega-proyecto",
+    label: "Informe de entrega de proyecto",
+    seoTitle: "Generador de informe de entrega de proyecto",
+    seoDescription: "Crea un informe de cierre o entrega de proyecto para cliente o equipo.",
+    summary: "Informe con entregables, alcance completado, incidencias, pendientes y siguientes pasos.",
+    category: "Empresa",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como informe profesional de entrega de proyecto. Incluye resumen ejecutivo, alcance completado, entregables, enlaces o anexos como pendientes si faltan, incidencias, puntos abiertos, recomendaciones y siguientes pasos.",
+    fields: [
+      { name: "proyecto", label: "Proyecto" },
+      { name: "cliente", label: "Cliente" },
+      { name: "responsable", label: "Responsable" },
+      { name: "entregables", label: "Entregables", type: "textarea" },
+      { name: "trabajo_realizado", label: "Trabajo realizado", type: "textarea" },
+      { name: "pendientes", label: "Pendientes", type: "textarea" },
+      { name: "siguientes_pasos", label: "Siguientes pasos", type: "textarea" },
+    ],
+  },
+  {
+    type: "checklist-entrega-cliente",
+    label: "Checklist de entrega a cliente",
+    seoTitle: "Generador de checklist de entrega a cliente",
+    seoDescription: "Prepara una lista profesional para entregar proyectos, accesos o materiales a cliente.",
+    summary: "Checklist operativo para validar entregables, accesos, archivos y aprobaciones.",
+    category: "Empresa",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como checklist operativo de entrega a cliente. Organiza por bloques: entregables, accesos, documentacion, validaciones, pendientes y aprobacion. Usa casillas o listados claros. No uses lenguaje contractual.",
+    fields: [
+      { name: "proyecto", label: "Proyecto" },
+      { name: "cliente", label: "Cliente" },
+      { name: "entregables", label: "Entregables", type: "textarea" },
+      { name: "accesos", label: "Accesos o credenciales", type: "textarea" },
+      { name: "documentacion", label: "Documentacion", type: "textarea" },
+      { name: "pendientes", label: "Pendientes", type: "textarea" },
+    ],
+  },
+  {
+    type: "comunicacion-cambio-condiciones",
+    label: "Comunicacion de cambio de condiciones",
+    seoTitle: "Generador de comunicacion de cambio de condiciones",
+    seoDescription: "Redacta una comunicacion profesional para informar de cambios de condiciones a clientes.",
+    summary: "Email o carta para explicar cambios de precio, servicio, plazos o condiciones.",
+    category: "Comercial",
+    includesSignatures: false,
+    generationGuidance:
+      "Redacta como comunicacion profesional de cambio de condiciones. Incluye contexto, cambio concreto, fecha de efecto, motivo, impacto para el cliente, opciones o contacto y cierre empatico. Evita imponer sin explicar.",
+    fields: [
+      { name: "empresa", label: "Empresa" },
+      { name: "cliente", label: "Cliente o segmento" },
+      { name: "condicion_actual", label: "Condicion actual", type: "textarea" },
+      { name: "nuevo_cambio", label: "Nuevo cambio", type: "textarea" },
+      { name: "fecha_efecto", label: "Fecha de efecto", type: "date" },
+      { name: "motivo", label: "Motivo", type: "textarea" },
+      { name: "contacto", label: "Contacto" },
+    ],
+  },
+  {
+    type: "contrato-prestamo-particulares",
+    label: "Prestamo entre particulares",
+    seoTitle: "Generador de contrato de prestamo entre particulares",
+    seoDescription: "Crea un borrador de prestamo entre particulares con importe, plazo e intereses.",
+    summary: "Borrador para documentar un prestamo privado, calendario de devolucion y firmas.",
+    category: "Legal",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de prestamo entre particulares en Espana. Incluye prestamista, prestatario, importe, entrega del dinero, plazo, calendario, intereses si se aportan, amortizacion anticipada, impago, jurisdiccion y firmas. Incluye aviso de revision fiscal/legal y no inventes intereses.",
+    fields: [
+      { name: "prestamista", label: "Prestamista" },
+      { name: "nif_prestamista", label: "NIF prestamista" },
+      { name: "prestatario", label: "Prestatario" },
+      { name: "nif_prestatario", label: "NIF prestatario" },
+      { name: "importe", label: "Importe del prestamo" },
+      { name: "fecha_entrega", label: "Fecha de entrega", type: "date" },
+      { name: "calendario_devolucion", label: "Calendario de devolucion", type: "textarea" },
+      { name: "intereses", label: "Intereses" },
+      { name: "jurisdiccion", label: "Jurisdiccion" },
+    ],
+  },
+  {
+    type: "contrato-alquiler-vivienda",
+    label: "Alquiler de vivienda",
+    seoTitle: "Generador de contrato de alquiler de vivienda",
+    seoDescription: "Prepara un borrador de arrendamiento de vivienda con renta, fianza y duracion.",
+    summary: "Borrador de alquiler de vivienda con partes, inmueble, renta, fianza y uso.",
+    category: "Inmobiliario",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como contrato de arrendamiento de vivienda en Espana con prudencia. Incluye arrendador, arrendatario, vivienda, destino, renta, fianza, duracion, gastos, conservacion, suministros, prohibiciones si se indican, resolucion, jurisdiccion y firmas. Indica que debe revisarse por profesional.",
+    fields: [
+      { name: "arrendador", label: "Arrendador" },
+      { name: "nif_arrendador", label: "NIF/CIF arrendador" },
+      { name: "arrendatario", label: "Arrendatario" },
+      { name: "nif_arrendatario", label: "NIF/CIF arrendatario" },
+      { name: "direccion_vivienda", label: "Direccion de la vivienda" },
+      { name: "renta", label: "Renta mensual" },
+      { name: "fianza", label: "Fianza" },
+      { name: "duracion", label: "Duracion" },
+      { name: "gastos", label: "Gastos y suministros", type: "textarea" },
+    ],
+  },
+  {
+    type: "carta-despido-disciplinario",
+    label: "Carta de despido disciplinario",
+    seoTitle: "Generador de carta de despido disciplinario",
+    seoDescription: "Prepara un borrador prudente de carta de despido disciplinario para revision profesional.",
+    summary: "Borrador laboral sensible con hechos, fecha de efectos y advertencia de revision.",
+    category: "Laboral",
+    includesSignatures: true,
+    requiredPlan: "pro",
+    generationGuidance:
+      "Redacta como borrador prudente de carta de despido disciplinario para Espana. Incluye empresa, trabajador, hechos concretos, fechas, incumplimientos descritos por el usuario, fecha de efectos, liquidacion o finiquito como pendiente si falta, entrega y firma. No inventes causas ni garantices validez; insiste en revision laboral profesional.",
+    fields: [
+      { name: "empresa", label: "Empresa" },
+      { name: "cif_empresa", label: "CIF de la empresa" },
+      { name: "trabajador", label: "Trabajador" },
+      { name: "nif_trabajador", label: "NIF del trabajador" },
+      { name: "puesto", label: "Puesto" },
+      { name: "hechos", label: "Hechos que motivan la carta", type: "textarea" },
+      { name: "fecha_efectos", label: "Fecha de efectos", type: "date" },
+      { name: "firmante", label: "Persona firmante" },
+    ],
+  },
 ] as const satisfies readonly DocumentTypeConfig[];
 
 export const futureDocumentTypes = [
-  "Carta de despido disciplinario",
-  "Contrato de préstamo entre particulares",
-  "Política interna de uso de dispositivos",
+  "Politica interna de uso de dispositivos",
   "Protocolo de onboarding de empleado",
-  "Solicitud de aplazamiento de pago",
+  "Comunicado interno de nueva politica",
+  "Plan de acogida de cliente",
+  "Informe de seguimiento mensual",
 ];
 
 export const documentTypeValues = documentTypes.map((item) => item.type) as [DocumentType, ...DocumentType[]];
