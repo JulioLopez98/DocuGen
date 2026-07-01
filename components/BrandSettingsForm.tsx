@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import type { BrandSettings } from "@/lib/supabase-server";
@@ -116,13 +115,10 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           <p className="eyebrow">Marca Pro</p>
           <h2 className="panel-title mt-3">Identidad de marca</h2>
           <p className="body-muted mt-3 max-w-2xl">
-            Estos datos se usarán en exportaciones Word y PDF, y quedan listos para plantillas avanzadas.
+            Estos datos aparecerán en exportaciones PDF y Word cuando el formato lo permita. Úsalos para que los documentos salgan con presencia de empresa.
           </p>
           {!hasBrandData && (
-            <p className="status-note mt-4">
-              Aún no tienes marca configurada. Completa al menos el nombre de empresa o sube un logo para que aparezca en
-              tus exportaciones.
-            </p>
+            <p className="status-note mt-4">Aún no tienes marca configurada. Completa al menos el nombre de empresa o sube un logo para que empiece a aparecer en tus exportaciones.</p>
           )}
         </div>
         <span className="badge badge-pro">
@@ -165,7 +161,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
           <div>
             <h3 className="font-semibold">Logo de marca</h3>
             <p className="body-muted mt-1">
-              Sube un PNG, JPG, WebP o SVG. También puedes pegar una URL si ya tienes el logo alojado.
+              Sube un PNG, JPG, WebP o SVG, o pega una URL pública si ya lo tienes alojado.
             </p>
           </div>
           <label className="focus-ring btn-secondary cursor-pointer px-4 py-2 text-sm">
@@ -215,7 +211,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
                 </button>
               )}
               <p className="text-xs leading-5 text-slate-500">
-                En Word y PDF se añadirá como referencia visual de marca cuando el formato lo permita.
+                Se añadirá en Word y PDF como referencia visual de marca cuando el formato lo permita.
               </p>
             </div>
           </div>
@@ -226,9 +222,7 @@ export function BrandSettingsForm({ initialSettings, userId, isPro }: BrandSetti
         <button type="submit" disabled={saving || uploading} className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60">
           {saving ? "Guardando..." : uploading ? "Subiendo logo..." : "Guardar marca"}
         </button>
-        <Link href="/dashboard" className="btn-ghost px-4 py-3 text-sm">
-          Volver al panel
-        </Link>
+
       </div>
       {message && <p className="status-success mt-4">{message}</p>}
       {error && <p className="status-error mt-4">{error}</p>}

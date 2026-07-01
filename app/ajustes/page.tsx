@@ -42,10 +42,7 @@ export default async function SettingsPage() {
           <div>
             <p className="eyebrow">Ajustes</p>
             <h1 className="section-title mt-3 max-w-4xl">Administra tu cuenta profesional</h1>
-            <p className="body-muted mt-4 max-w-3xl">
-              Controla plan, uso, exportaciones, identidad de marca y datos guardados desde una zona pensada para dejar
-              DocuGen listo para trabajar.
-            </p>
+            <p className="body-muted mt-4 max-w-3xl">Gestiona tu cuenta, facturación, marca y datos guardados desde un único sitio. Aquí decides cómo se ve DocuGen por fuera y cómo se comporta por dentro.</p>
           </div>
           <div className="surface-muted p-5">
             <div className="flex items-center justify-between gap-3">
@@ -59,12 +56,20 @@ export default async function SettingsPage() {
             </p>
           </div>
         </div>
-      </div>
-
-      <div className="mb-6 flex flex-wrap justify-end gap-3">
-        <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
-          Volver al panel
-        </Link>
+        <div className="grid border-t border-[#d8f3dc] bg-[#fffdf8]/70 md:grid-cols-4">
+          {[
+            ["1", "Cuenta", "Revisa email, plan actual y uso mensual."],
+            ["2", "Suscripción", "Cambia de plan o cancela desde Stripe con claridad."],
+            ["3", "Marca", "Añade logo y datos para PDF y Word."],
+            ["4", "Datos", "Consulta o limpia documentos guardados."],
+          ].map(([step, title, text]) => (
+            <div key={step} className="border-t border-[#d8f3dc] p-4 md:border-l md:border-t-0 first:md:border-l-0">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#d8f3dc] text-xs font-bold text-[#2d6a4f]">{step}</span>
+              <p className="mt-3 text-sm font-bold text-[#1f2933]">{title}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">{text}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <SettingsTabs
@@ -72,22 +77,22 @@ export default async function SettingsPage() {
           {
             id: "cuenta",
             label: "Cuenta",
-            description: "Email, plan y uso mensual",
+            description: "Identidad y consumo",
             content: (
               <section className="surface p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="eyebrow">Cuenta</p>
-                    <h2 className="panel-title mt-3">Tu cuenta</h2>
+                    <h2 className="panel-title mt-3">Resumen de cuenta</h2>
                     <p className="body-muted mt-2">{user.email}</p>
                   </div>
                   <PlanBadge plan={profile.plan} />
                 </div>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  <AccountFact label="Plan" value={profile.plan} />
+                  <AccountFact label="Plan actual" value={profile.plan} />
                   <AccountFact label="Documentos este mes" value={profile.docs_this_month.toString()} />
-                  <AccountFact label="Documentos" value={`${documentCount || 0}`} />
+                  <AccountFact label="Guardados" value={`${documentCount || 0}`} />
                 </div>
 
                 <div className="mt-6">
@@ -102,14 +107,14 @@ export default async function SettingsPage() {
           {
             id: "suscripcion",
             label: "Suscripción",
-            description: "Stripe y formatos",
+            description: "Pagos y exportación",
             content: (
               <div className="grid gap-4">
                 <section className="surface p-6">
                   <p className="eyebrow">Suscripción</p>
                   <h2 className="panel-title mt-3">Plan y facturación</h2>
                   <p className="body-muted mt-3">
-                    Actualiza a Pro o gestiona tu suscripción desde el portal seguro de Stripe.
+                    Cambia de plan o cancela desde el portal seguro de Stripe. Si cancelas, mantienes el acceso hasta el final del periodo ya pagado.
                   </p>
                   <div className="mt-6">
                     <SubscriptionActions
@@ -130,7 +135,7 @@ export default async function SettingsPage() {
 
                 <section className="surface p-6">
                   <p className="eyebrow">Exportaciones</p>
-                  <h2 className="panel-title mt-3">Formatos disponibles</h2>
+                  <h2 className="panel-title mt-3">Formatos de exportación</h2>
                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
                     <ExportFormat title="PDF" status="Incluido" active />
                     <ExportFormat title="TXT" status="Incluido" active />
@@ -143,13 +148,13 @@ export default async function SettingsPage() {
           {
             id: "marca",
             label: "Marca",
-            description: hasBrand ? "Identidad configurada" : "Logo y datos Pro",
+            description: hasBrand ? "Logo y datos activos" : "Logo y datos Pro",
             content: <BrandSettingsForm initialSettings={brandSettings || null} userId={user.id} isPro={isPro} />,
           },
           {
             id: "datos",
             label: "Datos",
-            description: "Documentos y limpieza",
+            description: "Historial y borrado",
             content: (
               <div className="grid gap-4">
                 <section className="surface p-6">
@@ -158,8 +163,7 @@ export default async function SettingsPage() {
                   {documentCount ? (
                     <>
                       <p className="body-muted mt-3">
-                        Tienes <strong>{documentCount}</strong> documentos guardados. Puedes consultarlos,
-                        descargarlos o reutilizarlos como plantilla.
+                        Tienes <strong>{documentCount}</strong> documentos guardados. Puedes abrirlos, descargarlos, editarlos o convertirlos en formatos de Mi catálogo cuando te sirvan para repetir trabajo.
                       </p>
                       <Link href="/historial" className="focus-ring btn-secondary mt-6 px-4 py-3 text-sm">
                         Abrir documentos
