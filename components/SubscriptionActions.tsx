@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type SubscriptionActionsProps = {
@@ -136,6 +137,11 @@ export function SubscriptionActions({
             {loading === "/api/create-checkout:empresa" ? "Conectando..." : "Actualizar a Empresa"}
           </button>
         )}
+        {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
+          <Link href="/precios" className="focus-ring btn-primary px-4 py-2 text-sm">
+            Cambiar plan
+          </Link>
+        )}
         {isPaid && hasCustomer && hasManagedSubscription && !cancelAtPeriodEnd && (
           <button
             type="button"
@@ -143,7 +149,7 @@ export function SubscriptionActions({
             disabled={loading !== null}
             className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
           >
-            {loading === "/api/create-portal" ? "Abriendo..." : "Cambiar plan o tarjeta"}
+            {loading === "/api/create-portal" ? "Abriendo..." : "Tarjeta y facturas"}
           </button>
         )}
         {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
@@ -179,7 +185,7 @@ export function SubscriptionActions({
       </div>
       {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
         <p className="text-xs leading-5 text-slate-500">
-          Puedes cambiar de plan o cancelar cuando quieras. Para cambiar entre Pro y Empresa, usa Cambiar plan o tarjeta. Si cancelas, mantendras {getPlanLabel(plan)} hasta
+          Puedes cambiar de plan desde Precios y gestionar tarjeta o facturas desde Stripe. Si cancelas, mantendras {getPlanLabel(plan)} hasta
           {periodEndLabel ? ` el ${periodEndLabel}` : " que termine el periodo ya pagado"}; despues DocuGen pasara a Free
           automaticamente. No se devuelve el importe del mes ya pagado.
         </p>

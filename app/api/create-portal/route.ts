@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { getErrorMessage, recordApiErrorEvent } from "@/lib/api-error-monitor";
 import { getStripe } from "@/lib/stripe";
 import { requireUser, type Profile } from "@/lib/supabase-server";
@@ -47,10 +48,17 @@ export async function POST() {
       );
     }
 
-    const session = await stripe.billingPortal.sessions.create({
+    const portalParams: Stripe.BillingPortal.SessionCreateParams = {
       customer: profile.stripe_customer_id,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard`,
-    });
+    };
+    const portalConfigurationId = process.env.STRIPE_PORTAL_CONFIGURATION_ID;
+
+    if (portalConfigurationId) {
+      portalParams.configuration = portalConfigurationId;
+    }
+
+    const session = await stripe.billingPortal.sessions.create(portalParams);
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
