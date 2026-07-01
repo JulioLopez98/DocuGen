@@ -574,6 +574,7 @@ function TemplateCard({
   onProcessTemplate: (template: DocumentTemplateRow) => void;
   onDeleteTemplate: (template: DocumentTemplateRow) => void;
 }) {
+  const [toolsOpen, setToolsOpen] = useState(false);
   const analysis = getTemplateCardAnalysis(template.extracted_metadata);
   const qaReport = getTemplateQaReport(template);
   const isWorking = workingId === template.id;
@@ -596,39 +597,28 @@ function TemplateCard({
           </p>
 
           {(template.category || template.description) && (
-            <p className="body-muted mt-3">
+            <p className="body-muted mt-3 line-clamp-2">
               {template.category && <strong>{template.category}: </strong>}
               {template.description || "Sin descripción."}
             </p>
           )}
 
-          {template.summary && <p className="status-note mt-3">{template.summary}</p>}
+          {template.summary && <p className="status-note mt-3 line-clamp-3">{template.summary}</p>}
 
-          {analysis && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{analysis.sections} secciones</span>
-              <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{analysis.variables} variables</span>
-              <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">Calidad {analysis.qualityScore}/100</span>
-            </div>
-          )}
-
-          <p className="status-note mt-3 text-xs">{qaReport.summary}</p>
-
-          <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
-            <span className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 px-3 py-2">Usos: {metrics.totalUses}</span>
-            <span className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 px-3 py-2">
-              Último uso: {formatDateOrNever(metrics.lastUsedAt)}
-            </span>
-            <span className="rounded-md border border-[#d8f3dc] bg-[#fffdf8]/76 px-3 py-2">
-              Modo: {formatUsageMode(metrics.mostUsedMode)}
-            </span>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+            {analysis && <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{analysis.sections} secciones</span>}
+            {analysis && <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{analysis.variables} variables</span>}
+            <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">{metrics.totalUses} usos</span>
+            <span className="badge bg-[#fffdf8]/82 text-[#2d6a4f]">Último: {formatDateOrNever(metrics.lastUsedAt)}</span>
           </div>
+
+          <p className="mt-3 text-xs leading-5 text-slate-500">{qaReport.summary}</p>
         </div>
 
         <div className="flex flex-wrap gap-2 xl:max-w-48 xl:flex-col xl:items-stretch">
           {template.status === "ready" && (
             <Link href={`/plantillas/${template.id}/generar`} className="focus-ring btn-primary px-3 py-2 text-xs">
-              Generar con esta
+              Generar
             </Link>
           )}
           <Link href={`/plantillas/${template.id}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
@@ -636,42 +626,63 @@ function TemplateCard({
           </Link>
           <button
             type="button"
-            onClick={() => onToggleFavorite(template)}
-            disabled={isWorking}
-            className={`focus-ring rounded-xl border px-3 py-2 text-xs font-semibold transition disabled:opacity-60 ${
-              template.is_favorite
-                ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
-                : "border-[#d8f3dc] bg-[#fffdf8]/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
-            }`}
+            onClick={() => setToolsOpen((current) => !current)}
+            className="focus-ring btn-ghost px-3 py-2 text-xs"
           >
-            {template.is_favorite ? "Quitar destaque" : "Destacar"}
-          </button>
-          <button
-            type="button"
-            onClick={() => onDownloadOriginal(template)}
-            disabled={isWorking}
-            className="focus-ring btn-ghost px-3 py-2 text-xs disabled:opacity-60"
-          >
-            Descargar original
-          </button>
-          <button
-            type="button"
-            onClick={() => onProcessTemplate(template)}
-            disabled={isWorking}
-            className="focus-ring btn-ghost px-3 py-2 text-xs disabled:opacity-60"
-          >
-            {isWorking ? "Procesando..." : template.status === "ready" ? "Reprocesar" : "Procesar"}
-          </button>
-          <button
-            type="button"
-            onClick={() => onDeleteTemplate(template)}
-            disabled={isWorking}
-            className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
-          >
-            Borrar
+            {toolsOpen ? "Ocultar" : "Gestionar"}
           </button>
         </div>
       </div>
+
+      {toolsOpen && (
+        <div className="mt-4 rounded-md border border-[#d8f3dc] bg-white/75 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Mantenimiento</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">Acciones sobre el archivo de referencia. No borran documentos ya generados.</p>
+            </div>
+            <span className="text-xs text-slate-500">Modo más usado: {formatUsageMode(metrics.mostUsedMode)}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onToggleFavorite(template)}
+              disabled={isWorking}
+              className={`focus-ring rounded-xl border px-3 py-2 text-xs font-semibold transition disabled:opacity-60 ${
+                template.is_favorite
+                  ? "border-[#2d6a4f] bg-[#d8f3dc] text-[#1f2933]"
+                  : "border-[#d8f3dc] bg-[#fffdf8]/72 text-[#2d6a4f] hover:border-[#2d6a4f]"
+              }`}
+            >
+              {template.is_favorite ? "Quitar destacada" : "Destacar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => onDownloadOriginal(template)}
+              disabled={isWorking}
+              className="focus-ring btn-ghost px-3 py-2 text-xs disabled:opacity-60"
+            >
+              Descargar original
+            </button>
+            <button
+              type="button"
+              onClick={() => onProcessTemplate(template)}
+              disabled={isWorking}
+              className="focus-ring btn-ghost px-3 py-2 text-xs disabled:opacity-60"
+            >
+              {isWorking ? "Procesando..." : template.status === "ready" ? "Reprocesar" : "Procesar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => onDeleteTemplate(template)}
+              disabled={isWorking}
+              className="focus-ring rounded-xl border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+            >
+              Borrar
+            </button>
+          </div>
+        </div>
+      )}
     </article>
   );
 }

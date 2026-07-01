@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -40,6 +40,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId);
   const [messages, setMessages] = useState<ChatMessageRow[]>(initialMessages);
   const [localSessions, setLocalSessions] = useState<ChatSessionRow[]>(sessions);
+  const [localSessionTitles, setLocalSessionTitles] = useState<Record<string, string>>(sessionTitles);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -47,7 +48,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   const [generatedDocument, setGeneratedDocument] = useState<GeneratedAssistantDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
   const canGenerate = Boolean(sessionId && messages.length > 0 && !loading && !generating);
-  const currentSessionTitle = sessionId ? formatSessionTitle(sessionTitles[sessionId]) : "Nuevo documento";
+  const currentSessionTitle = sessionId ? formatSessionTitle(localSessionTitles[sessionId]) : "Nuevo documento";
 
   function startNewChat() {
     setSessionId(null);
@@ -124,14 +125,30 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         return;
       }
 
-      setSessionId(payload.sessionId);
+      const nextSessionId = payload.sessionId;
+      const createdAt = new Date().toISOString();
+
+      setSessionId(nextSessionId);
       setMessages((current) => [
-        ...current.map((item) => (item.id === optimisticMessage.id ? { ...item, session_id: payload.sessionId! } : item)),
+        ...current.map((item) => (item.id === optimisticMessage.id ? { ...item, session_id: nextSessionId } : item)),
         payload.message!,
       ]);
+      setLocalSessionTitles((current) => ({ ...current, [nextSessionId]: cleanMessage }));
+      setLocalSessions((current) => {
+        const nextSession: ChatSessionRow = {
+          id: nextSessionId,
+          user_id: "local",
+          doc_type: null,
+          status: "active",
+          created_at: createdAt,
+          updated_at: createdAt,
+        };
+        const withoutCurrent = current.filter((item) => item.id !== nextSessionId);
+        return [nextSession, ...withoutCurrent];
+      });
 
       if (!sessionId) {
-        router.replace(`/asistente?sessionId=${payload.sessionId}`);
+        router.replace(`/asistente?sessionId=${nextSessionId}`);
       }
 
       router.refresh();
@@ -180,7 +197,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   }
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
       <section className="surface order-2 overflow-hidden p-0 xl:order-1">
         <div className="border-b border-[#d8f3dc] bg-[#fffdf8]/74 px-5 py-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -281,7 +298,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         </div>
       </section>
 
-      <aside className="surface-flat order-1 p-4 xl:sticky xl:top-24 xl:order-2 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+      <aside className="surface-flat order-1 overflow-hidden p-5 xl:sticky xl:top-24 xl:order-2 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
         <div className="flex gap-2">
           <button type="button" onClick={startNewChat} className="focus-ring btn-primary flex-1 px-4 py-3 text-sm">
             Nuevo chat
@@ -291,9 +308,12 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
           </Link>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-[#1f2933]">Chats anteriores</p>
+            <div>
+              <p className="text-base font-bold text-[#1f2933]">Conversaciones</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">Retoma o borra chats guardados.</p>
+            </div>
             <span className="badge badge-free">{localSessions.length}</span>
           </div>
 
@@ -302,18 +322,18 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
               Cuando empieces una conversación, aparecerá aquí.
             </p>
           ) : (
-            <div className="mt-3 grid gap-2">
+            <div className="mt-4 grid max-h-[520px] gap-3 overflow-y-auto pr-1">
               {localSessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`rounded-md border p-2 transition ${
+                  className={`overflow-hidden rounded-xl border p-3 transition ${
                     session.id === sessionId ? "border-[#2d6a4f] bg-[#d8f3dc]/72" : "border-[#d8f3dc] bg-[#fffdf8]/74"
                   }`}
                 >
                   <div className="flex items-start gap-2">
                     <Link href={`/asistente?sessionId=${session.id}`} className="focus-ring min-w-0 flex-1 rounded-md px-2 py-1 text-sm">
-                      <span className="block truncate font-semibold">{formatSessionTitle(sessionTitles[session.id])}</span>
-                      <span className="mt-1 block text-xs text-slate-500">{new Date(session.updated_at).toLocaleString("es-ES")}</span>
+                      <span className="line-clamp-2 break-words font-semibold leading-5">{formatSessionTitle(localSessionTitles[session.id])}</span>
+                      <span className="mt-2 block text-xs text-slate-500">{new Date(session.updated_at).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
                     </Link>
                     <button
                       type="button"
@@ -376,12 +396,17 @@ function AssistantStep({ number, title, text }: { number: string; title: string;
 }
 
 function formatSessionTitle(value?: string) {
-  const clean = value?.trim().replace(/\s+/g, " ");
+  const clean = value
+    ?.trim()
+    .replace(/\s+/g, " ")
+    .replace(/^(hola[, ]+)?(necesito|quiero|tengo que|me gustaría|me gustaria|debo)\s+/i, "")
+    .replace(/^(preparar|hacer|crear|redactar|generar)\s+/i, "");
 
   if (!clean) {
     return "Conversación nueva";
   }
 
-  return clean.length > 52 ? clean.slice(0, 49) + "..." : clean;
+  const title = clean.charAt(0).toUpperCase() + clean.slice(1);
+  return title.length > 62 ? title.slice(0, 59).trimEnd() + "..." : title;
 }
 

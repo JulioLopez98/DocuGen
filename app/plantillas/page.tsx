@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ContextualHelp } from "@/components/ContextualHelp";
 import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
 import { TemplateLibraryClient } from "@/components/TemplateLibraryClient";
@@ -66,11 +65,10 @@ export default async function TemplatesPage() {
           <div>
             <p className="eyebrow">Plantillas</p>
             <h1 className="section-title mt-3 max-w-4xl">
-              Convierte tus documentos buenos en referencias reutilizables
+              Usa tus documentos como referencia
             </h1>
             <p className="body-muted mt-4 max-w-2xl">
-              Sube Word/PDF propios para que DocuGen respete estructura, tono y criterios internos al crear nuevos
-              borradores. Las plantillas orientan: no sustituyen los datos del formulario.
+              Sube Word/PDF propios para que DocuGen pueda respetar estructura, tono y criterios internos. Plantillas son archivos de referencia; Mi catálogo son formatos guardados para repetir documentos.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {isFree ? (
@@ -83,7 +81,7 @@ export default async function TemplatesPage() {
                 </a>
               )}
               <Link href="/catalogo" className="focus-ring btn-secondary px-5 py-3 text-sm">
-                Ver tipos disponibles
+                Ver catálogo
               </Link>
             </div>
           </div>
@@ -102,38 +100,6 @@ export default async function TemplatesPage() {
           </aside>
         </div>
       </div>
-
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
-        {[
-          ["1", "Sube documentos", "Word/PDF con plantillas, ejemplos, cláusulas o documentos anteriores."],
-          ["2", "Procesa y revisa", "Extrae texto, secciones, variables y calidad para usar la referencia con control."],
-          ["3", "Úsala al generar", "Desde Crear podrás orientar estructura y tono sin copiar datos concretos."],
-        ].map(([step, title, text]) => (
-          <article key={step} className="surface-flat interactive-subtle p-5">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2d6a4f] text-sm font-bold text-white">
-              {step}
-            </span>
-            <h2 className="mt-4 font-bold">{title}</h2>
-            <p className="body-muted mt-2">{text}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        <ContextualHelp
-          title="Cuando usar plantillas"
-          description="Úsalas si ya tienes documentos buenos y quieres que los nuevos respeten estructura, tono o criterios internos."
-          items={["No sustituyen los datos del formulario.", "No copian información sensible.", "Sirven como referencia controlada."]}
-          primaryAction={isFree ? { href: "/precios", label: "Ver Pro" } : { href: "#subir-plantilla", label: "Subir plantilla" }}
-          tone="pro"
-        />
-        <ContextualHelp
-          title="Como preparar un archivo"
-          description="Sube ejemplos limpios: sin versiones mezcladas, con apartados claros y sin datos que no quieras usar como referencia."
-          items={["DOCX suele dar mejores resultados.", "PDF también sirve si el texto se puede extraer.", "Marca favoritas para recomendarlas al generar."]}
-          secondaryAction={{ href: "/generar", label: "Ir al generador" }}
-        />
-      </section>
 
       <div id="subir-plantilla" className="mt-6 scroll-mt-24">
         {isFree ? (
