@@ -10,7 +10,7 @@ type PricingCardsProps = {
 };
 
 export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = false }: PricingCardsProps) {
-  const [loading, setLoading] = useState<"pro" | "empresa" | null>(null);
+  const [loading, setLoading] = useState<"free" | "pro" | "empresa" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isPro = currentPlan === "pro";
   const isEmpresa = currentPlan === "empresa";
@@ -45,6 +45,35 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
     }
   }
 
+  async function scheduleFree() {
+    if (!window.confirm("Vas a cancelar la suscripcion. Mantendras tu plan hasta el final del periodo ya pagado y despues pasaras a Free. No se devuelve el importe del periodo actual. ¿Quieres continuar?")) {
+      return;
+    }
+
+    setLoading("free");
+    setError(null);
+
+    try {
+      const response = await fetch("/api/subscription/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel_at_period_end" }),
+      });
+      const payload = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        setError(payload.message || "No se pudo programar el paso a Free.");
+        return;
+      }
+
+      window.location.href = "/dashboard?plan_scheduled=free";
+    } catch {
+      setError("No se pudo conectar con Stripe. Espera unos segundos y vuelve a intentarlo.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   const cards = [
     {
       name: "Free",
@@ -60,8 +89,9 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
         "Exportación PDF y TXT",
         "Avisos de revisión profesional incluidos",
       ],
-      action: currentPlan ? "Plan inicial" : "Empezar gratis",
-      href: currentPlan ? "/dashboard" : "/auth",
+      action: currentPlan === "free" ? "Plan actual" : currentPlan ? (loading === "free" ? "Programando..." : "Pasar a Free al final del periodo") : "Empezar gratis",
+      href: currentPlan ? undefined : "/auth",
+      onClick: currentPlan && currentPlan !== "free" ? scheduleFree : undefined,
       disabled: currentPlan === "free",
     },
     {

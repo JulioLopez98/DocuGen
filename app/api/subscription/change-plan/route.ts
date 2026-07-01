@@ -86,6 +86,8 @@ export async function POST(request: Request) {
           stripe_subscription_status: updatedSubscription.status,
           stripe_current_period_end: periodEnd,
           stripe_cancel_at_period_end: updatedSubscription.cancel_at_period_end,
+          stripe_pending_plan: null,
+          stripe_pending_plan_at: null,
         })
         .eq("id", user.id);
       await supabase.from("workspaces").update({ plan: "empresa" }).eq("owner_id", user.id);
@@ -128,6 +130,8 @@ export async function POST(request: Request) {
         .update({
           stripe_current_period_end: new Date(periodEnd * 1000).toISOString(),
           stripe_cancel_at_period_end: false,
+          stripe_pending_plan: "pro",
+          stripe_pending_plan_at: new Date(periodEnd * 1000).toISOString(),
         })
         .eq("id", user.id);
 

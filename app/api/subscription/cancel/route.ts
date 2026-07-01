@@ -62,6 +62,8 @@ export async function POST(request: Request) {
         stripe_subscription_status: subscription.status,
         stripe_current_period_end: periodEnd,
         stripe_cancel_at_period_end: subscription.cancel_at_period_end,
+        stripe_pending_plan: subscription.cancel_at_period_end ? "free" : null,
+        stripe_pending_plan_at: subscription.cancel_at_period_end ? periodEnd : null,
       })
       .eq("id", user.id);
 

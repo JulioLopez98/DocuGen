@@ -14,6 +14,8 @@ export type Profile = {
   stripe_subscription_status: string | null;
   stripe_current_period_end: string | null;
   stripe_cancel_at_period_end: boolean | null;
+  stripe_pending_plan: "free" | "pro" | "empresa" | null;
+  stripe_pending_plan_at: string | null;
   referral_code: string | null;
 };
 
