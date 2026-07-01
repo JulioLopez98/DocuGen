@@ -255,7 +255,7 @@ export function CommunityCatalogClient({ candidates, sourceRequests }: Community
         <EmptyState
           eyebrow="Sin resultados"
           title="No hay candidatos con esos filtros"
-          description="Prueba con otra búsqueda o vuelve a la vista completa del catálogo comunitario privado."
+          description="Prueba con otra búsqueda o vuelve a la vista completa del catálogo interno."
           variant="flat"
         />
       ) : (

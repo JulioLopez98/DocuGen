@@ -10,7 +10,6 @@ import { runInternalHealthChecks, type HealthCheckReport, type HealthCheckStatus
 import {
   createSupabaseServiceClient,
   getCurrentProfile,
-  type CommunityDocumentTypeRow,
   type DocumentRequestRow,
   type WorkspaceAuditEventRow,
 } from "@/lib/supabase-server";
@@ -86,7 +85,6 @@ export default async function AdminPage() {
     docs30Result,
     events24Result,
     requestsResult,
-    communityTypesResult,
     rateLimitEventsResult,
     securityEventsResult,
     auditEventsResult,
@@ -102,7 +100,6 @@ export default async function AdminPage() {
     adminClient.from("documents").select("id", { count: "exact", head: true }).gte("created_at", last30Days.toISOString()),
     adminClient.from("generation_events").select("id", { count: "exact", head: true }).gte("created_at", new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()),
     adminClient.from("document_requests").select("*").order("created_at", { ascending: false }).limit(30).returns<DocumentRequestRow[]>(),
-    adminClient.from("community_document_types").select("*").order("created_at", { ascending: false }).limit(20).returns<CommunityDocumentTypeRow[]>(),
     adminClient
       .from("rate_limit_events")
       .select("id,user_id,workspace_id,action,created_at")
@@ -136,7 +133,6 @@ export default async function AdminPage() {
   const profiles = profilesResult.data || [];
   const documents = documentsResult.data || [];
   const documentRequests = requestsResult.data || [];
-  const communityTypes = communityTypesResult.data || [];
   const rateLimitEvents = rateLimitEventsResult.data || [];
   const securityEvents = securityEventsResult.data || [];
   const sensitiveAuditEvents = auditEventsResult.data || [];
@@ -160,7 +156,7 @@ export default async function AdminPage() {
             <p className="eyebrow">Consola interna</p>
             <h1 className="section-title mt-3">Estado operativo de DocuGen</h1>
             <p className="body-muted mt-4 max-w-2xl">
-              Métricas de negocio, salud técnica, solicitudes de nuevos documentos, catálogo comunitario y señales de
+              Métricas de negocio, salud técnica, solicitudes a medida, pagos, equipos y señales de
               seguridad en una sola vista de administración.
             </p>
           </div>
@@ -177,15 +173,8 @@ export default async function AdminPage() {
                 <span className="text-sm text-slate-600">Solicitudes a medida</span>
                 <span className="badge badge-empresa">{documentRequests.length}</span>
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-slate-600">Tipos comunitarios</span>
-                <span className="badge badge-free">{communityTypes.length}</span>
               </div>
-            </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Link href="/admin/catalogo-comunitario" className="focus-ring btn-primary px-4 py-3 text-sm">
-                Revisar catálogo
-              </Link>
               <Link href="/dashboard" className="focus-ring btn-secondary px-4 py-3 text-sm">
                 Ir al panel
               </Link>
@@ -495,7 +484,7 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <AdminDocumentRequests requests={documentRequests} communityTypes={communityTypes} />
+      <AdminDocumentRequests requests={documentRequests} />
     </section>
   );
 }
@@ -631,7 +620,7 @@ function getPopularTypes(documents: AdminDocument[]) {
     counts.set(doc.doc_type, {
       count: (current?.count || 0) + 1,
       label: config?.label || doc.doc_label || humanizeDocumentType(doc.doc_type),
-      category: config?.category || (doc.doc_type.startsWith("community:") ? "Comunidad" : "Documento"),
+      category: config?.category || (doc.doc_type.startsWith("community:") ? "Mi catálogo" : "Documento"),
     });
   }
 

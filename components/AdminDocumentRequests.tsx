@@ -4,11 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
-import type { CommunityDocumentTypeRow, DocumentRequestRow, DocumentRequestStatus } from "@/lib/supabase-server";
+import type { DocumentRequestRow, DocumentRequestStatus } from "@/lib/supabase-server";
 
 type AdminDocumentRequestsProps = {
   requests: DocumentRequestRow[];
-  communityTypes: CommunityDocumentTypeRow[];
 };
 
 type EditableRequestState = {
@@ -19,14 +18,14 @@ type EditableRequestState = {
 const statusOptions: Array<{ value: DocumentRequestStatus; label: string; helper: string }> = [
   { value: "submitted", label: "Nueva", helper: "Pendiente de revisar" },
   { value: "reviewing", label: "En revisión", helper: "Se está evaluando" },
-  { value: "approved", label: "Candidata", helper: "Buena candidata para catálogo" },
-  { value: "rejected", label: "Descartada", helper: "No interesa convertirla" },
-  { value: "converted", label: "Convertida", helper: "Ya pasó a catálogo o definición interna" },
+  { value: "approved", label: "Interesante", helper: "Puede inspirar una mejora futura" },
+  { value: "rejected", label: "Descartada", helper: "No encaja ahora mismo" },
+  { value: "converted", label: "Resuelta", helper: "Ya se incorporó o gestionó internamente" },
 ];
 
 const statusLabels = Object.fromEntries(statusOptions.map((option) => [option.value, option.label])) as Record<DocumentRequestStatus, string>;
 
-export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumentRequestsProps) {
+export function AdminDocumentRequests({ requests }: AdminDocumentRequestsProps) {
   const router = useRouter();
   const [editableRequests, setEditableRequests] = useState<Record<string, EditableRequestState>>(() =>
     Object.fromEntries(
@@ -40,10 +39,8 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
     ),
   );
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [convertingId, setConvertingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
-  const [convertedId, setConvertedId] = useState<string | null>(null);
 
   const requestCounts = useMemo(() => countRequestStatuses(requests), [requests]);
 
@@ -69,7 +66,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
     setSavedId(null);
 
     try {
-      const response = await fetch(`/api/admin/document-requests/${id}`, {
+      const response = await fetch("/api/admin/document-requests/" + id, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -90,31 +87,6 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
     }
   }
 
-  async function convertRequest(id: string) {
-    setConvertingId(id);
-    setError(null);
-    setConvertedId(null);
-
-    try {
-      const response = await fetch(`/api/admin/document-requests/${id}/convert`, {
-        method: "POST",
-      });
-      const data = (await response.json()) as { message?: string };
-
-      if (!response.ok) {
-        setError(data.message || "No se pudo crear el candidato.");
-        return;
-      }
-
-      setConvertedId(id);
-      router.refresh();
-    } catch {
-      setError("No se pudo conectar con el servidor.");
-    } finally {
-      setConvertingId(null);
-    }
-  }
-
   return (
     <section className="surface mt-4 p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -122,52 +94,17 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           <p className="eyebrow">Generador libre</p>
           <h2 className="panel-title mt-3">Solicitudes a medida</h2>
           <p className="body-muted mt-2 max-w-2xl">
-            Revisa lo que piden los usuarios, añade notas internas y marca candidatas para convertirlas en catálogo.
+            Revisa lo que piden los usuarios, añade notas internas y detecta patrones para mejorar el catálogo base sin
+            convertir cada solicitud en una cola pública.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <StatusPill label="Nuevas" value={requestCounts.submitted} />
           <StatusPill label="Revisión" value={requestCounts.reviewing} />
-          <StatusPill label="Candidatas" value={requestCounts.approved} />
-          <StatusPill label="Convertidas" value={requestCounts.converted} />
+          <StatusPill label="Interesantes" value={requestCounts.approved} />
+          <StatusPill label="Resueltas" value={requestCounts.converted} />
         </div>
       </div>
-
-      {communityTypes.length > 0 && (
-        <div className="mb-5 surface-muted p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-[#2d6a4f]">Candidatos creados</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                Definiciones internas nacidas de solicitudes. Todavía no forman parte del catálogo público.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="badge badge-free">
-                {communityTypes.length} recientes
-              </span>
-              <Link href="/admin/catalogo-comunitario" className="focus-ring btn-ghost px-3 py-2 text-xs">
-                Abrir catálogo privado
-              </Link>
-            </div>
-          </div>
-          <div className="mt-3 grid gap-2 md:grid-cols-2">
-            {communityTypes.slice(0, 6).map((type) => (
-              <div key={type.id} className="interactive-subtle rounded-md border border-[#d8f3dc] bg-[#fffdf8]/74 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold">{type.label}</p>
-                    <p className="mt-1 text-xs text-slate-500">{type.category || "A medida"} · {type.status}</p>
-                  </div>
-                  <span className="badge badge-empresa">
-                    {type.required_plan}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {error && <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
@@ -178,9 +115,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
             admin_notes: request.admin_notes || "",
           };
           const isBusy = busyId === request.id;
-          const isConverting = convertingId === request.id;
           const isSaved = savedId === request.id;
-          const isConverted = convertedId === request.id || request.status === "converted";
           const sourceLabel = getRequestSourceLabel(request);
 
           return (
@@ -204,26 +139,18 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                     <span>{new Date(request.created_at).toLocaleString("es-ES")}</span>
                     {request.intended_use && <span className="sm:col-span-2">Uso: {request.intended_use}</span>}
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {request.generated_document_id && (
-                      <Link href={`/historial/${request.generated_document_id}`} className="focus-ring btn-secondary px-3 py-2 text-xs">
-                        Ver documento
+                  {request.generated_document_id && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Link href={"/historial/" + request.generated_document_id} className="focus-ring btn-secondary px-3 py-2 text-xs">
+                        Ver documento generado
                       </Link>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => void convertRequest(request.id)}
-                      disabled={isConverting || isConverted}
-                      className="focus-ring btn-primary px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {isConverted ? "Candidato creado" : isConverting ? "Creando..." : "Convertir a candidato"}
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="surface-muted p-4">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Estado</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Estado interno</span>
                     <select
                       value={editable.status}
                       onChange={(event) =>
@@ -246,7 +173,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
                       onChange={(event) => updateLocalRequest(request.id, { admin_notes: event.target.value })}
                       rows={4}
                       className="focus-ring mt-2 w-full rounded-md border border-slate-300 bg-[#fffdf8] px-3 py-2 text-sm"
-                      placeholder="Ej. Buena candidata para legal web. Revisar campos necesarios."
+                      placeholder="Ej. Se repite mucho. Valorar añadirlo al catálogo base en una versión futura."
                     />
                   </label>
 
@@ -270,7 +197,7 @@ export function AdminDocumentRequests({ requests, communityTypes }: AdminDocumen
           <EmptyState
             eyebrow="Sin solicitudes"
             title="Aún no hay documentos a medida"
-            description="Cuando los usuarios usen el generador libre, verás aquí qué documentos piden y cuáles conviene convertir en catálogo oficial."
+            description="Cuando los usuarios usen el generador libre, verás aquí qué documentos piden y que patrones se repiten."
             variant="flat"
           />
         )}

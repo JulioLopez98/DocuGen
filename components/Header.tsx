@@ -135,7 +135,7 @@ function buildUserMoreLinks({
           {
             href: "/admin",
             label: "Admin",
-            description: "Operaciones, seguridad, catálogo comunitario y métricas.",
+            description: "Operaciones, seguridad, solicitudes y métricas.",
             badge: "Admin",
           },
         ]
