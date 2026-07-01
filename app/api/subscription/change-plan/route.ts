@@ -17,6 +17,11 @@ type SubscriptionWithPeriods = Stripe.Subscription & {
   current_period_end?: number | null;
 };
 
+type SubscriptionItemWithPeriods = Stripe.SubscriptionItem & {
+  current_period_start?: number | null;
+  current_period_end?: number | null;
+};
+
 export async function POST(request: Request) {
   try {
     const { supabase, user } = await requireUser();
@@ -92,8 +97,8 @@ export async function POST(request: Request) {
     }
 
     if (profile.plan === "empresa" && targetPlan === "pro") {
-      const periodEnd = getPeriodTimestamp(subscription, "end");
-      const periodStart = getPeriodTimestamp(subscription, "start");
+      const periodEnd = getPeriodTimestamp(subscription, subscriptionItem, "end");
+      const periodStart = getPeriodTimestamp(subscription, subscriptionItem, "start");
 
       if (!periodStart || !periodEnd) {
         return errorResponse(409, "billing_period_missing", "Stripe no devolvio las fechas del periodo actual.");
@@ -165,13 +170,23 @@ async function getOrCreateScheduleId(stripe: Stripe, subscription: Stripe.Subscr
   return schedule.id;
 }
 
-function getPeriodTimestamp(subscription: Stripe.Subscription, side: "start" | "end") {
+function getPeriodTimestamp(
+  subscription: Stripe.Subscription,
+  item: Stripe.SubscriptionItem | null,
+  side: "start" | "end",
+) {
   const periodSubscription = subscription as SubscriptionWithPeriods;
-  return side === "start" ? periodSubscription.current_period_start || null : periodSubscription.current_period_end || null;
+  const periodItem = item as SubscriptionItemWithPeriods | null;
+
+  if (side === "start") {
+    return periodSubscription.current_period_start || periodItem?.current_period_start || null;
+  }
+
+  return periodSubscription.current_period_end || periodItem?.current_period_end || null;
 }
 
 function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
-  const periodEnd = getPeriodTimestamp(subscription, "end");
+  const periodEnd = getPeriodTimestamp(subscription, subscription.items.data[0] || null, "end");
   return periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 }
 

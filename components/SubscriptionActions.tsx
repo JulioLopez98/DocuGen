@@ -126,28 +126,14 @@ export function SubscriptionActions({
             {loading === "/api/create-checkout:pro" ? "Conectando..." : "Actualizar a Pro"}
           </button>
         )}
-        {plan !== "empresa" && !cancelAtPeriodEnd && (
+        {!isPaid && (
           <button
             type="button"
-            onClick={() => go(isPaid ? "/api/subscription/change-plan" : "/api/create-checkout", "empresa")}
+            onClick={() => go("/api/create-checkout", "empresa")}
             disabled={loading !== null}
             className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
           >
-            {loading === "/api/create-checkout:empresa" || loading === "/api/subscription/change-plan:empresa"
-              ? "Conectando..."
-              : isPaid
-                ? "Cambiar a Empresa"
-                : "Actualizar a Empresa"}
-          </button>
-        )}
-        {plan === "empresa" && hasManagedSubscription && !cancelAtPeriodEnd && (
-          <button
-            type="button"
-            onClick={() => go("/api/subscription/change-plan", "pro")}
-            disabled={loading !== null}
-            className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
-          >
-            {loading === "/api/subscription/change-plan:pro" ? "Programando..." : "Cambiar a Pro al final del periodo"}
+            {loading === "/api/create-checkout:empresa" ? "Conectando..." : "Actualizar a Empresa"}
           </button>
         )}
         {isPaid && hasCustomer && hasManagedSubscription && !cancelAtPeriodEnd && (
@@ -193,8 +179,7 @@ export function SubscriptionActions({
       </div>
       {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
         <p className="text-xs leading-5 text-slate-500">
-          Puedes cambiar de plan o cancelar cuando quieras. Subir de Pro a Empresa aplica prorrateo automatico. Bajar de Empresa
-          a Pro se programa para el final del periodo ya pagado. Si cancelas, mantendras {getPlanLabel(plan)} hasta
+          Puedes cambiar de plan o cancelar cuando quieras. Para cambiar entre Pro y Empresa, usa Cambiar plan o tarjeta. Si cancelas, mantendras {getPlanLabel(plan)} hasta
           {periodEndLabel ? ` el ${periodEndLabel}` : " que termine el periodo ya pagado"}; despues DocuGen pasara a Free
           automaticamente. No se devuelve el importe del mes ya pagado.
         </p>
