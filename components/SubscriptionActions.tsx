@@ -185,9 +185,8 @@ export function SubscriptionActions({
       </div>
       {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
         <p className="text-xs leading-5 text-slate-500">
-          Puedes cambiar de plan desde Precios y gestionar tarjeta o facturas desde Stripe. Si cancelas, mantendras {getPlanLabel(plan)} hasta
-          {periodEndLabel ? ` el ${periodEndLabel}` : " que termine el periodo ya pagado"}; despues DocuGen pasara a Free
-          automaticamente. No se devuelve el importe del mes ya pagado.
+          Cambia entre Pro y Empresa desde Precios. Los cambios a un plan inferior se programan para el final del periodo ya pagado
+          {periodEndLabel ? " (" + periodEndLabel + ")" : ""}. Para pasar a Free, usa Pasar a Free: mantendras {getPlanLabel(plan)} hasta esa fecha y despues DocuGen pasara a Free automaticamente.
         </p>
       )}
       {isPaid && hasManagedSubscription && cancelAtPeriodEnd && (
