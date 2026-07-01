@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ContextualHelp } from "@/components/ContextualHelp";
 import { WorkspacePanel } from "@/components/WorkspacePanel";
 import {
   createSupabaseServiceClient,
@@ -129,40 +128,27 @@ export default async function WorkspacePage() {
           <div>
             <p className="eyebrow">Empresa</p>
             <h1 className="section-title mt-3 max-w-4xl">Un espacio claro para trabajar documentos en equipo</h1>
-            <p className="body-muted mt-4 max-w-3xl">
-              Coordina miembros, documentos compartidos, invitaciones, avisos y actividad sin perder de vista quién
-              puede hacer qué dentro del equipo.
-            </p>
+            <p className="body-muted mt-4 max-w-3xl">Trabaja con documentos compartidos, miembros, plantillas de equipo y actividad reciente desde una vista pensada para empresas.</p>
           </div>
           <div className="surface-muted p-5">
             <p className="text-sm font-bold text-[#2d6a4f]">Centro de control</p>
-            <p className="body-muted mt-3">
-              Empieza invitando a una persona, genera un documento dentro del equipo y revisa los avisos recientes para
-              validar el flujo completo.
-            </p>
+            <p className="body-muted mt-3">Flujo recomendado: invita al equipo, crea documentos dentro del workspace y usa plantillas compartidas para mantener un estilo común.</p>
           </div>
         </div>
-      </div>
-
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
-        <ContextualHelp
-          title="Qué es Equipo"
-          description="Equipo agrupa documentos, miembros, invitaciones y actividad cuando trabajas con más personas."
-          items={["Comparte documentos con el equipo.", "Gestiona invitaciones.", "Revisa actividad reciente."]}
-          tone="empresa"
-        />
-        <ContextualHelp
-          title="Roles y permisos"
-          description="Los permisos avanzados ayudan a separar quién puede invitar, gestionar miembros o ver información sensible."
-          items={["Admin: gestiona el espacio.", "Miembro: trabaja dentro del equipo.", "Permisos finos: control adicional."]}
-          tone="empresa"
-        />
-        <ContextualHelp
-          title="Primer paso recomendado"
-          description="Si estás empezando, crea un espacio de equipo pequeño, invita una persona de prueba y genera un documento compartido."
-          primaryAction={{ href: "/generar", label: "Crear documento" }}
-          tone="empresa"
-        />
+        <div className="grid border-t border-[#d8f3dc] bg-[#fffdf8]/70 md:grid-cols-4">
+          {[
+            ["1", "Elige espacio", "Todo se filtra por el workspace activo."],
+            ["2", "Invita miembros", "Asigna un rol claro a cada persona."],
+            ["3", "Comparte trabajo", "Crea documentos y plantillas dentro del equipo."],
+            ["4", "Revisa actividad", "Avisos y auditoría muestran qué ha pasado."],
+          ].map(([step, title, text]) => (
+            <div key={step} className="border-t border-[#d8f3dc] p-4 md:border-l md:border-t-0 first:md:border-l-0">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#d8f3dc] text-xs font-bold text-[#2d6a4f]">{step}</span>
+              <p className="mt-3 text-sm font-bold text-[#1f2933]">{title}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">{text}</p>
+            </div>
+          ))}
+        </div>
       </div>
       <WorkspacePanel
         profile={profile}

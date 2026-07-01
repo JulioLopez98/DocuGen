@@ -90,7 +90,7 @@ export function WorkspacePanel({
               {selectedWorkspace?.name || "Espacio personal"}
             </h1>
             <p className="body-muted mt-3 max-w-3xl">
-              Organiza documentos, miembros, avisos y actividad compartida desde una vista pensada para equipos.
+              Este es el centro del workspace: miembros, documentos compartidos, avisos y actividad del equipo en un solo sitio.
             </p>
           </div>
           <PlanBadge plan={profile.plan} />
@@ -123,15 +123,25 @@ export function WorkspacePanel({
           <WorkspaceMetric label="Miembros" value={workspaceMembers.length.toString()} helper="En este espacio" />
           <WorkspaceMetric label="Documentos" value={workspaceDocuments.length.toString()} helper="Compartidos aquí" />
           <WorkspaceMetric label="Avisos" value={unreadNotifications.toString()} helper="Sin leer" />
-          <WorkspaceMetric label="Personales" value={personalDocuments.length.toString()} helper="Sin equipo" />
+          <WorkspaceMetric label="Personales" value={personalDocuments.length.toString()} helper="Fuera del equipo" />
         </div>
 
         {selectedWorkspace && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            <WorkspaceCapability enabled={isWorkspaceAdmin} label="Admin" />
-            <WorkspaceCapability enabled={canCreateInWorkspace} label="Puede generar" />
-            <WorkspaceCapability enabled={canUploadTemplates} label="Puede subir plantillas" />
-            <WorkspaceCapability enabled={canInviteMembers} label="Puede invitar" />
+          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="flex flex-wrap gap-2">
+              <WorkspaceCapability enabled={isWorkspaceAdmin} label="Admin" />
+              <WorkspaceCapability enabled={canCreateInWorkspace} label="Puede generar" />
+              <WorkspaceCapability enabled={canUploadTemplates} label="Puede subir plantillas" />
+              <WorkspaceCapability enabled={canInviteMembers} label="Puede invitar" />
+            </div>
+            <div className="flex flex-wrap gap-2 lg:justify-end">
+              <Link href="/generar" className="focus-ring btn-primary px-4 py-3 text-sm">
+                Crear en equipo
+              </Link>
+              <Link href="/plantillas" className="focus-ring btn-secondary px-4 py-3 text-sm">
+                Plantillas de equipo
+              </Link>
+            </div>
           </div>
         )}
 

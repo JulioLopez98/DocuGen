@@ -55,6 +55,7 @@ export function WorkspaceMembersManager({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [expandedPermissionsId, setExpandedPermissionsId] = useState<string | null>(null);
 
   const profileById = useMemo(
     () => new Map(memberProfiles.map((memberProfile) => [memberProfile.id, memberProfile])),
@@ -224,7 +225,7 @@ export function WorkspaceMembersManager({
           <p className="eyebrow">Miembros</p>
           <h2 className="panel-title mt-3">Personas y permisos</h2>
           <p className="body-muted mt-2">
-            Invita personas por email y asigna roles claros: Admin, Editor, Miembro o Solo lectura.
+            Invita personas por email, asigna un rol claro y abre permisos avanzados solo cuando necesites ajustar algo concreto.
           </p>
         </div>
         <span className="badge badge-empresa">
@@ -403,6 +404,16 @@ export function WorkspaceMembersManager({
                       </span>
                     )}
 
+                    {canEditThisMember && member.role !== "admin" && (
+                      <button
+                        className="focus-ring btn-ghost px-3 py-2 text-sm"
+                        type="button"
+                        onClick={() => setExpandedPermissionsId(expandedPermissionsId === member.id ? null : member.id)}
+                      >
+                        {expandedPermissionsId === member.id ? "Ocultar permisos" : "Permisos"}
+                      </button>
+                    )}
+
                     {canEditThisMember && (
                       <button
                         className="focus-ring rounded-md border border-red-200 bg-[#fffdf8] px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
@@ -415,12 +426,9 @@ export function WorkspaceMembersManager({
                     )}
                   </div>
                 </div>
-                {canEditThisMember && member.role !== "admin" && (
+                {canEditThisMember && member.role !== "admin" && expandedPermissionsId === member.id && (
                   <div className="mt-4 grid gap-2 rounded-md border border-[#d8f3dc] bg-[#faf9f6] p-3 sm:grid-cols-2">
-                    <p className="text-xs leading-5 text-slate-500 sm:col-span-2">
-                      Puedes partir de un rol predefinido y ajustar permisos concretos. Si cambias un permiso, el rol
-                      pasará a Personalizado.
-                    </p>
+                    <p className="text-xs leading-5 text-slate-500 sm:col-span-2">Ajusta solo si necesitas un rol más específico. Si cambias un permiso, el rol pasará a Personalizado.</p>
                     {permissionItems.map((item) => (
                       <label
                         key={item.key}
