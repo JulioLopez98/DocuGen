@@ -394,14 +394,14 @@ export function GeneratorClient({
             <p className="eyebrow">Crear documento</p>
             <h1 className="panel-title mt-3">Elige una forma de empezar</h1>
             <p className="body-muted mt-3 max-w-2xl">
-              La opción recomendada es el catálogo oficial. Si no encuentras lo que necesitas, usa A medida o el Asistente.
+              La opción recomendada es el catálogo base. Si no encuentras lo que necesitas, usa A medida o el Asistente.
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <CreationModeCard
               active={generatorMode === "catalog"}
               eyebrow={documentTypes.length + " tipos"}
-              title="Catálogo oficial"
+              title="Catálogo base"
               text="La forma más rápida y guiada."
               onClick={() => selectCatalogIntent("all")}
             />
@@ -721,7 +721,7 @@ function DocumentChoicePanel({
       <div className="surface-muted p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="eyebrow">Catálogo oficial</p>
+            <p className="eyebrow">Catálogo base</p>
             <h2 className="mt-2 font-serif-display text-2xl font-bold">
               {isFiltered ? selectedIntent.label : "Busca o abre una categoría"}
             </h2>

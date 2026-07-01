@@ -30,7 +30,7 @@ export function buildAssistantDocumentProposal(messages: ChatMessageRow[]): Assi
       `Categoria sugerida: ${category}.`,
       `Tono sugerido: ${tone}.`,
       missingData.length > 0 ? `Campos sugeridos: ${missingData.join(", ")}.` : "",
-      assistantMessages.length > 0 ? "La conversacion ya contiene guia del asistente y puede convertirse en candidato." : "",
+      assistantMessages.length > 0 ? "La conversación ya contiene guía del asistente y puede revisarse como señal de producto." : "",
     ]
       .filter(Boolean)
       .join("\n"),
