@@ -29,6 +29,71 @@ export default async function WorkspacePage() {
     redirect("/auth");
   }
 
+  if (profile.plan !== "empresa") {
+    return (
+      <section className="container-page py-8 lg:py-10">
+        <div className="surface overflow-hidden">
+          <div className="grid gap-8 p-6 lg:grid-cols-[1fr_380px] lg:p-8">
+            <div>
+              <p className="eyebrow">Equipo Empresa</p>
+              <h1 className="section-title mt-3 max-w-3xl">Colabora con tu equipo sin mezclar documentos</h1>
+              <p className="body-muted mt-4 max-w-2xl">
+                El espacio Empresa permite compartir documentos, plantillas, miembros, invitaciones y actividad interna.
+                Puedes ver como funciona, pero para usarlo necesitas el plan Empresa.
+              </p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  ["Workspaces", "Separa documentos por equipo, cliente o departamento."],
+                  ["Miembros", "Invita usuarios y asigna permisos claros."],
+                  ["Plantillas compartidas", "Mantiene un estilo comun para todo el equipo."],
+                  ["Actividad", "Revisa cambios, invitaciones y acciones importantes."],
+                ].map(([title, text]) => (
+                  <div key={title} className="surface-muted p-4">
+                    <p className="font-bold text-[#1f2933]">{title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
+                  Ver plan Empresa
+                </a>
+                <a href="/dashboard" className="focus-ring btn-secondary px-5 py-3 text-sm">
+                  Volver al panel
+                </a>
+              </div>
+
+              <p className="status-note mt-5 max-w-2xl">
+                Tu plan actual es {profile.plan === "free" ? "Free" : "Pro"}. Esta zona se desbloquea al pasar a Empresa.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#b7e4c7] bg-[#fffdf8] p-5 shadow-[0_18px_50px_rgba(31,41,51,0.08)]">
+              <p className="eyebrow">Vista previa</p>
+              <h2 className="mt-3 font-serif-display text-2xl font-bold text-[#1f2933]">Centro de equipo</h2>
+              <div className="mt-5 grid gap-3">
+                {[
+                  ["DocuGen Studio", "3 miembros", "Activo"],
+                  ["Documentos compartidos", "18 borradores", "Equipo"],
+                  ["Plantillas de marca", "6 referencias", "Empresa"],
+                ].map(([title, detail, badge]) => (
+                  <div key={title} className="rounded-xl border border-[#d8f3dc] bg-[#f4fbf5] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-bold text-[#1f2933]">{title}</p>
+                      <span className="badge badge-pro">{badge}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">{detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   const { data: memberships } = await supabase
     .from("workspace_members")
     .select("*")
@@ -165,3 +230,4 @@ export default async function WorkspacePage() {
     </section>
   );
 }
+

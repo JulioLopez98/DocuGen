@@ -101,6 +101,11 @@ export default async function SettingsPage() {
                 <p className="status-note mt-4">
                   {isPro ? "Tu plan incluye documentos ilimitados." : `Te quedan ${remaining} documentos gratuitos este mes.`}
                 </p>
+                {!isPro && profile.docs_this_month > (documentCount || 0) && (
+                  <p className="mt-3 text-xs leading-5 text-slate-500">
+                    El contador mensual mide documentos generados, aunque despues borres alguno del historial.
+                  </p>
+                )}
               </section>
             ),
           },
@@ -215,3 +220,4 @@ function AccountFact({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

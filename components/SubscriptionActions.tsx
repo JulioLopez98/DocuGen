@@ -22,7 +22,7 @@ export function SubscriptionActions({
   const isPaid = plan !== "free";
   const periodEndLabel = currentPeriodEnd ? formatDate(currentPeriodEnd) : null;
 
-  async function go(endpoint: "/api/create-checkout" | "/api/create-portal", targetPlan?: "pro" | "empresa") {
+  async function go(endpoint: "/api/create-checkout" | "/api/create-portal" | "/api/subscription/change-plan", targetPlan?: "pro" | "empresa") {
     const loadingKey = targetPlan ? `${endpoint}:${targetPlan}` : endpoint;
     setLoading(loadingKey);
     setError(null);
@@ -35,12 +35,16 @@ export function SubscriptionActions({
       });
       const payload = (await response.json()) as { url?: string; message?: string };
 
-      if (!response.ok || !payload.url) {
-        setError(payload.message || "No se pudo crear la sesión.");
+      if (!response.ok) {
+        setError(payload.message || "No se pudo gestionar el plan.");
         return;
       }
 
-      window.location.href = payload.url;
+      if (payload.message && !payload.url) {
+        window.alert(payload.message);
+      }
+
+      window.location.href = payload.url || "/dashboard";
     } catch {
       setError("No se pudo conectar con Stripe. Espera unos segundos y vuelve a intentarlo.");
     } finally {
@@ -125,15 +129,25 @@ export function SubscriptionActions({
         {plan !== "empresa" && !cancelAtPeriodEnd && (
           <button
             type="button"
-            onClick={() => go("/api/create-checkout", "empresa")}
+            onClick={() => go(isPaid ? "/api/subscription/change-plan" : "/api/create-checkout", "empresa")}
             disabled={loading !== null}
             className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
           >
-            {loading === "/api/create-checkout:empresa"
+            {loading === "/api/create-checkout:empresa" || loading === "/api/subscription/change-plan:empresa"
               ? "Conectando..."
               : isPaid
                 ? "Cambiar a Empresa"
                 : "Actualizar a Empresa"}
+          </button>
+        )}
+        {plan === "empresa" && hasManagedSubscription && !cancelAtPeriodEnd && (
+          <button
+            type="button"
+            onClick={() => go("/api/subscription/change-plan", "pro")}
+            disabled={loading !== null}
+            className="focus-ring btn-secondary px-4 py-2 text-sm disabled:opacity-60"
+          >
+            {loading === "/api/subscription/change-plan:pro" ? "Programando..." : "Cambiar a Pro al final del periodo"}
           </button>
         )}
         {isPaid && hasCustomer && hasManagedSubscription && !cancelAtPeriodEnd && (
@@ -179,9 +193,10 @@ export function SubscriptionActions({
       </div>
       {isPaid && hasManagedSubscription && !cancelAtPeriodEnd && (
         <p className="text-xs leading-5 text-slate-500">
-          Puedes cambiar de plan o cancelar cuando quieras. Si cancelas, mantendrás {getPlanLabel(plan)} hasta
-          {periodEndLabel ? ` el ${periodEndLabel}` : " que termine el periodo ya pagado"}; después DocuGen pasará a Free
-          automáticamente. No se devuelve el importe del mes ya pagado.
+          Puedes cambiar de plan o cancelar cuando quieras. Subir de Pro a Empresa aplica prorrateo automatico. Bajar de Empresa
+          a Pro se programa para el final del periodo ya pagado. Si cancelas, mantendras {getPlanLabel(plan)} hasta
+          {periodEndLabel ? ` el ${periodEndLabel}` : " que termine el periodo ya pagado"}; despues DocuGen pasara a Free
+          automaticamente. No se devuelve el importe del mes ya pagado.
         </p>
       )}
       {isPaid && hasManagedSubscription && cancelAtPeriodEnd && (
@@ -225,3 +240,4 @@ function formatDate(value: string) {
     year: "numeric",
   });
 }
+

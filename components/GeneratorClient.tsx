@@ -58,6 +58,7 @@ type GeneratorClientProps = {
 };
 
 type GeneratorIntentId = "popular" | "sell" | "hire" | "protect" | "web" | "claim" | "operations" | "home" | "all";
+type AccessFilter = "all" | "free" | "pro";
 
 type GeneratorIntent = {
   id: GeneratorIntentId;
@@ -173,6 +174,7 @@ export function GeneratorClient({
   const [error, setError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
   const [selectedIntentId, setSelectedIntentId] = useState<GeneratorIntentId>(initialIntentId);
+  const [accessFilter, setAccessFilter] = useState<AccessFilter>(plan === "free" ? "free" : "all");
   const [generatorMode, setGeneratorMode] = useState<"catalog" | "community" | "custom">(initialMode);
   const [personalCatalogTypes, setPersonalCatalogTypes] = useState(communityTypes);
   const initialCommunityTypeExists = Boolean(initialCommunityTypeId && communityTypes.some((type) => type.id === initialCommunityTypeId));
@@ -185,7 +187,10 @@ export function GeneratorClient({
   const config = getDocumentConfig(selected)!;
   const proLocked = plan === "free" && requiresPro(config);
   const customModeEyebrow = plan === "free" ? "1 prueba/mes" : "Incluido";
-  const groupedDocuments = useMemo(() => groupDocumentTypes(documentQuery, selectedIntentId), [documentQuery, selectedIntentId]);
+  const groupedDocuments = useMemo(
+    () => groupDocumentTypes(documentQuery, selectedIntentId, accessFilter),
+    [accessFilter, documentQuery, selectedIntentId],
+  );
   const selectedIntent = generatorIntents.find((intent) => intent.id === selectedIntentId) || generatorIntents[0];
   const selectedCommunityType = personalCatalogTypes.find((type) => type.id === selectedCommunityId);
   const communityLocked = selectedCommunityType ? !canUseCommunityType(plan, selectedCommunityType.required_plan) : false;
@@ -492,6 +497,8 @@ export function GeneratorClient({
             selectedIntent={selectedIntent}
             selectedIntentId={selectedIntentId}
             documentQuery={documentQuery}
+            accessFilter={accessFilter}
+            onAccessFilterChange={setAccessFilter}
             onQueryChange={setDocumentQuery}
             onSelectDocument={selectDocument}
             onSelectIntent={selectCatalogIntent}
@@ -620,7 +627,7 @@ export function GeneratorClient({
   );
 }
 
-function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
+function groupDocumentTypes(query: string, intentId: GeneratorIntentId, accessFilter: AccessFilter) {
   const groups = new Map<string, typeof documentTypes[number][]>();
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -628,6 +635,14 @@ function groupDocumentTypes(query: string, intentId: GeneratorIntentId) {
     const searchable = `${doc.label} ${doc.summary} ${doc.category}`.toLowerCase();
 
     if (!documentMatchesIntent(doc, intentId)) {
+      continue;
+    }
+
+    if (accessFilter === "free" && requiresPro(doc)) {
+      continue;
+    }
+
+    if (accessFilter === "pro" && !requiresPro(doc)) {
       continue;
     }
 
@@ -680,6 +695,8 @@ function DocumentChoicePanel({
   selectedIntent,
   selectedIntentId,
   documentQuery,
+  accessFilter,
+  onAccessFilterChange,
   onQueryChange,
   onSelectDocument,
   onSelectIntent,
@@ -689,6 +706,8 @@ function DocumentChoicePanel({
   selectedIntent: GeneratorIntent;
   selectedIntentId: GeneratorIntentId;
   documentQuery: string;
+  accessFilter: AccessFilter;
+  onAccessFilterChange: (value: AccessFilter) => void;
   onQueryChange: (value: string) => void;
   onSelectDocument: (type: DocumentType) => void;
   onSelectIntent: (intentId: GeneratorIntentId) => void;
@@ -698,6 +717,8 @@ function DocumentChoicePanel({
   const isFiltered = selectedIntent.id !== "all";
   const visibleDocuments = groupedDocuments.flatMap((group) => group.documents);
   const categoryCount = groupedDocuments.length;
+  const freeCount = documentTypes.filter((doc) => !requiresPro(doc)).length;
+  const proCount = documentTypes.filter((doc) => requiresPro(doc)).length;
 
   return (
     <div className="grid gap-5">
@@ -724,7 +745,7 @@ function DocumentChoicePanel({
               value={documentQuery}
               onChange={(event) => onQueryChange(event.target.value)}
               className="field-control mt-2"
-              placeholder="Contrato, reclamación, privacidad..."
+              placeholder="Contrato, reclamacion, privacidad..."
             />
           </label>
           <div>
@@ -743,10 +764,41 @@ function DocumentChoicePanel({
           </div>
         </div>
 
+        <div className="mt-4 rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2d6a4f]">Mostrar documentos</span>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {[
+              ["free", `Solo Free (${freeCount})`, "Incluidos en el plan gratis"],
+              ["pro", `Solo Pro (${proCount})`, "Requieren Pro o Empresa"],
+              ["all", "Ver todo", "Catalogo completo"],
+            ].map(([value, label, help]) => (
+              <label
+                key={value}
+                className={`focus-within:ring-2 focus-within:ring-[#2d6a4f]/35 rounded-lg border px-3 py-2 text-sm transition ${
+                  accessFilter === value ? "border-[#2d6a4f] bg-[#d8f3dc]/55" : "border-[#d8f3dc] bg-white hover:bg-[#f4fbf5]"
+                }`}
+              >
+                <span className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={accessFilter === value}
+                    onChange={() => onAccessFilterChange(accessFilter === value ? "all" : (value as AccessFilter))}
+                    className="mt-1 accent-[#2d6a4f]"
+                  />
+                  <span>
+                    <span className="block font-bold text-[#1f2933]">{label}</span>
+                    <span className="mt-0.5 block text-xs leading-4 text-slate-500">{help}</span>
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         {(isFiltered || hasSearch) && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d8f3dc] bg-[#fffdf8]/78 p-3">
             <p className="text-xs leading-5 text-slate-600">
-              Mostrando {visibleDocuments.length} tipos en {categoryCount} categorías.
+              Mostrando {visibleDocuments.length} tipos en {categoryCount} categorias.
             </p>
             {isFiltered && (
               <button type="button" onClick={onShowAll} className="focus-ring btn-ghost px-3 py-2 text-xs">
@@ -813,7 +865,7 @@ function DocumentChoicePanel({
         <EmptyState
           eyebrow="Sin coincidencias"
           title="No encontramos ese documento"
-          description="Prueba con una palabra más general o usa el modo a medida si tu plan lo permite."
+          description="Prueba con una palabra mas general, cambia el filtro Free/Pro o usa el modo a medida si tu plan lo permite."
           variant="flat"
           secondaryAction={{ href: "/catalogo", label: "Ver todos los tipos" }}
         />
@@ -1422,5 +1474,8 @@ function canUseCommunityType(userPlan: "free" | "pro" | "empresa", requiredPlan:
 
   return rank[userPlan] >= rank[requiredPlan];
 }
+
+
+
 
 

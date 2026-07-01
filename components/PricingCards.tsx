@@ -20,19 +20,24 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
     setError(null);
 
     try {
-      const response = await fetch("/api/create-checkout", {
+      const endpoint = currentPlan && currentPlan !== "free" ? "/api/subscription/change-plan" : "/api/create-checkout";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       });
       const payload = (await response.json()) as { url?: string; message?: string };
 
-      if (!response.ok || !payload.url) {
-        setError(payload.message || "No se pudo iniciar el pago.");
+      if (!response.ok) {
+        setError(payload.message || "No se pudo iniciar el cambio de plan.");
         return;
       }
 
-      window.location.href = payload.url;
+      if (payload.message && !payload.url) {
+        window.alert(payload.message);
+      }
+
+      window.location.href = payload.url || "/dashboard";
     } catch {
       setError("No se pudo conectar con Stripe. Espera unos segundos y vuelve a intentarlo.");
     } finally {
@@ -74,11 +79,17 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
         "Documentos a medida ilimitados",
         "Gestión de suscripción desde Stripe",
       ],
-      action: isPro ? "Plan actual" : loading === "pro" ? "Conectando..." : isEmpresa ? "Incluido en Empresa" : "Actualizar a Pro",
-      onClick: isPro || isEmpresa ? undefined : () => startCheckout("pro"),
-      href: isPro || isEmpresa ? "/dashboard" : undefined,
+      action: isPro
+        ? "Plan actual"
+        : loading === "pro"
+          ? "Programando..."
+          : isEmpresa
+            ? "Cambiar a Pro al final del periodo"
+            : "Actualizar a Pro",
+      onClick: isPro ? undefined : () => startCheckout("pro"),
+      href: isPro ? "/dashboard" : undefined,
       highlighted: true,
-      disabled: isPro || isEmpresa,
+      disabled: isPro,
       badge: "Más recomendable",
     },
     {
@@ -108,9 +119,9 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
       href: isEmpresa ? "/workspace" : undefined,
       disabled: isEmpresa || !empresaCheckoutEnabled,
       helper: !isEmpresa && !empresaCheckoutEnabled
-        ? "Añade STRIPE_PRICE_ID_EMPRESA para vender Empresa."
+        ? "Anade STRIPE_PRICE_ID_EMPRESA para vender Empresa."
         : isPro
-          ? "Se abrirá el portal de Stripe para cambiar tu suscripción."
+          ? "Subida inmediata con prorrateo automatico de Stripe."
           : undefined,
     },
   ];
@@ -186,3 +197,4 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
     </section>
   );
 }
+

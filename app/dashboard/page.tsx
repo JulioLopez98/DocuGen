@@ -129,6 +129,12 @@ export default async function DashboardPage() {
                 : "Has agotado tus documentos gratuitos este mes."
               : "Generaciones ilimitadas activas en tu plan."}
           </p>
+          {isFree && profile.docs_this_month > allDocuments.length && (
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              El uso mensual cuenta documentos generados, aunque los hayas borrado del historial. Por eso puede haber mas
+              uso que documentos guardados.
+            </p>
+          )}
 
           <div className="mt-5">
             <SubscriptionActions
@@ -485,3 +491,4 @@ function getBrandHelper({ hasBrand, isPaid }: { hasBrand: boolean; isPaid: boole
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("es-ES");
 }
+

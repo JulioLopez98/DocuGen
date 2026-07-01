@@ -25,11 +25,71 @@ export default async function AssistantPage({ searchParams }: Props) {
     redirect("/auth");
   }
 
+  const requestedSessionId = searchParams?.sessionId || null;
+
   if (profile.plan === "free") {
-    redirect("/precios");
+    return (
+      <section className="container-page py-8 lg:py-10">
+        <div className="surface overflow-hidden">
+          <div className="grid gap-8 p-6 lg:grid-cols-[1fr_420px] lg:p-8">
+            <div>
+              <p className="eyebrow">Asistente Pro</p>
+              <h1 className="section-title mt-3 max-w-3xl">Crea documentos hablando con DocuGen</h1>
+              <p className="body-muted mt-4 max-w-2xl">
+                El asistente te ayuda cuando no sabes que tipo elegir o necesitas un documento mas personalizado. Te hace
+                preguntas, ordena la informacion y prepara el borrador cuando el caso esta claro.
+              </p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  ["1", "Describe el caso", "Explica lo que necesitas con tus palabras."],
+                  ["2", "Responde preguntas", "DocuGen pide solo los datos importantes."],
+                  ["3", "Genera el borrador", "Obtienes un documento listo para revisar."],
+                ].map(([step, title, text]) => (
+                  <div key={step} className="surface-muted p-4">
+                    <span className="badge badge-free">{step}</span>
+                    <p className="mt-3 font-bold text-[#1f2933]">{title}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">{text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href="/precios" className="focus-ring btn-primary px-5 py-3 text-sm">
+                  Desbloquear asistente
+                </a>
+                <a href="/generar" className="focus-ring btn-secondary px-5 py-3 text-sm">
+                  Crear con Free
+                </a>
+              </div>
+
+              <p className="status-note mt-5 max-w-2xl">
+                Estas viendo una vista previa. El chat guiado esta incluido en Pro y Empresa; en Free puedes generar
+                documentos del catalogo base y probar un documento a medida al mes.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#b7e4c7] bg-[#fffdf8] p-4 shadow-[0_18px_50px_rgba(31,41,51,0.08)]">
+              <div className="rounded-xl bg-[#f4fbf5] p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#2d6a4f]">Vista previa</p>
+                <div className="mt-4 rounded-xl bg-[#2d6a4f] p-4 text-sm leading-6 text-white">
+                  Necesito responder formalmente a una reclamacion de un cliente.
+                </div>
+                <div className="mt-4 rounded-xl border border-[#d8f3dc] bg-white p-4 text-sm leading-6 text-slate-700">
+                  Perfecto. Para preparar una respuesta profesional necesito saber el motivo de la reclamacion, si
+                  reconoces algun fallo, que solucion propones y que tono quieres usar.
+                </div>
+                <div className="mt-4 rounded-xl border border-dashed border-[#b7e4c7] p-4 text-sm text-slate-500">
+                  El asistente seguira preguntando hasta tener lo justo para generar el documento.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
-  const requestedSessionId = searchParams?.sessionId || null;
   const { data: sessions } = await supabase
     .from("chat_sessions")
     .select("*")
@@ -75,9 +135,10 @@ export default async function AssistantPage({ searchParams }: Props) {
     <section className="container-page py-8 lg:py-10">
       <div className="mb-6 max-w-3xl">
         <p className="eyebrow">Asistente Pro</p>
-        <h1 className="section-title mt-3">Describe lo que necesitas y deja que DocuGen te guíe</h1>
+        <h1 className="section-title mt-3">Describe lo que necesitas y deja que DocuGen te guie</h1>
         <p className="body-muted mt-4">
-          Usa el asistente cuando no sepas qué tipo elegir o cuando el documento requiera contexto. Te hará preguntas, ordenará la información y podrás generar el borrador cuando el caso esté claro.
+          Usa el asistente cuando no sepas que tipo elegir o cuando el documento requiera contexto. Te hara preguntas,
+          ordenara la informacion y podras generar el borrador cuando el caso este claro.
         </p>
       </div>
       <AssistantChatClient
