@@ -146,8 +146,20 @@ export default async function PricingPage() {
           </div>
         </div>
       </div>
-
       <div id="planes" className="container-page scroll-mt-24 pb-10">
+        <div className="mb-5 grid gap-3 md:grid-cols-3">
+          {[
+            ["Free", "Para probar", "3 documentos al mes y exportación PDF/TXT."],
+            ["Pro", "Para uso frecuente", "Documentos ilimitados, Word, marca, plantillas y a medida."],
+            ["Empresa", "Para equipos", "Workspace, roles, plantillas compartidas y actividad."],
+          ].map(([plan, title, text]) => (
+            <div key={plan} className="surface-flat p-4">
+              <p className="eyebrow">{plan}</p>
+              <h2 className="mt-2 text-base font-bold">{title}</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{text}</p>
+            </div>
+          ))}
+        </div>
         <PricingCards compact currentPlan={profile?.plan} empresaCheckoutEnabled={empresaCheckoutEnabled} />
       </div>
 
@@ -172,7 +184,7 @@ export default async function PricingPage() {
         <div className="mb-6 max-w-2xl">
           <p className="eyebrow">Comparativa</p>
           <h2 className="panel-title mt-3">Lo importante, sin rodeos</h2>
-          <p className="body-muted mt-3">Free prueba el producto. Pro es el uso recurrente. Empresa es colaboración y control.</p>
+          <p className="body-muted mt-3">Free prueba el producto. Pro es el uso recurrente. Empresa es colaboración, roles y control.</p>
         </div>
         <div className="overflow-x-auto rounded-xl border border-[#d8f3dc] bg-[#fffdf8]/84 shadow-[0_16px_42px_rgba(31,41,51,0.06)]">
           <div className="min-w-[860px]">
