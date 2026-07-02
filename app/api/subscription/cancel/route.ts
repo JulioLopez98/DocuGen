@@ -16,6 +16,10 @@ type SubscriptionWithPeriodEnd = Stripe.Subscription & {
   current_period_end?: number | null;
 };
 
+type SubscriptionItemWithPeriodEnd = Stripe.SubscriptionItem & {
+  current_period_end?: number | null;
+};
+
 export async function POST(request: Request) {
   try {
     const { supabase, user } = await requireUser();
@@ -95,8 +99,8 @@ export async function POST(request: Request) {
 
 function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
   const periodSubscription = subscription as SubscriptionWithPeriodEnd;
+  const periodItem = subscription.items.data[0] as SubscriptionItemWithPeriodEnd | undefined;
+  const periodEnd = periodSubscription.current_period_end || periodItem?.current_period_end || null;
 
-  return periodSubscription.current_period_end
-    ? new Date(periodSubscription.current_period_end * 1000).toISOString()
-    : null;
+  return periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 }

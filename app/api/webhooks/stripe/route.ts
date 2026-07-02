@@ -18,6 +18,10 @@ type SubscriptionWithPeriodEnd = Stripe.Subscription & {
   current_period_end?: number | null;
 };
 
+type SubscriptionItemWithPeriodEnd = Stripe.SubscriptionItem & {
+  current_period_end?: number | null;
+};
+
 export async function POST(request: Request) {
   try {
     const stripe = getStripe();
@@ -78,6 +82,8 @@ export async function POST(request: Request) {
             stripe_customer_id: customerId,
             stripe_subscription_id: subscriptionId ?? null,
             stripe_subscription_status: "active",
+            stripe_pending_plan: null,
+            stripe_pending_plan_at: null,
           })
           .eq("id", userId);
 
@@ -157,7 +163,17 @@ export async function POST(request: Request) {
       };
 
       if (userId) {
-        await db.from("profiles").update(updatePayload).eq("id", userId);
+        const { data: profile } = await db
+          .from("profiles")
+          .update(updatePayload)
+          .eq("id", userId)
+          .select("id,stripe_pending_plan")
+          .maybeSingle<Pick<Profile, "id" | "stripe_pending_plan">>();
+
+        if (profile?.stripe_pending_plan === plan) {
+          await db.from("profiles").update({ stripe_pending_plan: null, stripe_pending_plan_at: null }).eq("id", userId);
+        }
+
         await db.from("workspaces").update({ plan }).eq("owner_id", userId);
         return;
       }
@@ -167,10 +183,14 @@ export async function POST(request: Request) {
           .from("profiles")
           .update(updatePayload)
           .eq("stripe_customer_id", customerId)
-          .select("id")
-          .maybeSingle<Pick<Profile, "id">>();
+          .select("id,stripe_pending_plan")
+          .maybeSingle<Pick<Profile, "id" | "stripe_pending_plan">>();
 
         if (profile?.id) {
+          if (profile.stripe_pending_plan === plan) {
+            await db.from("profiles").update({ stripe_pending_plan: null, stripe_pending_plan_at: null }).eq("id", profile.id);
+          }
+
           await db.from("workspaces").update({ plan }).eq("owner_id", profile.id);
         }
       }
@@ -209,9 +229,9 @@ function isActiveSubscription(subscription: Stripe.Subscription) {
 
 function getBillingStateFromSubscription(subscription: Stripe.Subscription): BillingState {
   const periodSubscription = subscription as SubscriptionWithPeriodEnd;
-  const currentPeriodEnd = periodSubscription.current_period_end
-    ? new Date(periodSubscription.current_period_end * 1000).toISOString()
-    : null;
+  const periodItem = subscription.items.data[0] as SubscriptionItemWithPeriodEnd | undefined;
+  const periodEnd = periodSubscription.current_period_end || periodItem?.current_period_end || null;
+  const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 
   return {
     stripe_subscription_id: subscription.id,
