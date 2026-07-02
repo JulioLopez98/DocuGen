@@ -55,6 +55,13 @@ export async function POST(request: Request) {
     }
 
     const cancelAtPeriodEnd = payload.action === "cancel_at_period_end";
+    const currentSubscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id);
+    const scheduleId = getScheduleId(currentSubscription);
+
+    if (cancelAtPeriodEnd && scheduleId) {
+      await stripe.subscriptionSchedules.release(scheduleId);
+    }
+
     const subscription = await stripe.subscriptions.update(profile.stripe_subscription_id, {
       cancel_at_period_end: cancelAtPeriodEnd,
     });
@@ -103,4 +110,14 @@ function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
   const periodEnd = periodSubscription.current_period_end || periodItem?.current_period_end || null;
 
   return periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+}
+
+function getScheduleId(subscription: Stripe.Subscription) {
+  const schedule = subscription.schedule;
+
+  if (typeof schedule === "string") {
+    return schedule;
+  }
+
+  return schedule?.id || null;
 }
