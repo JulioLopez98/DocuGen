@@ -90,6 +90,7 @@ export default async function PricingPage() {
   const groupedProDocuments = groupByCategory(proDocuments);
   const planLabel = profile?.plan ? profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1) : null;
   const empresaCheckoutEnabled = Boolean(process.env.STRIPE_PRICE_ID_EMPRESA);
+  const hasManagedSubscription = profile ? hasManagedStripeSubscription(profile) : false;
 
   return (
     <section>
@@ -160,7 +161,7 @@ export default async function PricingPage() {
             </div>
           ))}
         </div>
-        <PricingCards compact currentPlan={profile?.plan} empresaCheckoutEnabled={empresaCheckoutEnabled} />
+        <PricingCards compact currentPlan={profile?.plan} empresaCheckoutEnabled={empresaCheckoutEnabled} hasManagedSubscription={hasManagedSubscription} />
       </div>
 
       <div className="border-y border-[#d8f3dc] bg-[#f2efe8]/56 py-12">
@@ -262,5 +263,12 @@ export default async function PricingPage() {
         <LegalDisclaimer />
       </div>
     </section>
+  );
+}
+
+function hasManagedStripeSubscription(profile: Profile) {
+  return Boolean(
+    profile.stripe_subscription_id ||
+      (profile.stripe_subscription_status && ["active", "trialing", "past_due"].includes(profile.stripe_subscription_status)),
   );
 }

@@ -7,9 +7,10 @@ type PricingCardsProps = {
   compact?: boolean;
   currentPlan?: "free" | "pro" | "empresa" | null;
   empresaCheckoutEnabled?: boolean;
+  hasManagedSubscription?: boolean;
 };
 
-export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = false }: PricingCardsProps) {
+export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = false, hasManagedSubscription = false }: PricingCardsProps) {
   const [loading, setLoading] = useState<"free" | "pro" | "empresa" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isPro = currentPlan === "pro";
@@ -20,7 +21,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
     setError(null);
 
     try {
-      const endpoint = currentPlan && currentPlan !== "free" ? "/api/subscription/change-plan" : "/api/create-checkout";
+      const endpoint = currentPlan && currentPlan !== "free" && hasManagedSubscription ? "/api/subscription/change-plan" : "/api/create-checkout";
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,7 +47,12 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
   }
 
   async function scheduleFree() {
-    if (!window.confirm("Vas a cancelar la suscripcion. Mantendras tu plan hasta el final del periodo ya pagado y despues pasaras a Free. No se devuelve el importe del periodo actual. ¿Quieres continuar?")) {
+    const manualPlan = Boolean(currentPlan && currentPlan !== "free" && !hasManagedSubscription);
+    const confirmed = manualPlan
+      ? window.confirm("Vas a volver al plan Free. Este plan viene de un codigo o activacion manual, asi que no se cancela ningun pago en Stripe. ¿Quieres continuar?")
+      : window.confirm("Vas a cancelar la suscripcion. Mantendras tu plan hasta el final del periodo ya pagado y despues pasaras a Free. No se devuelve el importe del periodo actual. ¿Quieres continuar?");
+
+    if (!confirmed) {
       return;
     }
 
@@ -54,26 +60,27 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
     setError(null);
 
     try {
-      const response = await fetch("/api/subscription/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cancel_at_period_end" }),
-      });
+      const response = manualPlan
+        ? await fetch("/api/downgrade-free", { method: "POST" })
+        : await fetch("/api/subscription/cancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "cancel_at_period_end" }),
+          });
       const payload = (await response.json()) as { message?: string };
 
       if (!response.ok) {
-        setError(payload.message || "No se pudo programar el paso a Free.");
+        setError(payload.message || (manualPlan ? "No se pudo volver al plan Free." : "No se pudo programar el paso a Free."));
         return;
       }
 
-      window.location.href = "/dashboard?plan_scheduled=free";
+      window.location.href = manualPlan ? "/dashboard?plan=free" : "/dashboard?plan_scheduled=free";
     } catch {
-      setError("No se pudo conectar con Stripe. Espera unos segundos y vuelve a intentarlo.");
+      setError(manualPlan ? "No se pudo conectar con DocuGen. Espera unos segundos y vuelve a intentarlo." : "No se pudo conectar con Stripe. Espera unos segundos y vuelve a intentarlo.");
     } finally {
       setLoading(null);
     }
   }
-
   const cards = [
     {
       name: "Free",
@@ -89,7 +96,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
         "Exportación PDF y TXT",
         "Avisos de revisión profesional incluidos",
       ],
-      action: currentPlan === "free" ? "Plan actual" : currentPlan ? (loading === "free" ? "Programando..." : "Pasar a Free al final del periodo") : "Empezar gratis",
+      action: currentPlan === "free" ? "Plan actual" : currentPlan ? (loading === "free" ? "Cambiando..." : hasManagedSubscription ? "Pasar a Free al final del periodo" : "Volver a Free") : "Empezar gratis",
       href: currentPlan ? undefined : "/auth",
       onClick: currentPlan && currentPlan !== "free" ? scheduleFree : undefined,
       disabled: currentPlan === "free",
@@ -114,7 +121,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
         : loading === "pro"
           ? "Programando..."
           : isEmpresa
-            ? "Cambiar a Pro al final del periodo"
+            ? hasManagedSubscription ? "Cambiar a Pro al final del periodo" : "Contratar Pro con Stripe"
             : "Actualizar a Pro",
       onClick: isPro ? undefined : () => startCheckout("pro"),
       href: isPro ? "/dashboard" : undefined,
@@ -143,7 +150,7 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
           : loading === "empresa"
             ? "Conectando..."
             : isPro
-              ? "Cambiar a Empresa"
+              ? hasManagedSubscription ? "Cambiar a Empresa" : "Contratar Empresa"
               : "Actualizar a Empresa",
       onClick: isEmpresa || !empresaCheckoutEnabled ? undefined : () => startCheckout("empresa"),
       href: isEmpresa ? "/workspace" : undefined,
@@ -151,7 +158,9 @@ export function PricingCards({ compact, currentPlan, empresaCheckoutEnabled = fa
       helper: !isEmpresa && !empresaCheckoutEnabled
         ? "Anade STRIPE_PRICE_ID_EMPRESA para vender Empresa."
         : isPro
-          ? "Subida inmediata con prorrateo automatico de Stripe."
+          ? hasManagedSubscription
+            ? "Subida inmediata con prorrateo automatico de Stripe."
+            : "Tu Pro actual es manual. Si contratas Empresa, Stripe empezara una suscripcion nueva."
           : undefined,
     },
   ];
