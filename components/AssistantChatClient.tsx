@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DocResult } from "@/components/DocResult";
 import type { ChatMessageRow, ChatSessionRow } from "@/lib/supabase-server";
 
@@ -37,6 +37,8 @@ const starterPrompts = [
 
 export function AssistantChatClient({ initialSessionId, initialMessages, sessions, sessionTitles }: AssistantChatClientProps) {
   const router = useRouter();
+  const resultRef = useRef<HTMLDivElement | null>(null);
+  const previousInitialSessionIdRef = useRef<string | null>(initialSessionId);
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId);
   const [messages, setMessages] = useState<ChatMessageRow[]>(initialMessages);
   const [localSessions, setLocalSessions] = useState<ChatSessionRow[]>(sessions);
@@ -49,6 +51,25 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
   const [error, setError] = useState<string | null>(null);
   const canGenerate = Boolean(sessionId && messages.length > 0 && !loading && !generating);
   const currentSessionTitle = sessionId ? formatSessionTitle(localSessionTitles[sessionId]) : "Nuevo documento";
+
+  useEffect(() => {
+    const sessionChanged = previousInitialSessionIdRef.current !== initialSessionId;
+    previousInitialSessionIdRef.current = initialSessionId;
+
+    setSessionId(initialSessionId);
+    setMessages(initialMessages);
+    setLocalSessions(sessions);
+    setLocalSessionTitles(sessionTitles);
+    setError(null);
+
+    if (sessionChanged) {
+      setGeneratedDocument(null);
+    }
+  }, [initialSessionId, initialMessages, sessions, sessionTitles]);
+
+  function scrollToGeneratedDocument() {
+    resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   function startNewChat() {
     setSessionId(null);
@@ -208,14 +229,25 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
                 Cuéntale el caso, responde a sus preguntas y genera el borrador cuando esté claro.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={generateFromChat}
-              disabled={!canGenerate}
-              className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60"
-            >
-              {generating ? "Generando..." : "Generar documento"}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              {generatedDocument && (
+                <button
+                  type="button"
+                  onClick={scrollToGeneratedDocument}
+                  className="focus-ring btn-secondary px-5 py-3 text-sm"
+                >
+                  Ver documento
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={generateFromChat}
+                disabled={!canGenerate}
+                className="focus-ring btn-primary px-5 py-3 text-sm disabled:opacity-60"
+              >
+                {generating ? "Generando..." : "Generar documento"}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -354,7 +386,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
       </aside>
 
       {generatedDocument && (
-        <div className="order-3 xl:col-span-2">
+        <div ref={resultRef} id="assistant-generated-document" className="scroll-mt-28 order-3 xl:col-span-2">
           <div className="mb-4 rounded-md border border-[#d8f3dc] bg-[#f4fbf5] p-4">
             <p className="text-sm font-bold text-[#2d6a4f]">Documento generado desde el asistente</p>
             <p className="mt-1 text-xs leading-5 text-slate-600">
