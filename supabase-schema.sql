@@ -1089,3 +1089,52 @@ for delete using (
     or public.is_admin()
   )
 );
+
+-- Promo / gift codes for manual Pro or Empresa access
+create table if not exists public.promo_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  plan text not null check (plan in ('pro', 'empresa')),
+  active boolean not null default true,
+  max_redemptions integer check (max_redemptions is null or max_redemptions > 0),
+  times_redeemed integer not null default 0 check (times_redeemed >= 0),
+  expires_at timestamptz,
+  note text,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.promo_code_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  promo_code_id uuid not null references public.promo_codes(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  plan_granted text not null check (plan_granted in ('pro', 'empresa')),
+  redeemed_at timestamptz not null default now(),
+  unique(promo_code_id, user_id)
+);
+
+create index if not exists promo_codes_code_idx on public.promo_codes(code);
+create index if not exists promo_codes_active_idx on public.promo_codes(active);
+create index if not exists promo_code_redemptions_user_id_idx on public.promo_code_redemptions(user_id);
+create index if not exists promo_code_redemptions_promo_code_id_idx on public.promo_code_redemptions(promo_code_id);
+
+drop trigger if exists promo_codes_set_updated_at on public.promo_codes;
+create trigger promo_codes_set_updated_at
+before update on public.promo_codes
+for each row execute function public.set_updated_at();
+
+alter table public.promo_codes enable row level security;
+alter table public.promo_code_redemptions enable row level security;
+
+drop policy if exists "promo_codes_admin_all" on public.promo_codes;
+create policy "promo_codes_admin_all" on public.promo_codes
+for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "promo_code_redemptions_select_own_or_admin" on public.promo_code_redemptions;
+create policy "promo_code_redemptions_select_own_or_admin" on public.promo_code_redemptions
+for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "promo_code_redemptions_admin_all" on public.promo_code_redemptions;
+create policy "promo_code_redemptions_admin_all" on public.promo_code_redemptions
+for all using (public.is_admin()) with check (public.is_admin());

@@ -6,6 +6,7 @@ import { BrandSettingsForm } from "@/components/BrandSettingsForm";
 import { DangerZone } from "@/components/DangerZone";
 import { EmptyState } from "@/components/EmptyState";
 import { PlanBadge } from "@/components/PlanBadge";
+import { PromoCodeRedeemer } from "@/components/PromoCodeRedeemer";
 import { SettingsTabs } from "@/components/SettingsTabs";
 import { SubscriptionActions } from "@/components/SubscriptionActions";
 import { UsageBar } from "@/components/UsageBar";
@@ -34,6 +35,7 @@ export default async function SettingsPage() {
   const isPro = profile.plan !== "free";
   const remaining = Math.max(3 - profile.docs_this_month, 0);
   const hasBrand = Boolean(brandSettings?.company_name || brandSettings?.cif || brandSettings?.address || brandSettings?.logo_url);
+  const hasManagedSubscription = hasManagedStripeSubscription(profile);
 
   return (
     <section className="container-page py-8 lg:py-10">
@@ -125,7 +127,7 @@ export default async function SettingsPage() {
                     <SubscriptionActions
                       plan={profile.plan}
                       hasCustomer={Boolean(profile.stripe_customer_id)}
-                      hasManagedSubscription={hasManagedStripeSubscription(profile)}
+                      hasManagedSubscription={hasManagedSubscription}
                       cancelAtPeriodEnd={profile.stripe_cancel_at_period_end}
                       currentPeriodEnd={profile.stripe_current_period_end}
                     />
@@ -137,6 +139,8 @@ export default async function SettingsPage() {
                     Comparar planes
                   </Link>
                 </section>
+
+                <PromoCodeRedeemer currentPlan={profile.plan} hasManagedSubscription={hasManagedSubscription} />
 
                 <section className="surface p-6">
                   <p className="eyebrow">Exportaciones</p>
