@@ -154,7 +154,7 @@ export function AssistantChatClient({ initialSessionId, initialMessages, session
         ...current.map((item) => (item.id === optimisticMessage.id ? { ...item, session_id: nextSessionId } : item)),
         payload.message!,
       ]);
-      setLocalSessionTitles((current) => ({ ...current, [nextSessionId]: cleanMessage }));
+      setLocalSessionTitles((current) => (current[nextSessionId] ? current : { ...current, [nextSessionId]: cleanMessage }));
       setLocalSessions((current) => {
         const nextSession: ChatSessionRow = {
           id: nextSessionId,
@@ -428,6 +428,16 @@ function AssistantStep({ number, title, text }: { number: string; title: string;
 }
 
 function formatSessionTitle(value?: string) {
+  const clean = summarizeSessionRequest(value);
+
+  if (!clean) {
+    return "Conversación nueva";
+  }
+
+  return clean.length > 62 ? clean.slice(0, 59).trimEnd() + "..." : clean;
+}
+
+function summarizeSessionRequest(value?: string) {
   const clean = value
     ?.trim()
     .replace(/\s+/g, " ")
@@ -435,10 +445,35 @@ function formatSessionTitle(value?: string) {
     .replace(/^(preparar|hacer|crear|redactar|generar)\s+/i, "");
 
   if (!clean) {
-    return "Conversación nueva";
+    return "";
   }
 
-  const title = clean.charAt(0).toUpperCase() + clean.slice(1);
-  return title.length > 62 ? title.slice(0, 59).trimEnd() + "..." : title;
-}
+  const lower = clean.toLowerCase();
 
+  if (lower.includes("reclamaci")) {
+    return "Respuesta formal a una reclamación";
+  }
+
+  if (lower.includes("autoriz") || lower.includes("recoger")) {
+    return "Autorización para recoger documentación";
+  }
+
+  if (lower.includes("colaborador") || lower.includes("colaboraci")) {
+    return "Acuerdo con colaborador externo";
+  }
+
+  if (lower.includes("contrato")) {
+    return "Contrato personalizado";
+  }
+
+  if (lower.includes("presupuesto")) {
+    return "Presupuesto personalizado";
+  }
+
+  if (lower.includes("anexo") || lower.includes("ampliaci")) {
+    return "Anexo o ampliación de alcance";
+  }
+
+  const words = clean.split(" ").filter(Boolean).slice(0, 9).join(" ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
